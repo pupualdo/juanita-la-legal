@@ -721,6 +721,8 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const [showRating, setShowRating] = useState(false);
   const [ratingDone, setRatingDone] = useState(false);
   const [timerExpired, setTimerExpired] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [devHistory, setDevHistory] = useState([]);
   const [activeTerm, setActiveTerm] = useState(null); // { key, label, explanation } | null
   const [isMobile, setIsMobile] = useState(false);
   const [voiceState, setVoiceState] = useState('idle'); // idle | recording | transcribing | reviewing
@@ -807,7 +809,11 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
           setStage("chat");
           setTimerActive(true);
           addMsg({ type: "system", text: `[DEV] Sesión creada sin pago. Tema: ${TOPIC_LABELS[data.tema]}` });
-          setTimeout(() => addMsg({ type: "juanita", text: QUESTION_SETS[data.tema][0] }), 300);
+          const initialHistory = [{ role: 'user', content: trimmed }];
+          const fullText = await streamChatResponse(trimmed, [], newSessionId);
+          if (fullText) {
+            setDevHistory([...initialHistory, { role: 'assistant', content: fullText }]);
+          }
         } else {
           setStage("payment");
         }
@@ -824,13 +830,55 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   // ── Post pago: confirmar tema ──────────────────────────────────────────────
   const handleAfterPayment = () => {
     setLockedTopic(pendingTopic);
-    setStage("topic-confirm");
-    addMsg({ type: "system", text: `Tema confirmado: ${TOPIC_LABELS[pendingTopic]} ${TOPIC_META[pendingTopic]?.emoji}. Vamos a ordenar tu caso con preguntas breves.` });
-    setTimeout(() => {
-      addMsg({ type: "juanita", text: QUESTION_SETS[pendingTopic][0] });
-      setStage("chat");
-      setTimerActive(true);
-    }, 400);
+    setStage("chat");
+    setTimerActive(true);
+    addMsg({ type: "system", text: `Tema confirmado: ${TOPIC_LABELS[pendingTopic]} ${TOPIC_META[pendingTopic]?.emoji}.` });
+  };
+
+  // ── Streaming helper ──────────────────────────────────────────────────────
+  const streamChatResponse = async (message, historyForApi, currentSessionId) => {
+    setIsStreaming(true);
+    const msgId = createId();
+    setMessages(prev => [...prev, { id: msgId, type: 'juanita', text: '...' }]);
+    let fullText = '';
+    try {
+      const body = { sessionId: currentSessionId, message };
+      if (process.env.NEXT_PUBLIC_DEV_SKIP_PAYMENT === 'true') {
+        body.history = historyForApi;
+      }
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6);
+          if (data === '[DONE]') continue;
+          try {
+            const { text } = JSON.parse(data);
+            if (text) {
+              fullText += text;
+              setMessages(prev => prev.map(m => m.id === msgId ? { ...m, text: fullText } : m));
+            }
+          } catch {}
+        }
+      }
+    } catch {
+      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, text: 'Hubo un error al responder. Intenta de nuevo.' } : m));
+    } finally {
+      setIsStreaming(false);
+    }
+    return fullText;
   };
 
   // ── Respuestas guiadas ─────────────────────────────────────────────────────
@@ -847,36 +895,11 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
 
     addMsg({ type: "user", text });
 
-    // Enviar al backend si hay sesion pagada
-    if (sessionId) {
-      try {
-        await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId, message: text }),
-        });
-      } catch {
-        // Chat backend fallo, seguir con flujo local
-      }
+    const newDevHistory = [...devHistory, { role: 'user', content: text }];
+    const fullText = await streamChatResponse(text, newDevHistory, sessionId);
+    if (fullText) {
+      setDevHistory([...newDevHistory, { role: 'assistant', content: fullText }]);
     }
-
-    const questions = QUESTION_SETS[lockedTopic];
-    const newAnswers = { ...guidedAnswers, [currentQIdx]: text };
-    setGuidedAnswers(newAnswers);
-    const nextIdx = currentQIdx + 1;
-
-    if (nextIdx < questions.length) {
-      setCurrentQIdx(nextIdx);
-      setTimeout(() => addMsg({ type: "juanita", text: questions[nextIdx] }), 250);
-      return;
-    }
-
-    // Generar respuesta final
-    const answer = buildFinalAnswer(lockedTopic);
-    setStage("closed");
-    setTimerActive(false);
-    setTimeout(() => addMsg({ type: "final", finalAnswer: answer }), 300);
-    setTimeout(() => addMsg({ type: "juanita", text: "Espero que esta orientación te sea útil. Recuerda: la CAJ entrega asesoría gratuita — llama al 600 440 2000. ¿Necesitas una nueva consulta sobre otro tema?" }), 800);
   };
 
   // ── Grabación de voz ──────────────────────────────────────────────────────
@@ -953,9 +976,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const handleContinueTopic = () => {
     setShowScopeWarning(false);
     setOffTopicDetected(null);
-    const questions = QUESTION_SETS[lockedTopic];
     addMsg({ type: "system", text: `Perfecto, seguimos con ${TOPIC_LABELS[lockedTopic]}.` });
-    setTimeout(() => addMsg({ type: "juanita", text: questions[currentQIdx] }), 250);
   };
 
   const handleNewConsult = () => {
@@ -978,7 +999,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
     : stage === "chat" ? "Escribe tu respuesta..."
     : "Consulta cerrada";
 
-  const inputDisabled = showScopeWarning || timerExpired || stage === "closed" || stage === "classifying" || stage === "payment" || stage === "topic-confirm" || stage === "resuming";
+  const inputDisabled = showScopeWarning || timerExpired || isStreaming || stage === "closed" || stage === "classifying" || stage === "payment" || stage === "topic-confirm" || stage === "resuming";
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "row", background: "#faf8f4" }}>

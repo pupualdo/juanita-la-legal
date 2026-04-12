@@ -188,24 +188,51 @@ export async function POST(request) {
     const newHistory = [...history, { role: 'user', content: message }];
 
     const anthropic = new Anthropic({ apiKey: process.env.JUANITA_ANTHROPIC_KEY });
-    const response = await anthropic.messages.create({
+    const stream = anthropic.messages.stream({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
-      messages: newHistory
+      messages: newHistory,
     });
 
-    const reply = response.content[0].text;
+    const encoder = new TextEncoder();
+    let fullReply = '';
+    const capturedSessionId = sessionId;
+    const capturedHistory = newHistory;
+    const isDevMode = process.env.DEV_SKIP_PAYMENT === 'true';
 
-    if (process.env.DEV_SKIP_PAYMENT !== 'true' && sessionId) {
-      const updatedHistory = [...newHistory, { role: 'assistant', content: reply }];
-      await supabase
-        .from('sessions')
-        .update({ history: updatedHistory })
-        .eq('session_id', sessionId);
-    }
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const event of stream) {
+            if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+              fullReply += event.delta.text;
+              controller.enqueue(encoder.encode('data: ' + JSON.stringify({ text: event.delta.text }) + '\n\n'));
+            }
+          }
+          if (!isDevMode && capturedSessionId) {
+            const updatedHistory = [...capturedHistory, { role: 'assistant', content: fullReply }];
+            await supabase
+              .from('sessions')
+              .update({ history: updatedHistory })
+              .eq('session_id', capturedSessionId);
+          }
+        } catch (err) {
+          controller.enqueue(encoder.encode('data: ' + JSON.stringify({ error: 'Stream error' }) + '\n\n'));
+        } finally {
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      }
+    });
 
-    return NextResponse.json({ reply });
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
   } catch (error) {
     console.error('Error chat:', error);
     return NextResponse.json({ error: 'Error en el chat' }, { status: 500 });
