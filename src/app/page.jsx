@@ -1049,6 +1049,10 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Error ${res.status}`);
+      }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
@@ -1063,16 +1067,22 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
           const data = line.slice(6);
           if (data === '[DONE]') continue;
           try {
-            const { text } = JSON.parse(data);
-            if (text) {
-              fullText += text;
+            const parsed = JSON.parse(data);
+            if (parsed.error) throw new Error(parsed.error);
+            if (parsed.text) {
+              fullText += parsed.text;
               setMessages(prev => prev.map(m => m.id === msgId ? { ...m, text: fullText } : m));
             }
-          } catch {}
+          } catch (parseErr) {
+            if (parseErr.message !== 'Unexpected token') throw parseErr;
+          }
         }
       }
-    } catch {
-      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, text: 'Hubo un error al responder. Intenta de nuevo.' } : m));
+    } catch (err) {
+      const errMsg = err.message && err.message !== 'Failed to fetch'
+        ? `Error: ${err.message}`
+        : 'Hubo un error al responder. Intenta de nuevo.';
+      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, text: errMsg } : m));
     } finally {
       setIsStreaming(false);
     }

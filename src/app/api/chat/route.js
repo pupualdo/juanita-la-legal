@@ -186,10 +186,13 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Sesión inválida o expirada' }, { status: 401 });
       }
 
-      history = session.history || [];
+      history = Array.isArray(session.history) ? session.history : [];
     }
 
-    const newHistory = [...history, { role: 'user', content: message }];
+    const validHistory = history.filter(
+      m => m && typeof m.role === 'string' && typeof m.content === 'string'
+    );
+    const newHistory = [...validHistory, { role: 'user', content: message }];
 
     const anthropic = new Anthropic({ apiKey: process.env.JUANITA_ANTHROPIC_KEY });
     const stream = anthropic.messages.stream({
@@ -222,7 +225,8 @@ export async function POST(request) {
               .eq('session_id', capturedSessionId);
           }
         } catch (err) {
-          controller.enqueue(encoder.encode('data: ' + JSON.stringify({ error: 'Stream error' }) + '\n\n'));
+          console.error('Anthropic stream error:', err?.message || err);
+          controller.enqueue(encoder.encode('data: ' + JSON.stringify({ error: err?.message || 'Error en el chat' }) + '\n\n'));
         } finally {
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
