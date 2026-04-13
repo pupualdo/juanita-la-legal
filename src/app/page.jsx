@@ -117,13 +117,13 @@ const buildFinalAnswer = (topic) => ({
   options: [
     "Ordenar todos los antecedentes y definir qué corresponde primero.",
     "Evaluar si se necesita acción formal según el nivel del conflicto.",
-    "Consultar con la CAJ (Corporación de Asistencia Judicial) si no tienes recursos.",
+    "Consultar en la clínica jurídica de alguna universidad cercana si no tienes recursos.",
   ],
   nextSteps: [
     "Anota qué pasó y en qué fechas exactas.",
     "Reúne contratos, mensajes, comprobantes y cualquier documento relevante.",
     "No firmes nada nuevo sin entenderlo completamente.",
-    "Llama a la CAJ: 600 440 2000 (Región Metropolitana) — es gratuito.",
+    "Si necesitas un abogado y no puedes pagar uno, consulta en la clínica jurídica de alguna universidad cercana.",
   ],
   lawyerNeeded: "Necesitas abogado sí o sí si hay montos altos, plazos corriendo, conflicto formal o documentos complejos que firmar.",
   disclaimer: DISCLAIMER,
@@ -316,7 +316,7 @@ const LEGAL_TERMS = {
   "régimen de visitas": "Es el calendario que define cuándo y cómo el padre/madre que no vive con los hijos puede verlos y compartir con ellos.",
   "vif": "Violencia Intrafamiliar. Es cualquier tipo de maltrato (físico, psicológico, económico) dentro de la familia. Es delito en Chile.",
   "inspección del trabajo": "Es una oficina del gobierno donde puedes denunciar gratis a tu empleador si no respeta tus derechos laborales. Ellos investigan y pueden multarlo.",
-  "caj": "Corporación de Asistencia Judicial. Te dan abogado gratis si no tienes plata para pagar uno. Llama al 600 440 2000.",
+  "clínica jurídica": "Es un servicio gratuito que ofrecen muchas universidades. Estudiantes de derecho supervisados por profesores te ayudan con orientación y representación legal sin costo.",
   "conservador de bienes raíces": "Es la oficina donde se registran todos los terrenos, casas y departamentos del país. Si un bien raíz no está inscrito ahí, legalmente no existe a tu nombre.",
   "dem": "Departamento de Extranjería y Migración. Es la oficina del gobierno que tramita visas, residencias y todo lo relacionado con migración.",
   "arraigo nacional": "Es una medida que impide a una persona salir del país. Se usa por ejemplo cuando alguien debe pensión alimenticia y no paga.",
@@ -620,15 +620,66 @@ function HeroSection({ onStart }) {
 
 function PaymentWall({ topic, resumen, sessionId, onBack }) {
   const [loading, setLoading] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(null); // { discount, label } | null
+  const [promoError, setPromoError] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
   const m = TOPIC_META[topic] || {};
+
+  const BASE_PRICE = 9990;
+  const finalPrice = promoApplied
+    ? Math.round(BASE_PRICE * (1 - promoApplied.discount / 100))
+    : BASE_PRICE;
+  const isFree = finalPrice === 0;
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError('');
+    setPromoApplied(null);
+    try {
+      const res = await fetch('/api/validate-promo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setPromoApplied({ discount: data.discount, label: data.label });
+      } else {
+        setPromoError('Código no válido. Intenta con otro.');
+      }
+    } catch {
+      setPromoError('Error al validar el código.');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
 
   const handlePay = async () => {
     setLoading(true);
     try {
+      if (isFree) {
+        const res = await fetch('/api/create-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tema: topic, resumen, sessionId, promoCode: promoCode.trim().toUpperCase(), free: true }),
+        });
+        const data = await res.json();
+        if (data.checkoutUrl) {
+          window.location.href = data.checkoutUrl;
+        } else if (data.sessionId) {
+          window.location.href = `/success?session_id=${data.sessionId}`;
+        } else {
+          setLoading(false);
+          alert('Error al activar el acceso. Intenta de nuevo.');
+        }
+        return;
+      }
       const res = await fetch('/api/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tema: topic, resumen, sessionId }),
+        body: JSON.stringify({ tema: topic, resumen, sessionId, promoCode: promoCode.trim().toUpperCase() }),
       });
       const data = await res.json();
       if (data.checkoutUrl) {
@@ -662,7 +713,7 @@ function PaymentWall({ topic, resumen, sessionId, onBack }) {
         <div style={{ fontSize: 15, fontWeight: 700, color: "#1a3a2a", marginBottom: 12 }}>
           🔓 Desbloquea tu consulta guiada
         </div>
-        {["Orientación detallada sobre tus derechos", "Preguntas guiadas para ordenar tu caso", "Riesgos, opciones y próximos pasos concretos", "Derivación a servicios gratuitos (CAJ, etc.)"].map((item, i) => (
+        {["Orientación detallada sobre tus derechos", "Preguntas guiadas para ordenar tu caso", "Riesgos, opciones y próximos pasos concretos", "Derivación a instituciones y recursos de ayuda"].map((item, i) => (
           <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <span style={{ color: "#4a7a20", fontWeight: 700 }}>✓</span>
             <span style={{ fontSize: 13, color: "#3a3028" }}>{item}</span>
@@ -671,20 +722,68 @@ function PaymentWall({ topic, resumen, sessionId, onBack }) {
 
         <div style={{ background: "#f5f0e8", borderRadius: 10, padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", margin: "14px 0" }}>
           <span style={{ fontSize: 13, color: "#6a5e50" }}>Consulta completa · pago único</span>
-          <span style={{ fontFamily: "serif", fontSize: 24, fontWeight: 700, color: "#1a3a2a" }}>$9.990</span>
+          <div style={{ textAlign: "right" }}>
+            {promoApplied && (
+              <div style={{ fontSize: 12, color: "#a09080", textDecoration: "line-through" }}>
+                ${BASE_PRICE.toLocaleString('es-CL')}
+              </div>
+            )}
+            <span style={{ fontFamily: "serif", fontSize: 24, fontWeight: 700, color: isFree ? "#4a7a20" : "#1a3a2a" }}>
+              {isFree ? "¡Gratis!" : `$${finalPrice.toLocaleString('es-CL')}`}
+            </span>
+            {promoApplied && (
+              <div style={{ fontSize: 11, color: "#4a7a20", fontWeight: 600 }}>
+                {promoApplied.label} aplicado ✓
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Promo code field */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              type="text"
+              value={promoCode}
+              onChange={e => { setPromoCode(e.target.value); setPromoError(''); }}
+              onKeyDown={e => e.key === 'Enter' && handleApplyPromo()}
+              placeholder="¿Tienes un código de descuento?"
+              disabled={!!promoApplied}
+              style={{
+                flex: 1, padding: "10px 12px", fontSize: 13, border: "1.5px solid #e0d8cc",
+                borderRadius: 10, outline: "none", background: promoApplied ? "#f0f5e8" : "white",
+                color: "#3a3028",
+              }}
+            />
+            <button
+              onClick={handleApplyPromo}
+              disabled={promoLoading || !!promoApplied || !promoCode.trim()}
+              style={{
+                padding: "10px 14px", fontSize: 13, fontWeight: 600, border: "none",
+                borderRadius: 10, cursor: promoApplied || !promoCode.trim() ? "default" : "pointer",
+                background: promoApplied ? "#4a7a20" : "#1a3a2a", color: "white",
+                opacity: promoLoading ? 0.7 : 1,
+              }}
+            >
+              {promoApplied ? "✓" : promoLoading ? "..." : "Aplicar"}
+            </button>
+          </div>
+          {promoError && (
+            <div style={{ fontSize: 12, color: "#c0392b", marginTop: 5 }}>{promoError}</div>
+          )}
         </div>
 
         {!loading ? (
           <button onClick={handlePay} style={{
-            width: "100%", background: "#009ee3", color: "white", border: "none",
+            width: "100%", background: isFree ? "#4a7a20" : "#009ee3", color: "white", border: "none",
             borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 600, cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           }}>
-            💳 Pagar con Mercado Pago
+            {isFree ? "🎉 Acceder gratis" : "💳 Pagar con Mercado Pago"}
           </button>
         ) : (
           <div style={{ textAlign: "center", color: "#009ee3", fontSize: 13, padding: "13px" }}>
-            ⏳ Redirigiendo a Mercado Pago...
+            ⏳ {isFree ? "Activando acceso..." : "Redirigiendo a Mercado Pago..."}
           </div>
         )}
 
