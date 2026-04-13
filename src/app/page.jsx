@@ -660,6 +660,17 @@ function PaymentWall({ topic, resumen, sessionId, onBack }) {
     setLoading(true);
     try {
       if (isFree) {
+        const grantRes = await fetch('/api/grant-access', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, promoCode: promoCode.trim().toUpperCase() }),
+        });
+        const grantData = await grantRes.json();
+        if (!grantData.ok) {
+          setLoading(false);
+          alert('Error al activar el acceso. Intenta de nuevo.');
+          return;
+        }
         localStorage.setItem('juanita_session', sessionId);
         window.location.href = '/?paid=true';
         return;
