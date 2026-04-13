@@ -848,10 +848,22 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
 
   // Post-pago: iniciar chat directamente
   useEffect(() => {
-    if (initialPaid && initialSessionId) {
-      setSessionId(initialSessionId);
+    if (!initialPaid || !initialSessionId) return;
+
+    const savedQuery = sessionStorage.getItem('juanita_query');
+    const savedTema = localStorage.getItem('juanita_topic');
+
+    setSessionId(initialSessionId);
+    if (savedTema) setLockedTopic(savedTema);
+    setTimerActive(true);
+
+    if (savedQuery) {
+      sessionStorage.removeItem('juanita_query');
       setStage("chat");
-      setTimerActive(true);
+      setMessages([{ id: createId(), type: "user", text: savedQuery }]);
+      streamChatResponse(savedQuery, [], initialSessionId);
+    } else {
+      setStage("chat");
       setMessages([{
         id: createId(), type: "juanita",
         text: "¡Pago confirmado! 🎉 Cuéntame tu problema legal y te oriento paso a paso.",
@@ -884,6 +896,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
         setSessionId(newSessionId);
         localStorage.setItem('juanita_session', newSessionId);
         localStorage.setItem('juanita_topic', data.tema);
+        sessionStorage.setItem('juanita_query', trimmed);
 
         if (process.env.NEXT_PUBLIC_DEV_SKIP_PAYMENT === 'true') {
           // Dev bypass: crear sesión directamente sin pago
