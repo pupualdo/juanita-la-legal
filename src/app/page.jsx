@@ -1,6 +1,7 @@
 'use client';
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import ReactMarkdown from 'react-markdown';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
@@ -325,58 +326,69 @@ const LEGAL_TERMS = {
 
 // ─── EXPLAINABLE MESSAGE ─────────────────────────────────────────────────────
 
-function ExplainableMessage({ text, onTermClick, activeTerm }) {
-  const segments = [];
-  const boldRegex = /\*\*(.*?)\*\*/g;
-  let lastIndex = 0;
-  let match;
+function TypingDots() {
+  return (
+    <div style={{ display: 'flex', gap: 5, alignItems: 'center', height: 20, padding: '2px 0' }}>
+      {[0, 1, 2].map(i => (
+        <div key={i} style={{
+          width: 7, height: 7, borderRadius: '50%', background: '#8fbc8f',
+          animation: `dotPulse 1.2s ease-in-out ${i * 0.18}s infinite`,
+        }} />
+      ))}
+    </div>
+  );
+}
 
-  while ((match = boldRegex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      segments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
-    }
-    const term = match[1];
+function JuanitaMessage({ text, onTermClick, activeTerm }) {
+  if (text === '...') return <TypingDots />;
+
+  const LegalStrong = ({ children }) => {
+    const term = String(children);
     const key = term.toLowerCase().replace(/[().,]/g, '').trim();
     const explanation = LEGAL_TERMS[key];
-    segments.push({ type: 'bold', content: term, key, explanation });
-    lastIndex = match.index + match[0].length;
-  }
-  if (lastIndex < text.length) {
-    segments.push({ type: 'text', content: text.slice(lastIndex) });
-  }
+    const isActive = activeTerm?.key === key;
+    return (
+      <>
+        <strong>{term}</strong>
+        {explanation && onTermClick && (
+          <button
+            onClick={e => {
+              e.stopPropagation();
+              onTermClick(isActive ? null : { key, label: term, explanation });
+            }}
+            title={`¿Qué es ${term}?`}
+            style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              width: 16, height: 16, borderRadius: '50%',
+              background: isActive ? '#3a6fd4' : '#e8e4dc',
+              color: isActive ? 'white' : '#6a5e50',
+              border: 'none', cursor: 'pointer',
+              fontSize: 10, fontWeight: 700, lineHeight: 1,
+              marginLeft: 3, verticalAlign: 'middle',
+              transition: 'background 0.15s, color 0.15s',
+              flexShrink: 0,
+            }}
+          >?</button>
+        )}
+      </>
+    );
+  };
 
   return (
-    <span>
-      {segments.map((seg, i) => {
-        if (seg.type === 'text') return <span key={i}>{seg.content}</span>;
-        const isActive = activeTerm?.key === seg.key;
-        return (
-          <span key={i}>
-            <strong>{seg.content}</strong>
-            {seg.explanation && onTermClick && (
-              <button
-                onClick={e => {
-                  e.stopPropagation();
-                  onTermClick(isActive ? null : { key: seg.key, label: seg.content, explanation: seg.explanation });
-                }}
-                title={`¿Qué es ${seg.content}?`}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  width: 16, height: 16, borderRadius: '50%',
-                  background: isActive ? '#3a6fd4' : '#e8e4dc',
-                  color: isActive ? 'white' : '#6a5e50',
-                  border: 'none', cursor: 'pointer',
-                  fontSize: 10, fontWeight: 700, lineHeight: 1,
-                  marginLeft: 3, verticalAlign: 'middle',
-                  transition: 'background 0.15s, color 0.15s',
-                  flexShrink: 0,
-                }}
-              >?</button>
-            )}
-          </span>
-        );
-      })}
-    </span>
+    <ReactMarkdown
+      components={{
+        p: ({ children }) => <p style={{ margin: '0 0 8px', lineHeight: 1.65 }}>{children}</p>,
+        h2: ({ children }) => <h2 style={{ color: '#1a3a2a', fontSize: 15, fontWeight: 700, margin: '12px 0 6px', lineHeight: 1.3 }}>{children}</h2>,
+        h3: ({ children }) => <h3 style={{ color: '#1a3a2a', fontSize: 14, fontWeight: 600, margin: '10px 0 4px', lineHeight: 1.3 }}>{children}</h3>,
+        ul: ({ children }) => <ul style={{ paddingLeft: 18, margin: '4px 0 8px' }}>{children}</ul>,
+        ol: ({ children }) => <ol style={{ paddingLeft: 18, margin: '4px 0 8px' }}>{children}</ol>,
+        li: ({ children }) => <li style={{ marginBottom: 3, lineHeight: 1.6 }}>{children}</li>,
+        hr: () => <hr style={{ border: 'none', borderTop: '1px solid #e0d8c8', margin: '10px 0' }} />,
+        strong: LegalStrong,
+      }}
+    >
+      {text}
+    </ReactMarkdown>
   );
 }
 
@@ -498,7 +510,7 @@ function MessageBubble({ msg, topic, sessionId, onTermClick, activeTerm }) {
           boxShadow: isJuanita ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
         }}>
           {isJuanita
-            ? <ExplainableMessage text={msg.text} onTermClick={onTermClick} activeTerm={activeTerm} />
+            ? <JuanitaMessage text={msg.text} onTermClick={onTermClick} activeTerm={activeTerm} />
             : msg.text}
         </div>
         {showContactForm && <ContactForm topic={topic} sessionId={sessionId} />}
@@ -1636,41 +1648,24 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   );
 }
 
-// ─── APP INNER (usa useSearchParams) ─────────────────────────────────────────
+// ─── PAID DETECTOR (requiere Suspense por useSearchParams) ───────────────────
 
-function AppInner() {
-  const [screen, setScreen] = useState("hero");
+function PaidDetector({ onPaid }) {
   const searchParams = useSearchParams();
-
-  // Detectar retorno post-pago
   useEffect(() => {
-    const paid = searchParams.get('paid');
-    if (paid === 'true') {
+    if (searchParams.get('paid') === 'true') {
       const savedSession = localStorage.getItem('juanita_session');
-      if (savedSession) {
-        setScreen("chat-paid");
-      }
+      if (savedSession) onPaid();
     }
   }, [searchParams]);
-
-  return (
-    <>
-      {screen === "hero" && <HeroSection onStart={() => setScreen("chat")} />}
-      {screen === "chat" && <ChatSection onRestart={() => setScreen("hero")} initialPaid={false} />}
-      {screen === "chat-paid" && (
-        <ChatSection
-          onRestart={() => setScreen("hero")}
-          initialPaid={true}
-          initialSessionId={typeof window !== 'undefined' ? localStorage.getItem('juanita_session') : null}
-        />
-      )}
-    </>
-  );
+  return null;
 }
 
 // ─── APP PRINCIPAL ───────────────────────────────────────────────────────────
 
 export default function App() {
+  const [screen, setScreen] = useState("hero");
+
   return (
     <>
       <style>{`
@@ -1680,6 +1675,7 @@ export default function App() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.92); } }
+        @keyframes dotPulse { 0%, 60%, 100% { opacity: 0.25; transform: scale(0.8); } 30% { opacity: 1; transform: scale(1); } }
         textarea { font-family: inherit; }
         button { font-family: inherit; }
         ::-webkit-scrollbar { width: 4px; }
@@ -1687,14 +1683,19 @@ export default function App() {
         ::-webkit-scrollbar-thumb { background: #d8cfc0; border-radius: 4px; }
       `}</style>
 
-      <Suspense fallback={
-        <div style={{ textAlign: 'center', padding: 60 }}>
-          <div style={{ fontSize: 40, marginBottom: 16 }}>⚖️</div>
-          <p style={{ fontSize: 16, color: '#6a5e50' }}>Cargando Juanita La Legal...</p>
-        </div>
-      }>
-        <AppInner />
+      <Suspense fallback={null}>
+        <PaidDetector onPaid={() => setScreen("chat-paid")} />
       </Suspense>
+
+      {screen === "hero" && <HeroSection onStart={() => setScreen("chat")} />}
+      {screen === "chat" && <ChatSection onRestart={() => setScreen("hero")} initialPaid={false} />}
+      {screen === "chat-paid" && (
+        <ChatSection
+          onRestart={() => setScreen("hero")}
+          initialPaid={true}
+          initialSessionId={typeof window !== 'undefined' ? localStorage.getItem('juanita_session') : null}
+        />
+      )}
     </>
   );
 }
