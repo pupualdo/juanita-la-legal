@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server';
 
 const SYSTEM_PROMPT = `Eres un clasificador legal para Chile.
 Devuelve SOLO un JSON sin texto adicional ni markdown.
-Temas posibles: familia, laboral, arriendo, herencia, migracion, terrenos
+Temas posibles: familia, laboral, arriendo, herencia, migracion, terrenos, otros
+
+Usa 'otros' para cualquier consulta legal que no encaje claramente en las 6 categorías anteriores (previsional, penal, tributario, comercial, consumidor, salud, educación, etc.)
 
 Formato exacto:
 {"tema":"familia","emoji":"🏠","titulo":"Derecho de Familia","resumen":"frase corta del caso"}
@@ -14,7 +16,8 @@ Mapeo de emojis:
 - arriendo → 🔑
 - herencia → 📜
 - migracion → 🌍
-- terrenos → 🌿`;
+- terrenos → 🌿
+- otros → ⚖️`;
 
 export async function POST(request) {
   try {

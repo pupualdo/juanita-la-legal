@@ -12,6 +12,7 @@ const TOPIC_LABELS = {
   herencia: "Herencia",
   migracion: "Migración",
   terrenos: "Terrenos",
+  otros: "Consulta Legal General",
 };
 
 const TOPIC_META = {
@@ -21,6 +22,7 @@ const TOPIC_META = {
   herencia: { emoji: "📜", color: "#7a4ad4", bg: "#f5efff", border: "#cdb8f0" },
   migracion:{ emoji: "🌍", color: "#2a9a5a", bg: "#effff4", border: "#9adfc0" },
   terrenos: { emoji: "🌿", color: "#4a7a20", bg: "#f0f5e8", border: "#b8d98a" },
+  otros:    { emoji: "⚖️", color: "#4a5568", bg: "#f7fafc", border: "#cbd5e0" },
 };
 
 const TOPIC_KEYWORDS = {
