@@ -688,7 +688,7 @@ function HeroSection({ onStart }) {
           Primera orientación legal clara, rápida y pagable. $9.990 por consulta.
         </p>
 
-        <button onClick={onStart} style={{
+        <button data-action="start" onClick={onStart} style={{
           background: "#c8a040", color: "white", border: "none",
           borderRadius: 16, padding: "14px 36px", fontSize: 16, fontWeight: 600,
           cursor: "pointer", boxShadow: "0 8px 24px rgba(200,160,64,0.35)",
@@ -938,6 +938,12 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, showScopeWarning, stage]);
+
+  useEffect(() => {
+    document.querySelectorAll('[data-action="suggest"]').forEach(b => {
+      b.onclick = () => handleInitialSubmit(b.dataset.text);
+    });
+  }, [stage, messages.length]);
 
   // Mostrar modal de evaluación cuando la consulta se cierra
   useEffect(() => {
@@ -1289,7 +1295,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                     Consultas frecuentes
                   </div>
                   {SUGGESTIONS.map((s, i) => (
-                    <button key={i} onClick={() => handleInitialSubmit(s)} style={{
+                    <button key={i} data-action="suggest" data-text={s} onClick={() => handleInitialSubmit(s)} style={{
                       display: "block", width: "100%", background: "white", border: "1px solid #e0d8c8",
                       borderRadius: 10, padding: "9px 13px", fontSize: 13, color: "#3a3028",
                       textAlign: "left", cursor: "pointer", marginBottom: 6,
@@ -1665,6 +1671,11 @@ function PaidDetector({ onPaid }) {
 
 export default function App() {
   const [screen, setScreen] = useState("hero");
+
+  useEffect(() => {
+    const b = document.querySelector('[data-action="start"]');
+    if (b) b.onclick = () => setScreen('chat');
+  }, [screen]);
 
   return (
     <>
