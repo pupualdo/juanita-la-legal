@@ -1566,6 +1566,9 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
               <div style={{ fontSize: 11, color: "#a09080", textAlign: "center", marginTop: 6 }}>
                 Este servicio es orientativo y no reemplaza a un abogado
               </div>
+              <div style={{ fontSize: 10, color: "#c0b8b0", textAlign: "center", marginTop: 2 }}>
+                v1.1
+              </div>
             </div>
           </div>
         </>
