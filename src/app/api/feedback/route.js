@@ -5,7 +5,19 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 
 export async function POST(request) {
   try {
-    const { session_id, rating, comment } = await request.json();
+    const body = await request.json();
+
+    if (body.type === 'contact') {
+      const { name, phone, email, description, tema, sessionId } = body;
+      console.log('Contact request:', { name, phone, email, description, tema, sessionId });
+      await supabase
+        .from('sessions')
+        .update({ feedback: `CONTACTO | ${name} | ${phone} | ${email} | ${description}` })
+        .eq('session_id', sessionId);
+      return NextResponse.json({ ok: true });
+    }
+
+    const { session_id, rating, comment } = body;
 
     if (!rating || rating < 1 || rating > 5) {
       return NextResponse.json({ error: 'Rating inválido' }, { status: 400 });

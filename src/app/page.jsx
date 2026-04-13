@@ -380,9 +380,89 @@ function ExplainableMessage({ text, onTermClick, activeTerm }) {
   );
 }
 
+// ─── CONTACT FORM ────────────────────────────────────────────────────────────
+
+function ContactForm({ topic, sessionId }) {
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [description, setDescription] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'contact',
+          name, phone, email, description, tema: topic, sessionId,
+        }),
+      });
+    } catch {}
+    setSubmitted(true);
+    setSubmitting(false);
+  };
+
+  if (submitted) {
+    return (
+      <div style={{
+        marginTop: 12, background: '#f0faf0', border: '1.5px solid #a8d5a0',
+        borderRadius: 12, padding: '14px 16px', fontSize: 14, color: '#2a5a2a',
+        fontWeight: 500,
+      }}>
+        ✅ ¡Datos enviados! Un profesional te contactará pronto.
+      </div>
+    );
+  }
+
+  const inputStyle = {
+    width: '100%', border: '1.5px solid #d8cfc0', borderRadius: 9,
+    padding: '9px 11px', fontSize: 13, color: '#2a2018', background: 'white',
+    outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <input
+        required type="text" placeholder="Nombre completo"
+        value={name} onChange={e => setName(e.target.value)} style={inputStyle}
+      />
+      <input
+        required type="tel" placeholder="Teléfono o WhatsApp"
+        value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle}
+      />
+      <input
+        required type="email" placeholder="Correo electrónico"
+        value={email} onChange={e => setEmail(e.target.value)} style={inputStyle}
+      />
+      <textarea
+        required placeholder="¿Qué necesitas? Describe brevemente tu caso"
+        value={description} onChange={e => setDescription(e.target.value)}
+        rows={3}
+        style={{ ...inputStyle, resize: 'vertical' }}
+      />
+      <button
+        type="submit" disabled={submitting}
+        style={{
+          background: submitting ? '#a0b8a0' : '#2a7a2a', color: 'white',
+          border: 'none', borderRadius: 10, padding: '10px 18px',
+          fontSize: 14, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer',
+          alignSelf: 'flex-start',
+        }}
+      >
+        {submitting ? 'Enviando...' : 'Enviar datos de contacto'}
+      </button>
+    </form>
+  );
+}
+
 // ─── MESSAGE BUBBLE ──────────────────────────────────────────────────────────
 
-function MessageBubble({ msg, topic, onTermClick, activeTerm }) {
+function MessageBubble({ msg, topic, sessionId, onTermClick, activeTerm }) {
   if (msg.type === "final") return <FinalAnswerCard data={msg.finalAnswer} topic={topic} />;
 
   if (msg.type === "system") {
@@ -397,6 +477,8 @@ function MessageBubble({ msg, topic, onTermClick, activeTerm }) {
   }
 
   const isJuanita = msg.type === "juanita";
+  const showContactForm = isJuanita && msg.text.includes('Teléfono o WhatsApp:') && msg.text.includes('Correo electrónico:');
+
   return (
     <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexDirection: isJuanita ? "row" : "row-reverse" }}>
       {isJuanita && (
@@ -406,17 +488,20 @@ function MessageBubble({ msg, topic, onTermClick, activeTerm }) {
           fontSize: 14, flexShrink: 0, marginTop: 2,
         }}>⚖️</div>
       )}
-      <div style={{
-        maxWidth: "78%", padding: "10px 14px",
-        background: isJuanita ? "white" : "#1a3a2a",
-        color: isJuanita ? "#2a2018" : "#e8f5e2",
-        borderRadius: isJuanita ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
-        fontSize: 14, lineHeight: 1.65,
-        boxShadow: isJuanita ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
-      }}>
-        {isJuanita
-          ? <ExplainableMessage text={msg.text} onTermClick={onTermClick} activeTerm={activeTerm} />
-          : msg.text}
+      <div style={{ maxWidth: "78%", display: "flex", flexDirection: "column" }}>
+        <div style={{
+          padding: "10px 14px",
+          background: isJuanita ? "white" : "#1a3a2a",
+          color: isJuanita ? "#2a2018" : "#e8f5e2",
+          borderRadius: isJuanita ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
+          fontSize: 14, lineHeight: 1.65,
+          boxShadow: isJuanita ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
+        }}>
+          {isJuanita
+            ? <ExplainableMessage text={msg.text} onTermClick={onTermClick} activeTerm={activeTerm} />
+            : msg.text}
+        </div>
+        {showContactForm && <ContactForm topic={topic} sessionId={sessionId} />}
       </div>
     </div>
   );
@@ -828,6 +913,8 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const scrollRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const fileInputRef = useRef(null);
+  const [attachedFile, setAttachedFile] = useState(null);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -1078,10 +1165,15 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
 
   const handleSend = () => {
     const trimmed = input.trim();
-    if (!trimmed || showScopeWarning) return;
+    if (!trimmed && !attachedFile) return;
+    if (showScopeWarning) return;
+    const fileNote = attachedFile ? `\n[Adjunto: ${attachedFile.name} (${(attachedFile.size / 1024).toFixed(0)} KB)]` : '';
+    const fullText = (trimmed || '') + fileNote;
     setInput("");
-    if (stage === "input") { handleInitialSubmit(trimmed); return; }
-    if (stage === "chat") { handleGuidedAnswer(trimmed); return; }
+    setAttachedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (stage === "input") { handleInitialSubmit(fullText); return; }
+    if (stage === "chat") { handleGuidedAnswer(fullText); return; }
   };
 
   const handleContinueTopic = () => {
@@ -1188,6 +1280,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
               {messages.map((msg) => (
                 <MessageBubble
                   key={msg.id} msg={msg} topic={lockedTopic || pendingTopic}
+                  sessionId={sessionId}
                   onTermClick={setActiveTerm} activeTerm={activeTerm}
                 />
               ))}
@@ -1312,6 +1405,52 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                 </div>
               )}
 
+              {/* Preview de archivo adjunto */}
+              {attachedFile && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  background: '#f0f8ff', border: '1.5px solid #b8d4f0',
+                  borderRadius: 10, padding: '8px 12px', marginBottom: 6,
+                }}>
+                  {attachedFile.type.startsWith('image/') ? (
+                    <img
+                      src={URL.createObjectURL(attachedFile)}
+                      alt="preview"
+                      style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }}
+                    />
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3a6fd4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#2a4a7a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {attachedFile.name}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#6a8ab0' }}>
+                      {(attachedFile.size / 1024).toFixed(0)} KB
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => { setAttachedFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6a8ab0', fontSize: 16, padding: 2, lineHeight: 1 }}
+                  >×</button>
+                </div>
+              )}
+
+              {/* Input oculto para archivos */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,.pdf,.doc,.docx"
+                style={{ display: 'none' }}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) setAttachedFile(file);
+                }}
+              />
+
               <div style={{
                 display: "flex", gap: 8, alignItems: "flex-end",
                 background: inputDisabled ? "#f0ebe0" : "white",
@@ -1335,6 +1474,27 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                     fontFamily: "inherit",
                   }}
                 />
+                {/* Botón adjuntar */}
+                {!inputDisabled && (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    title="Adjuntar documento o imagen"
+                    style={{
+                      width: 34, height: 34,
+                      background: attachedFile ? '#e8f4ff' : 'transparent',
+                      border: `1.5px solid ${attachedFile ? '#3a6fd4' : '#d8cfc0'}`,
+                      borderRadius: 9,
+                      cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                      stroke={attachedFile ? '#3a6fd4' : '#6a5e50'}
+                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                    </svg>
+                  </button>
+                )}
                 {/* Botón micrófono */}
                 {!inputDisabled && (
                   <button
@@ -1363,9 +1523,9 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                     </svg>
                   </button>
                 )}
-                <button onClick={handleSend} disabled={inputDisabled || !input.trim() || voiceState !== 'idle'} style={{
-                  width: 34, height: 34, background: inputDisabled || !input.trim() || voiceState !== 'idle' ? "#c0b8a8" : "#1a3a2a",
-                  border: "none", borderRadius: 9, cursor: inputDisabled || !input.trim() || voiceState !== 'idle' ? "not-allowed" : "pointer",
+                <button onClick={handleSend} disabled={inputDisabled || (!input.trim() && !attachedFile) || voiceState !== 'idle'} style={{
+                  width: 34, height: 34, background: inputDisabled || (!input.trim() && !attachedFile) || voiceState !== 'idle' ? "#c0b8a8" : "#1a3a2a",
+                  border: "none", borderRadius: 9, cursor: inputDisabled || (!input.trim() && !attachedFile) || voiceState !== 'idle' ? "not-allowed" : "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
