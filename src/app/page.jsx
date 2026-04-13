@@ -83,7 +83,7 @@ const SUGGESTIONS = [
   "Me despidieron y no me dieron finiquito",
   "El arrendador no me devuelve la garantía",
   "Falleció mi mamá, no sé qué hacer con sus bienes",
-  "Soy venezolano y necesito regularizar mi situación",
+  "Soy extranjero y necesito regularizar mi situación",
   "Tengo un problema con el título de dominio de mi terreno",
 ];
 
@@ -660,20 +660,8 @@ function PaymentWall({ topic, resumen, sessionId, onBack }) {
     setLoading(true);
     try {
       if (isFree) {
-        const res = await fetch('/api/create-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tema: topic, resumen, sessionId, promoCode: promoCode.trim().toUpperCase(), free: true }),
-        });
-        const data = await res.json();
-        if (data.checkoutUrl) {
-          window.location.href = data.checkoutUrl;
-        } else if (data.sessionId) {
-          window.location.href = `/success?session_id=${data.sessionId}`;
-        } else {
-          setLoading(false);
-          alert('Error al activar el acceso. Intenta de nuevo.');
-        }
+        localStorage.setItem('juanita_session', sessionId);
+        window.location.href = '/?paid=true';
         return;
       }
       const res = await fetch('/api/create-payment', {
