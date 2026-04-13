@@ -189,7 +189,7 @@ export async function POST(request) {
 
     const anthropic = new Anthropic({ apiKey: process.env.JUANITA_ANTHROPIC_KEY });
     const stream = anthropic.messages.stream({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: newHistory,
