@@ -6,32 +6,41 @@ import ReactMarkdown from 'react-markdown';
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
 const TOPIC_LABELS = {
-  familia: "Familia",
-  laboral: "Laboral",
-  arriendo: "Arriendo",
-  herencia: "Herencia",
+  familia: "Derecho de Familia",
+  laboral: "Derecho Laboral",
+  arriendo: "Arriendo y Vivienda",
+  herencia: "Herencia y Sucesión",
   migracion: "Migración",
-  terrenos: "Terrenos",
+  terrenos: "Terrenos y Propiedad",
+  deudas: "Deudas y Cobranzas",
+  empresas: "Empresas y Emprendimiento",
+  contratos: "Contratos y Consumidor",
   otros: "Consulta Legal General",
 };
 
 const TOPIC_META = {
-  familia:  { emoji: "🏠", color: "#d4845a", bg: "#fff4ef", border: "#f5c9ae" },
-  laboral:  { emoji: "💼", color: "#3a6fd4", bg: "#eff3ff", border: "#b8ccf5" },
-  arriendo: { emoji: "🔑", color: "#c49a12", bg: "#fffbef", border: "#f0de8a" },
-  herencia: { emoji: "📜", color: "#7a4ad4", bg: "#f5efff", border: "#cdb8f0" },
-  migracion:{ emoji: "🌍", color: "#2a9a5a", bg: "#effff4", border: "#9adfc0" },
-  terrenos: { emoji: "🌿", color: "#4a7a20", bg: "#f0f5e8", border: "#b8d98a" },
-  otros:    { emoji: "⚖️", color: "#4a5568", bg: "#f7fafc", border: "#cbd5e0" },
+  familia:   { emoji: "🏠", color: "#d4845a", bg: "#fff4ef", border: "#f5c9ae" },
+  laboral:   { emoji: "💼", color: "#3a6fd4", bg: "#eff3ff", border: "#b8ccf5" },
+  arriendo:  { emoji: "🔑", color: "#c49a12", bg: "#fffbef", border: "#f0de8a" },
+  herencia:  { emoji: "📜", color: "#7a4ad4", bg: "#f5efff", border: "#cdb8f0" },
+  migracion: { emoji: "🌍", color: "#2a9a5a", bg: "#effff4", border: "#9adfc0" },
+  terrenos:  { emoji: "🌿", color: "#4a7a20", bg: "#f0f5e8", border: "#b8d98a" },
+  deudas:    { emoji: "💰", color: "#c44a12", bg: "#fff2ee", border: "#f5b8a0" },
+  empresas:  { emoji: "🏢", color: "#1a6fa0", bg: "#eef6fb", border: "#9acce8" },
+  contratos: { emoji: "📋", color: "#6a3a8a", bg: "#f5eeff", border: "#cbaee8" },
+  otros:     { emoji: "⚖️", color: "#4a5568", bg: "#f7fafc", border: "#cbd5e0" },
 };
 
 const TOPIC_KEYWORDS = {
-  familia:  ["pension","alimentos","visitas","hijo","hija","tuicion","custodia","divorcio","pareja","violencia intrafamiliar","vif","cuidado personal"],
-  laboral:  ["despido","finiquito","sueldo","trabajo","empleador","cotizaciones","renuncia","liquidacion","horas extra","contrato de trabajo"],
-  arriendo: ["arriendo","arrendador","arrendatario","garantia","renta","departamento","casa","inmueble","desalojo","contrato arriendo"],
-  herencia: ["herencia","posesion efectiva","testamento","heredero","herederos","sucesion","causante","fallecio","murio"],
-  migracion:["visa","residencia","migracion","extranjero","permanencia","permiso","regularizacion","venezolano","colombiano","inmigrante"],
-  terrenos: ["terreno","dominio","deslinde","sitio","ocupante","servidumbre","rol","conservador","regularizacion terreno","titulo de dominio","escritura"],
+  familia:   ["pension","alimentos","visitas","hijo","hija","tuicion","custodia","divorcio","pareja","violencia intrafamiliar","vif","cuidado personal"],
+  laboral:   ["despido","finiquito","sueldo","trabajo","empleador","cotizaciones","renuncia","liquidacion","horas extra","contrato de trabajo"],
+  arriendo:  ["arriendo","arrendador","arrendatario","garantia","renta","departamento","casa","inmueble","desalojo","contrato arriendo"],
+  herencia:  ["herencia","posesion efectiva","testamento","heredero","herederos","sucesion","causante","fallecio","murio"],
+  migracion: ["visa","residencia","migracion","extranjero","permanencia","permiso","regularizacion","venezolano","colombiano","inmigrante"],
+  terrenos:  ["terreno","dominio","deslinde","sitio","ocupante","servidumbre","rol","conservador","regularizacion terreno","titulo de dominio","escritura"],
+  deudas:    ["dicom","deuda","cobranza","renegociar","incobrable","insolvencia","embargo","remate","moroso","credito","acreedor"],
+  empresas:  ["sociedad","empresa","pyme","sii","patente","tributario","factura","boleta","inicio actividades","emprendedor","spa","eirl"],
+  contratos: ["contrato","incumplimiento","proveedor","consumidor","sernac","garantia producto","reclamo","pagare","letra","cobro"],
 };
 
 const QUESTION_SETS = {
@@ -77,17 +86,42 @@ const QUESTION_SETS = {
     "¿Existe plano, rol SII o antecedentes del Conservador?",
     "¿Qué necesitas resolver primero?",
   ],
+  deudas: [
+    "¿Cuál es el problema principal? (Dicom, cobranza, renegociación u otro)",
+    "¿Sabes cuánto debes en total y a quiénes?",
+    "¿Estás recibiendo llamadas o presiones de cobradores?",
+    "¿Tienes ingresos actualmente o estás sin trabajo?",
+    "¿Qué es lo más urgente que necesitas resolver?",
+  ],
+  empresas: [
+    "¿Qué necesitas hacer? (constituir empresa, inicio de actividades, facturación u otro)",
+    "¿Vas a trabajar solo/a o con socios?",
+    "¿Tienes idea del tipo de negocio o giro que vas a tener?",
+    "¿Ya tienes RUT de empresa o estás partiendo desde cero?",
+    "¿Qué es lo que más te confunde del proceso?",
+  ],
+  contratos: [
+    "¿Cuál es el problema principal? (incumplimiento de contrato, garantía, producto malo u otro)",
+    "¿Tienes el contrato o comprobante de compra por escrito?",
+    "¿Ya reclamaste con la empresa o tienda? ¿Qué te respondieron?",
+    "¿Cuánto dinero está en juego aproximadamente?",
+    "¿Qué es lo que necesitas resolver?",
+  ],
 };
 
 const DISCLAIMER = "Esta es una orientación legal general basada en la información que entregaste. No reemplaza una asesoría jurídica completa ni constituye una conclusión definitiva. Cada situación puede tener detalles distintos — toma esta orientación como referencia, pero la decisión final debe evaluarse según tu caso concreto.";
 
 const SUGGESTIONS = [
-  "Mi marido no me pasa plata para los niños",
-  "Me despidieron y no me dieron finiquito",
-  "El arrendador no me devuelve la garantía",
-  "Falleció mi mamá, no sé qué hacer con sus bienes",
-  "Soy extranjero y necesito regularizar mi situación",
-  "Tengo un problema con el título de dominio de mi terreno",
+  "¿Cómo pido pensión de alimentos para mis hijos?",
+  "Me despidieron sin causa justa, ¿qué hago?",
+  "Mi arrendador no me devuelve la garantía",
+  "Falleció un familiar y no sé cómo hacer la herencia",
+  "Necesito regularizar mi situación migratoria",
+  "Tengo un terreno sin escritura, ¿cómo lo regularizo?",
+  "Estoy en Dicom y quiero salir, ¿qué opciones tengo?",
+  "Quiero crear una empresa o pyme en Chile",
+  "Me vendieron un producto malo y la empresa no responde",
+  "Tengo otra consulta legal",
 ];
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -1553,7 +1587,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                 Este servicio es orientativo y no reemplaza a un abogado
               </div>
               <div style={{ fontSize: 10, color: "#c0b8b0", textAlign: "center", marginTop: 2 }}>
-                v1.3
+                v1.4
               </div>
             </div>
           </div>
