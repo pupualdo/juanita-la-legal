@@ -97,16 +97,6 @@ const createId = () => Math.random().toString(36).slice(2, 10);
 const normalizeText = (v) =>
   v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-const detectOffTopic = (text, locked) => {
-  if (!locked) return null;
-  const n = normalizeText(text);
-  const others = Object.keys(TOPIC_KEYWORDS).filter(t => t !== locked);
-  for (const topic of others) {
-    if (TOPIC_KEYWORDS[topic].some(kw => n.includes(normalizeText(kw)))) return topic;
-  }
-  return null;
-};
-
 const buildFinalAnswer = (topic) => ({
   summary: `Con lo que me contaste, esto es un problema de **${TOPIC_LABELS[topic]}** que vale la pena ordenar bien antes de actuar.`,
   facts: [
@@ -198,41 +188,6 @@ function TopicBadge({ topic }) {
       fontSize: 13, fontWeight: 600, color: m.color,
     }}>
       {m.emoji} {TOPIC_LABELS[topic]}
-    </div>
-  );
-}
-
-// ─── SCOPE WARNING ───────────────────────────────────────────────────────────
-
-function ScopeWarning({ offTopic, lockedTopic, onContinue, onNewConsult }) {
-  const off = TOPIC_META[offTopic];
-  return (
-    <div style={{
-      background: "#fffbef", border: "1.5px solid #f0de8a",
-      borderRadius: 16, padding: "16px 18px", margin: "8px 0",
-    }}>
-      <div style={{ fontSize: 14, fontWeight: 600, color: "#7a5a10", marginBottom: 8 }}>
-        ⚠️ Detectamos un tema diferente
-      </div>
-      <p style={{ fontSize: 13, color: "#5a4820", lineHeight: 1.6, marginBottom: 12 }}>
-        Lo que mencionas parece corresponder a <strong>{TOPIC_LABELS[offTopic]}</strong> {off?.emoji},
-        que es distinto a <strong>{TOPIC_LABELS[lockedTopic]}</strong>. Para orientarte bien,
-        cada tema se ve en una consulta separada de 15 minutos.
-      </p>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <button onClick={onContinue} style={{
-          background: "#1a3a2a", color: "#c8e6c0", border: "none",
-          borderRadius: 10, padding: "8px 14px", fontSize: 13, fontWeight: 500, cursor: "pointer",
-        }}>
-          Seguir con {TOPIC_LABELS[lockedTopic]}
-        </button>
-        <button onClick={onNewConsult} style={{
-          background: "white", color: "#7a5a10", border: "1px solid #f0de8a",
-          borderRadius: 10, padding: "8px 14px", fontSize: 13, fontWeight: 500, cursor: "pointer",
-        }}>
-          Nueva consulta: {TOPIC_LABELS[offTopic]} {off?.emoji}
-        </button>
-      </div>
     </div>
   );
 }
@@ -955,8 +910,6 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const [lockedTopic, setLockedTopic] = useState(null);
   const [pendingTopic, setPendingTopic] = useState(null);
   const [classifyResumen, setClassifyResumen] = useState("");
-  const [showScopeWarning, setShowScopeWarning] = useState(false);
-  const [offTopicDetected, setOffTopicDetected] = useState(null);
   const [timerActive, setTimerActive] = useState(false);
   const [currentQIdx, setCurrentQIdx] = useState(0);
   const [guidedAnswers, setGuidedAnswers] = useState({});
@@ -989,7 +942,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
     if (!userScrolledUp) {
       scrollRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, showScopeWarning, stage, userScrolledUp]);
+  }, [messages, stage, userScrolledUp]);
 
   useEffect(() => {
     document.querySelectorAll('[data-action="suggest"]').forEach(b => {
@@ -1161,16 +1114,6 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
 
   // ── Respuestas guiadas ─────────────────────────────────────────────────────
   const handleGuidedAnswer = async (text) => {
-    if (!lockedTopic || showScopeWarning) return;
-
-    const offTopic = detectOffTopic(text, lockedTopic);
-    if (offTopic) {
-      setOffTopicDetected(offTopic);
-      setShowScopeWarning(true);
-      addMsg({ type: "user", text });
-      return;
-    }
-
     addMsg({ type: "user", text });
 
     const newDevHistory = [...devHistory, { role: 'user', content: text }];
@@ -1246,7 +1189,6 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const handleSend = () => {
     const trimmed = input.trim();
     if (!trimmed && !attachedFile) return;
-    if (showScopeWarning) return;
     const fileNote = attachedFile ? `\n[Adjunto: ${attachedFile.name} (${(attachedFile.size / 1024).toFixed(0)} KB)]` : '';
     const fullText = (trimmed || '') + fileNote;
     setInput("");
@@ -1256,33 +1198,11 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
     if (stage === "chat") { handleGuidedAnswer(fullText); return; }
   };
 
-  const handleContinueTopic = () => {
-    setShowScopeWarning(false);
-    setOffTopicDetected(null);
-    addMsg({ type: "system", text: `Perfecto, seguimos con ${TOPIC_LABELS[lockedTopic]}.` });
-  };
-
-  const handleNewConsult = () => {
-    setShowScopeWarning(false);
-    setStage("input");
-    setLockedTopic(null);
-    setPendingTopic(null);
-    setCurrentQIdx(0);
-    setGuidedAnswers({});
-    setTimerActive(false);
-    setMessages([{
-      id: createId(), type: "juanita",
-      text: `Empecemos de nuevo. Cuéntame tu consulta sobre ${TOPIC_LABELS[offTopicDetected] || "el nuevo tema"}.`,
-    }]);
-  };
-
-  const inputPlaceholder = showScopeWarning
-    ? "Elige una opción arriba para continuar"
-    : stage === "input" ? "Escribe tu problema principal..."
+  const inputPlaceholder = stage === "input" ? "Escribe tu problema principal..."
     : stage === "chat" ? "Escribe tu respuesta..."
     : "Consulta cerrada";
 
-  const inputDisabled = showScopeWarning || timerExpired || isStreaming || stage === "closed" || stage === "classifying" || stage === "payment" || stage === "topic-confirm" || stage === "resuming";
+  const inputDisabled = timerExpired || isStreaming || stage === "closed" || stage === "classifying" || stage === "payment" || stage === "topic-confirm" || stage === "resuming";
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "row", background: "#faf8f4" }}>
@@ -1374,15 +1294,6 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                   onTermClick={setActiveTerm} activeTerm={activeTerm}
                 />
               ))}
-
-              {showScopeWarning && (
-                <ScopeWarning
-                  offTopic={offTopicDetected}
-                  lockedTopic={lockedTopic}
-                  onContinue={handleContinueTopic}
-                  onNewConsult={handleNewConsult}
-                />
-              )}
 
               <div ref={scrollRef} />
             </div>
@@ -1642,7 +1553,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                 Este servicio es orientativo y no reemplaza a un abogado
               </div>
               <div style={{ fontSize: 10, color: "#c0b8b0", textAlign: "center", marginTop: 2 }}>
-                v1.2
+                v1.3
               </div>
             </div>
           </div>
