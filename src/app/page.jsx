@@ -319,6 +319,21 @@ const LEGAL_TERMS = {
 // ─── EXPLAINABLE MESSAGE ─────────────────────────────────────────────────────
 
 function TypingDots() {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setElapsed(e => e + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  if (elapsed >= 3) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#4a7a5a' }}>
+        <span>🔍</span>
+        <span>Verificando información actualizada...</span>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', gap: 5, alignItems: 'center', height: 20, padding: '2px 0' }}>
       {[0, 1, 2].map(i => (
@@ -1605,7 +1620,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                 Este servicio es orientativo y no reemplaza a un abogado
               </div>
               <div style={{ fontSize: 10, color: "#c0b8b0", textAlign: "center", marginTop: 2 }}>
-                v1.6
+                v1.7
               </div>
             </div>
           </div>

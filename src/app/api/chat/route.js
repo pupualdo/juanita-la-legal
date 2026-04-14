@@ -215,7 +215,24 @@ Menciona solo el recurso que corresponde al área y a la situación específica 
 - **SERNAC**: sernac.cl / 800 700 100 — reclamos de consumidores, cláusulas abusivas (contratos, arriendo)
 - **SUPERIR**: superir.gob.cl / 600 440 0200 — insolvencia y renegociación de deudas gratuita (deudas)
 - **SII**: sii.cl — trámites tributarios, inicio de actividades, facturación electrónica (empresas)
-- **Tu Empresa en un Día**: registrodeempresasysociedades.cl — constitución gratuita de empresas en línea (empresas)`;
+- **Tu Empresa en un Día**: registrodeempresasysociedades.cl — constitución gratuita de empresas en línea (empresas)
+
+---
+
+REGLA — BÚSQUEDA WEB:
+Tienes acceso a búsqueda web para verificar información legal actualizada. ÚSALA cuando:
+- El usuario mencione un monto, plazo o porcentaje específico → verificar valor actual
+- Pregunten por un trámite → verificar requisitos actuales
+- Mencionen una ley por nombre o número → verificar si fue modificada
+- Situación laboral con datos específicos → buscar dictamen DT aplicable
+
+NO es necesario buscar para:
+- Preguntas generales sobre derechos
+- Orientación sobre qué institución contactar
+- Explicar un trámite en términos generales
+
+Cuando busques, indica brevemente: "Verifiqué esto y según [fuente]..."
+Fuentes prioritarias: bcn.cl, dt.gob.cl, chileatiende.gob.cl, sii.cl, pjud.cl, serviciomigraciones.cl`;
 
 
 export async function POST(request) {
@@ -259,6 +276,7 @@ export async function POST(request) {
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: newHistory,
+      tools: [{ type: "web_search_20250305", name: "web_search" }],
     });
 
     const encoder = new TextEncoder();
