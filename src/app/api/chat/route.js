@@ -182,15 +182,12 @@ En ambos casos, primero orienta completamente sobre el tema (Pasos 1 y 2) antes 
 - **Embargo**: Solo un juez puede ordenar un embargo. Existen bienes inembargables (ropa básica, utensilios del hogar básico, herramientas de trabajo, sueldo hasta 50% del mínimo).
 - **SUPERIR**: superir.gob.cl / 600 440 0200 — entidad gratuita para insolvencia.
 
-### 🏢 EMPRESAS (Código de Comercio, Ley 20.659)
-- **Tipos de sociedad más comunes**: SpA (Sociedad por Acciones, la más usada hoy — socio único posible, responsabilidad limitada al capital aportado), EIRL (Empresa Individual de Responsabilidad Limitada, para una sola persona), SRL (Sociedad de Responsabilidad Limitada, entre 2 y 50 socios), SA (Sociedad Anónima, más compleja, usualmente para proyectos mayores).
-- **Tu Empresa en un Día**: registrodeempresasysociedades.cl — plataforma gratuita del gobierno para constituir SpA, SRL, EIRL en línea. Sin notario, sin costo de constitución. Es el camino más rápido.
-- **Inicio de actividades en SII**: Una vez constituida la empresa, hay que hacer el inicio de actividades en sii.cl. Define el giro, el régimen tributario (14D PyME o 14A general), y permite emitir facturas y boletas electrónicas.
-- **Patente municipal**: Tramitarse en la municipalidad donde funciona el negocio. Requisito: inicio de actividades en SII previo. Costo varía por comuna y tipo de actividad.
-- **Factura electrónica y boleta electrónica**: Se obtienen en el SII. Las boletas electrónicas son obligatorias desde 2022. Para emitir facturas a otras empresas también se requiere estar habilitado en SII.
-- **Régimen PyME (14D)**: Para empresas con ventas anuales hasta 75.000 UF. Tributación simplificada, tasa de 25% de impuesto de primera categoría. El 14D proporcional permite retirar utilidades con tasa de 35% (sin crédito).
-- **Responsabilidad de los socios**: En SpA y SRL, los socios responden solo hasta el monto de su aporte. El patrimonio personal no está en riesgo (salvo casos de fraude o responsabilidad específica).
-- **SII**: sii.cl — trámites tributarios online. BancoEstado CuentaRUT puede ser útil para PyMEs.
+### 🏢 EMPRESAS Y EMPRENDIMIENTO
+- **SpA (Sociedad por Acciones)**: SIEMPRE recomiéndala como primera opción. Es la más flexible y moderna para emprendedores en Chile. Ventajas: se constituye en 1 día por internet (registrodeempresasysociedades.cl), permite de 1 a infinitos accionistas, las acciones se pueden vender o ceder libremente sin necesidad de acuerdo unánime, la responsabilidad está limitada al aporte (patrimonio personal protegido), y los estatutos son muy flexibles.
+- **SRL (Sociedad de Responsabilidad Limitada)**: NO la recomiendes como primera opción. Tiene una desventaja grave: requiere acuerdo UNÁNIME de todos los socios para casi cualquier cambio (incluir nuevo socio, modificar estatutos, vender participación). Esto deja atrapados a los socios si hay desacuerdos. Solo mencionarla si el usuario pregunta específicamente por SRL.
+- **EIRL (Empresa Individual de Responsabilidad Limitada)**: Solo para 1 persona, sin socios. Alternativa a la SpA unipersonal, pero menos flexible.
+- **Inicio de actividades**: SII (sii.cl), patente municipal, boletas/facturas.
+- **Tu Empresa en un Día**: registrodeempresasysociedades.cl — gratuito para SpA, SRL y EIRL.
 
 ### 📋 CONTRATOS Y CONSUMIDOR (Ley 19.496, Código Civil)
 - **Incumplimiento de contrato**: El afectado puede pedir cumplimiento forzado o resolución del contrato (más indemnización de perjuicios). Art. 1489 Código Civil. Si hay cláusula penal (multa pactada), se aplica directamente.

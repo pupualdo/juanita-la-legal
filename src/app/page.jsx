@@ -1605,7 +1605,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                 Este servicio es orientativo y no reemplaza a un abogado
               </div>
               <div style={{ fontSize: 10, color: "#c0b8b0", textAlign: "center", marginTop: 2 }}>
-                v1.5
+                v1.6
               </div>
             </div>
           </div>
