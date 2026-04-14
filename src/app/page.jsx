@@ -2,6 +2,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
@@ -367,6 +368,7 @@ function JuanitaMessage({ text, onTermClick, activeTerm }) {
 
   return (
     <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
       components={{
         p: ({ children }) => <p style={{ margin: '0 0 8px', lineHeight: 1.65 }}>{children}</p>,
         h2: ({ children }) => <h2 style={{ color: '#1a3a2a', fontSize: 15, fontWeight: 700, margin: '12px 0 6px', lineHeight: 1.3 }}>{children}</h2>,
@@ -376,6 +378,10 @@ function JuanitaMessage({ text, onTermClick, activeTerm }) {
         li: ({ children }) => <li style={{ marginBottom: 3, lineHeight: 1.6 }}>{children}</li>,
         hr: () => <hr style={{ border: 'none', borderTop: '1px solid #e0d8c8', margin: '10px 0' }} />,
         strong: LegalStrong,
+        table: ({ children }) => <div style={{ overflowX: 'auto', margin: '8px 0' }}><table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 14 }}>{children}</table></div>,
+        th: ({ children }) => <th style={{ background: '#1a3a2a', color: '#fff', padding: '8px 12px', textAlign: 'left', fontWeight: 600 }}>{children}</th>,
+        td: ({ children }) => <td style={{ borderBottom: '1px solid #e0d8c8', padding: '8px 12px' }}>{children}</td>,
+        tr: ({ children }) => <tr style={{ borderBottom: '1px solid #e0d8c8' }}>{children}</tr>,
       }}
     >
       {text}
@@ -1091,13 +1097,14 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   };
 
   // ── Streaming helper ──────────────────────────────────────────────────────
-  const streamChatResponse = async (message, historyForApi, currentSessionId) => {
+  const streamChatResponse = async (message, historyForApi, currentSessionId, imageBase64) => {
     setIsStreaming(true);
     const msgId = createId();
     setMessages(prev => [...prev, { id: msgId, type: 'juanita', text: '...' }]);
     let fullText = '';
     try {
       const body = { sessionId: currentSessionId, message };
+      if (imageBase64) body.imageBase64 = imageBase64;
       if (process.env.NEXT_PUBLIC_DEV_SKIP_PAYMENT === 'true') {
         body.history = historyForApi;
       }
@@ -1147,11 +1154,11 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   };
 
   // ── Respuestas guiadas ─────────────────────────────────────────────────────
-  const handleGuidedAnswer = async (text) => {
+  const handleGuidedAnswer = async (text, imageBase64) => {
     addMsg({ type: "user", text });
 
     const newDevHistory = [...devHistory, { role: 'user', content: text }];
-    const fullText = await streamChatResponse(text, newDevHistory, sessionId);
+    const fullText = await streamChatResponse(text, newDevHistory, sessionId, imageBase64);
     if (fullText) {
       setDevHistory([...newDevHistory, { role: 'assistant', content: fullText }]);
     }
@@ -1220,16 +1227,27 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
     }
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed && !attachedFile) return;
     const fileNote = attachedFile ? `\n[Adjunto: ${attachedFile.name} (${(attachedFile.size / 1024).toFixed(0)} KB)]` : '';
     const fullText = (trimmed || '') + fileNote;
+    const file = attachedFile;
     setInput("");
     setAttachedFile(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+
+    let imageBase64 = null;
+    if (file && file.type.startsWith('image/')) {
+      imageBase64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+    }
+
     if (stage === "input") { handleInitialSubmit(fullText); return; }
-    if (stage === "chat") { handleGuidedAnswer(fullText); return; }
+    if (stage === "chat") { handleGuidedAnswer(fullText, imageBase64); return; }
   };
 
   const inputPlaceholder = stage === "input" ? "Escribe tu problema principal..."
@@ -1253,7 +1271,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <TopicBadge topic={lockedTopic} />
-          <ConsultTimer active={timerActive} totalSeconds={15 * 60} onExpire={handleTimerExpire} />
+          <ConsultTimer active={timerActive} totalSeconds={10 * 60} onExpire={handleTimerExpire} />
           <button onClick={onRestart} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#c8e6c0", borderRadius: 10, padding: "5px 12px", fontSize: 12, cursor: "pointer" }}>
             ← Inicio
           </button>
@@ -1587,7 +1605,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                 Este servicio es orientativo y no reemplaza a un abogado
               </div>
               <div style={{ fontSize: 10, color: "#c0b8b0", textAlign: "center", marginTop: 2 }}>
-                v1.4
+                v1.5
               </div>
             </div>
           </div>
