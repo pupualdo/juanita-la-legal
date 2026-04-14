@@ -474,6 +474,48 @@ function ContactForm({ topic, sessionId }) {
   );
 }
 
+// ─── BUY SESSION BUTTON ──────────────────────────────────────────────────────
+
+function BuySessionButton({ sessionId }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleBuy = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tema: 'documento', resumen: 'Sesión de elaboración de documento', sessionId }),
+      });
+      const data = await res.json();
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        setLoading(false);
+        alert('Error al crear el pago. Intenta de nuevo.');
+      }
+    } catch {
+      setLoading(false);
+      alert('Error de conexión. Intenta de nuevo.');
+    }
+  };
+
+  return (
+    <button
+      onClick={handleBuy}
+      disabled={loading}
+      style={{
+        marginTop: 10, background: loading ? '#a0b8a0' : '#2a7a2a', color: 'white',
+        border: 'none', borderRadius: 10, padding: '10px 16px',
+        fontSize: 13, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+        alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 6,
+      }}
+    >
+      {loading ? '⏳ Redirigiendo...' : '📄 Comprar sesión de documento ($9.990)'}
+    </button>
+  );
+}
+
 // ─── MESSAGE BUBBLE ──────────────────────────────────────────────────────────
 
 function MessageBubble({ msg, topic, sessionId, onTermClick, activeTerm }) {
@@ -491,7 +533,10 @@ function MessageBubble({ msg, topic, sessionId, onTermClick, activeTerm }) {
   }
 
   const isJuanita = msg.type === "juanita";
-  const showContactForm = isJuanita && msg.text.includes('Teléfono o WhatsApp:') && msg.text.includes('Correo electrónico:');
+  const hasSessionOffer = isJuanita && msg.text.includes('sesión adicional');
+  const showContactForm = isJuanita &&
+    (msg.text.includes('Déjanos tus datos') || (msg.text.includes('presupuesto') && msg.text.includes('Teléfono o WhatsApp:'))) &&
+    !hasSessionOffer;
 
   return (
     <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexDirection: isJuanita ? "row" : "row-reverse" }}>
@@ -516,6 +561,7 @@ function MessageBubble({ msg, topic, sessionId, onTermClick, activeTerm }) {
             : msg.text}
         </div>
         {showContactForm && <ContactForm topic={topic} sessionId={sessionId} />}
+        {hasSessionOffer && <BuySessionButton sessionId={sessionId} />}
       </div>
     </div>
   );
@@ -924,7 +970,9 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const [isMobile, setIsMobile] = useState(false);
   const [voiceState, setVoiceState] = useState('idle'); // idle | recording | transcribing | reviewing
   const [editableTranscript, setEditableTranscript] = useState('');
+  const [userScrolledUp, setUserScrolledUp] = useState(false);
   const scrollRef = useRef(null);
+  const chatScrollRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const fileInputRef = useRef(null);
@@ -938,8 +986,10 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   }, []);
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, showScopeWarning, stage]);
+    if (!userScrolledUp) {
+      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, showScopeWarning, stage, userScrolledUp]);
 
   useEffect(() => {
     document.querySelectorAll('[data-action="suggest"]').forEach(b => {
@@ -1287,7 +1337,17 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
       {/* Chat */}
       {(stage === "input" || stage === "topic-confirm" || stage === "chat" || stage === "closed") && (
         <>
-          <div style={{ flex: 1, overflowY: "auto", padding: "18px 16px", display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+          <div
+            ref={chatScrollRef}
+            onScroll={() => {
+              const el = chatScrollRef.current;
+              if (!el) return;
+              const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+              setUserScrolledUp(!nearBottom);
+            }}
+            style={{ height: "100%", overflowY: "auto", padding: "18px 16px", display: "flex", flexDirection: "column", gap: 14 }}
+          >
             <div style={{ maxWidth: 600, margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", gap: 14 }}>
 
               {/* Sugerencias solo al inicio */}
@@ -1326,6 +1386,21 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
 
               <div ref={scrollRef} />
             </div>
+          </div>
+          {userScrolledUp && (
+            <button
+              onClick={() => { setUserScrolledUp(false); scrollRef.current?.scrollIntoView({ behavior: "smooth" }); }}
+              style={{
+                position: "absolute", bottom: 16, right: 16,
+                background: "#1a3a2a", color: "#c8e6c0",
+                border: "none", borderRadius: "50%", width: 40, height: 40,
+                fontSize: 18, cursor: "pointer", zIndex: 10,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+              title="Ir al final"
+            >↓</button>
+          )}
           </div>
 
           {/* Input */}
@@ -1567,7 +1642,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                 Este servicio es orientativo y no reemplaza a un abogado
               </div>
               <div style={{ fontSize: 10, color: "#c0b8b0", textAlign: "center", marginTop: 2 }}>
-                v1.1
+                v1.2
               </div>
             </div>
           </div>
