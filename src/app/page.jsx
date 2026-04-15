@@ -1715,6 +1715,209 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   );
 }
 
+// ─── TERMS SCREEN ────────────────────────────────────────────────────────────
+
+const TYC_SECTIONS = [
+  {
+    heading: "⚠️ ADVERTENCIA IMPORTANTE — LEA ANTES DE CONTINUAR",
+    warning: true,
+    items: [
+      "Este servicio NO constituye asesoría jurídica formal ni establece relación abogado-cliente.",
+      "Las respuestas de Juanita La Legal son orientación general de carácter informativo.",
+      "El usuario no debe actuar exclusivamente en base a la información recibida sin consultar a un abogado.",
+      "Ante situaciones urgentes (violencia, plazos judiciales inminentes), consulte a un profesional de inmediato.",
+    ],
+  },
+  {
+    heading: "1. Identificación de las Partes",
+    body: 'Los presentes Términos y Condiciones regulan el uso de la plataforma digital denominada Juanita La Legal (en adelante, "la Plataforma"). Al hacer clic en el botón "He leído y acepto los Términos y Condiciones" el usuario declara haber leído, entendido y aceptado íntegramente las condiciones aquí establecidas.',
+  },
+  {
+    heading: "2. Naturaleza del Servicio",
+    body: "Juanita La Legal es un servicio de orientación legal de carácter exclusivamente informativo y general, basado en inteligencia artificial. Su propósito es proporcionar al usuario una primera aproximación a su situación jurídica. Este servicio NO constituye: asesoría jurídica formal (art. 520 COT), patrocinio judicial, opinión jurídica vinculante, relación abogado-cliente, ni garantía de resultado legal. Las respuestas son producidas por un sistema de inteligencia artificial y no constituyen el ejercicio de la abogacía.",
+  },
+  {
+    heading: "3. Limitaciones de la Información",
+    body: "Toda orientación es de carácter general y no considera la totalidad de los antecedentes del caso concreto. La legislación chilena está sujeta a cambios frecuentes. El operador no garantiza exactitud, completitud ni aplicabilidad al caso específico del usuario. Se debe consultar a un abogado obligatoriamente ante: plazos judiciales próximos, violencia intrafamiliar, notificaciones judiciales recibidas, montos significativos, procesos penales, decisiones irreversibles y plazos migratorios.",
+  },
+  {
+    heading: "4. Precio y Condiciones",
+    body: "El valor es de $9.990 (pesos chilenos) por sesión, pagaderos a través de los medios habilitados. El pago es previo al acceso. Una vez utilizado el servicio, no procede devolución salvo falla técnica imputable al operador. Incluye una sesión sobre un único tema legal. Consultas sobre temas adicionales requieren nuevo pago.",
+  },
+  {
+    heading: "5. Tratamiento de Datos Personales",
+    body: "El tratamiento se rige por la Ley N° 19.628. Se recopilan: contenido de consultas, datos de uso y sesión. Los datos se usan para prestar el servicio y mejorar su calidad. Las consultas se almacenan por máximo 24 horas. Los pagos son procesados por Mercado Pago S.A. y no son almacenados por el operador. Los datos no se comparten con terceros salvo Anthropic Inc. (procesamiento de IA) y Mercado Pago S.A. El usuario puede solicitar acceso, rectificación o cancelación de sus datos.",
+  },
+  {
+    heading: "6. Conducta del Usuario",
+    body: "El usuario se compromete a: proporcionar información veraz; no usar el servicio para fines ilegales; no intentar vulnerar el funcionamiento técnico de la Plataforma; no reproducir ni comercializar las respuestas obtenidas sin autorización; y entender que la orientación es general y no puede ser invocada como opinión jurídica profesional.",
+  },
+  {
+    heading: "7. Exención y Limitación de Responsabilidad",
+    body: "El operador no será responsable por: daños derivados del uso de la Plataforma; decisiones adoptadas por el usuario; inexactitud de la información; interrupciones del servicio por causas técnicas ajenas al operador; ni acceso no autorizado a los datos del usuario por terceros, salvo negligencia grave del operador. La responsabilidad máxima no excederá el monto pagado por el servicio.",
+  },
+  {
+    heading: "8. Propiedad Intelectual",
+    body: "El nombre Juanita La Legal, el diseño, textos y logotipos son de propiedad del operador y están protegidos por la Ley N° 17.336. Las respuestas generadas son de uso exclusivo del usuario para orientación personal y no pueden ser reproducidas ni comercializadas sin autorización.",
+  },
+  {
+    heading: "9. Modificaciones",
+    body: "El operador se reserva el derecho de modificar estos Términos en cualquier momento. Las modificaciones serán publicadas en la Plataforma. El uso continuado del servicio constituirá aceptación de los nuevos términos.",
+  },
+  {
+    heading: "10. Ley Aplicable y Jurisdicción",
+    body: "Los presentes Términos se rigen por las leyes de la República de Chile. Para cualquier controversia, las partes se someten a los Tribunales Ordinarios de Justicia de la ciudad de Santiago.",
+  },
+];
+
+function TermsScreen({ onAccept }) {
+  const [scrolledToBottom, setScrolledToBottom] = useState(false);
+  const scrollRef = useRef(null);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+    if (atBottom) setScrolledToBottom(true);
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#faf8f4',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px 16px',
+      fontFamily: "'Instrument Sans', system-ui, sans-serif",
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: 640,
+        background: '#fff',
+        borderRadius: 16,
+        boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        maxHeight: '90vh',
+      }}>
+        {/* Header */}
+        <div style={{ padding: '24px 28px 16px', borderBottom: '1px solid #f0ebe3' }}>
+          <div style={{ fontSize: 28, marginBottom: 6 }}>⚖️</div>
+          <div style={{ fontSize: 20, fontWeight: 600, color: '#2d2217', lineHeight: 1.2 }}>
+            Términos y Condiciones de Uso
+          </div>
+          <div style={{ fontSize: 13, color: '#9a8a78', marginTop: 4 }}>
+            Juanita La Legal · Versión 1.0 · Abril 2026
+          </div>
+        </div>
+
+        {/* Scroll hint */}
+        {!scrolledToBottom && (
+          <div style={{
+            background: '#fffbef',
+            borderBottom: '1px solid #f0e8b0',
+            padding: '8px 28px',
+            fontSize: 12,
+            color: '#8a6a10',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          }}>
+            <span>👇</span>
+            <span>Lee hasta el final para habilitar el botón de aceptación</span>
+          </div>
+        )}
+
+        {/* Scrollable content */}
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          style={{ overflowY: 'auto', padding: '20px 28px', flex: 1 }}
+        >
+          {TYC_SECTIONS.map((section, i) => (
+            <div key={i} style={{ marginBottom: 20 }}>
+              <div style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: section.warning ? '#c44a12' : '#5a3e2b',
+                marginBottom: 6,
+                background: section.warning ? '#fff2ee' : 'transparent',
+                borderLeft: section.warning ? '3px solid #c44a12' : '3px solid #d8cfc0',
+                paddingLeft: 10,
+                paddingTop: section.warning ? 6 : 0,
+                paddingBottom: section.warning ? 6 : 0,
+                borderRadius: section.warning ? '0 4px 4px 0' : 0,
+              }}>
+                {section.heading}
+              </div>
+              {section.items ? (
+                <ul style={{ paddingLeft: 18, margin: 0 }}>
+                  {section.items.map((item, j) => (
+                    <li key={j} style={{ fontSize: 13, color: '#5a4a3a', lineHeight: 1.6, marginBottom: 4 }}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p style={{ fontSize: 13, color: '#5a4a3a', lineHeight: 1.7, margin: 0 }}>
+                  {section.body}
+                </p>
+              )}
+            </div>
+          ))}
+          {/* End marker */}
+          <div style={{ textAlign: 'center', padding: '12px 0 4px', fontSize: 12, color: '#b0a090' }}>
+            — Fin de los Términos y Condiciones —
+          </div>
+        </div>
+
+        {/* Footer with accept button */}
+        <div style={{
+          padding: '16px 28px 20px',
+          borderTop: '1px solid #f0ebe3',
+          background: scrolledToBottom ? '#faf8f4' : '#f5f3ef',
+          transition: 'background 0.3s',
+        }}>
+          {!scrolledToBottom && (
+            <p style={{ fontSize: 12, color: '#9a8a78', textAlign: 'center', marginBottom: 10 }}>
+              Desplázate hasta el final del documento para continuar
+            </p>
+          )}
+          <button
+            onClick={() => {
+              if (!scrolledToBottom) return;
+              localStorage.setItem('juanita_terms_accepted', '1');
+              onAccept();
+            }}
+            disabled={!scrolledToBottom}
+            style={{
+              width: '100%',
+              padding: '14px 24px',
+              borderRadius: 10,
+              border: 'none',
+              background: scrolledToBottom ? '#c44a12' : '#d8cfc0',
+              color: scrolledToBottom ? '#fff' : '#9a8a78',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: scrolledToBottom ? 'pointer' : 'not-allowed',
+              transition: 'background 0.3s, color 0.3s',
+              fontFamily: 'inherit',
+            }}
+          >
+            He leído y acepto los Términos y Condiciones
+          </button>
+          <p style={{ fontSize: 11, color: '#b0a090', textAlign: 'center', marginTop: 8 }}>
+            Al aceptar, declaras haber leído y comprendido íntegramente estos términos.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── PAID DETECTOR (requiere Suspense por useSearchParams) ───────────────────
 
 function PaidDetector({ onPaid }) {
@@ -1738,6 +1941,11 @@ export default function App() {
     if (b) b.onclick = () => setScreen('chat');
   }, [screen]);
 
+  const handlePaid = () => {
+    const alreadyAccepted = typeof window !== 'undefined' && localStorage.getItem('juanita_terms_accepted') === '1';
+    setScreen(alreadyAccepted ? "chat-paid" : "terms");
+  };
+
   return (
     <>
       <style>{`
@@ -1756,11 +1964,12 @@ export default function App() {
       `}</style>
 
       <Suspense fallback={null}>
-        <PaidDetector onPaid={() => setScreen("chat-paid")} />
+        <PaidDetector onPaid={handlePaid} />
       </Suspense>
 
       {screen === "hero" && <HeroSection onStart={() => setScreen("chat")} />}
       {screen === "chat" && <ChatSection onRestart={() => setScreen("hero")} initialPaid={false} />}
+      {screen === "terms" && <TermsScreen onAccept={() => setScreen("chat-paid")} />}
       {screen === "chat-paid" && (
         <ChatSection
           onRestart={() => setScreen("hero")}
