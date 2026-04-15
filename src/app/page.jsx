@@ -110,7 +110,7 @@ const QUESTION_SETS = {
   ],
 };
 
-const DISCLAIMER = "Esta es una orientación legal general basada en la información que entregaste. No reemplaza una asesoría jurídica completa ni constituye una conclusión definitiva. Cada situación puede tener detalles distintos — toma esta orientación como referencia, pero la decisión final debe evaluarse según tu caso concreto.";
+const DISCLAIMER = "Esta es orientación legal de carácter general e informativo. No constituye asesoría jurídica personalizada, no reemplaza a un abogado/a y no crea relación abogado-cliente. Cada situación tiene particularidades propias — la información entregada es referencial y la decisión final debe evaluarse con un profesional según tu caso concreto.";
 
 const SUGGESTIONS = [
   "¿Cómo pido pensión de alimentos para mis hijos?",
@@ -335,13 +335,16 @@ function TypingDots() {
   }
 
   return (
-    <div style={{ display: 'flex', gap: 5, alignItems: 'center', height: 20, padding: '2px 0' }}>
-      {[0, 1, 2].map(i => (
-        <div key={i} style={{
-          width: 7, height: 7, borderRadius: '50%', background: '#8fbc8f',
-          animation: `dotPulse 1.2s ease-in-out ${i * 0.18}s infinite`,
-        }} />
-      ))}
+    <div style={{ display: 'flex', gap: 6, alignItems: 'center', padding: '2px 0' }}>
+      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+        {[0, 1, 2].map(i => (
+          <div key={i} style={{
+            width: 7, height: 7, borderRadius: '50%', background: '#8fbc8f',
+            animation: `dotPulse 1.2s ease-in-out ${i * 0.18}s infinite`,
+          }} />
+        ))}
+      </div>
+      <span style={{ fontSize: 12, color: '#6a8a6a', fontStyle: 'italic' }}>Juanita está escribiendo...</span>
     </div>
   );
 }
@@ -959,7 +962,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const [stage, setStage] = useState(initialPaid ? "resuming" : "input");
   const [messages, setMessages] = useState([{
     id: createId(), type: "juanita",
-    text: "Hola, soy Juanita 👋 Cuéntame en buen chileno cuál es tu problema principal y te ayudo a ordenarlo. En esta consulta veremos un solo tema.",
+    text: "Hola, soy Juanita 👋 Cuéntame en buen chileno cuál es tu problema principal y te ayudo a ordenarlo. En esta consulta veremos un solo tema.\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*",
   }]);
   const [input, setInput] = useState("");
   const [lockedTopic, setLockedTopic] = useState(null);
@@ -1552,9 +1555,9 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                   }}
                   onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                   style={{
-                    flex: 1, border: "none", outline: "none", fontSize: 14, color: "#2a2018",
-                    background: "transparent", resize: "none", maxHeight: 90, lineHeight: 1.5,
-                    fontFamily: "inherit",
+                    flex: 1, border: "none", outline: "none", fontSize: 16, color: "#2a2018",
+                    background: "transparent", resize: "none", maxHeight: 120, lineHeight: 1.5,
+                    fontFamily: "inherit", minHeight: 44,
                   }}
                 />
                 {/* Botón adjuntar */}
@@ -1617,10 +1620,10 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                 </button>
               </div>
               <div style={{ fontSize: 11, color: "#a09080", textAlign: "center", marginTop: 6 }}>
-                Este servicio es orientativo y no reemplaza a un abogado
+                Orientación legal general e informativa · No reemplaza a un abogado/a · No constituye asesoría jurídica personalizada · No crea relación abogado-cliente
               </div>
               <div style={{ fontSize: 10, color: "#c0b8b0", textAlign: "center", marginTop: 2 }}>
-                v1.7
+                v1.8
               </div>
             </div>
           </div>

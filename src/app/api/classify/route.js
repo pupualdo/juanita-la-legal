@@ -51,10 +51,18 @@ export async function POST(request) {
     });
 
     const raw = response.content[0].text.replace(/```json|```/g, '').trim();
-    const result = JSON.parse(raw);
+    let result;
+    try {
+      result = JSON.parse(raw);
+    } catch {
+      result = { tema: 'otros', emoji: '⚖️', titulo: 'Consulta Legal', resumen: query.slice(0, 80) };
+    }
+    if (!result.tema) {
+      result = { tema: 'otros', emoji: '⚖️', titulo: 'Consulta Legal', resumen: query.slice(0, 80) };
+    }
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error classify:', error);
-    return NextResponse.json({ error: 'Error al clasificar' }, { status: 500 });
+    return NextResponse.json({ tema: 'otros', emoji: '⚖️', titulo: 'Consulta Legal', resumen: query.slice(0, 80) });
   }
 }
