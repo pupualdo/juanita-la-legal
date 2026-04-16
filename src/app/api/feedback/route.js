@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+const getResend = () => new Resend(process.env.RESEND_API_KEY);
+
+const CONTACT_EMAIL = 'franciscoverar@gmail.com';
 
 export async function POST(request) {
   try {
@@ -9,11 +13,31 @@ export async function POST(request) {
 
     if (body.type === 'contact') {
       const { name, phone, email, description, tema, sessionId } = body;
-      console.log('Contact request:', { name, phone, email, description, tema, sessionId });
+
+      // Guardar en Supabase
       await supabase
         .from('sessions')
         .update({ feedback: `CONTACTO | ${name} | ${phone} | ${email} | ${description}` })
         .eq('session_id', sessionId);
+
+      // Enviar email
+      await getResend().emails.send({
+        from: 'Juanita La Legal <onboarding@resend.dev>',
+        to: CONTACT_EMAIL,
+        subject: `📋 Nuevo contacto — ${tema ?? 'sin tema'} — ${name}`,
+        html: `
+          <h2>Nuevo contacto desde Juanita La Legal</h2>
+          <table style="border-collapse:collapse;width:100%;font-family:sans-serif;font-size:15px">
+            <tr><td style="padding:8px;font-weight:bold;color:#555">Nombre</td><td style="padding:8px">${name}</td></tr>
+            <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold;color:#555">Teléfono</td><td style="padding:8px">${phone}</td></tr>
+            <tr><td style="padding:8px;font-weight:bold;color:#555">Email</td><td style="padding:8px"><a href="mailto:${email}">${email}</a></td></tr>
+            <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold;color:#555">Tema legal</td><td style="padding:8px">${tema ?? '—'}</td></tr>
+            <tr><td style="padding:8px;font-weight:bold;color:#555;vertical-align:top">Descripción</td><td style="padding:8px;white-space:pre-wrap">${description}</td></tr>
+            <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold;color:#555">Session ID</td><td style="padding:8px;font-size:12px;color:#888">${sessionId}</td></tr>
+          </table>
+        `,
+      });
+
       return NextResponse.json({ ok: true });
     }
 
