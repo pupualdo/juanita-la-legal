@@ -314,6 +314,27 @@ const LEGAL_TERMS = {
   "dem": "Departamento de Extranjería y Migración. Es la oficina del gobierno que tramita visas, residencias y todo lo relacionado con migración.",
   "arraigo nacional": "Es una medida que impide a una persona salir del país. Se usa por ejemplo cuando alguien debe pensión alimenticia y no paga.",
   "beneficio de inventario": "Es un derecho que te permite aceptar una herencia pero solo hasta el valor de los bienes que dejó el fallecido, sin tener que pagar sus deudas con tu propia plata.",
+
+  "previred": "Es el sitio web (previred.com) donde puedes ver tus cotizaciones de AFP, salud y tu historial laboral. Sirve para comprobar si tu empleador te está pagando las imposiciones.",
+  "afp": "Administradora de Fondos de Pensiones. Es la empresa que administra tu plata para la jubilación. En Chile cada trabajador debe cotizar un 10% de su sueldo en una AFP.",
+  "sii": "Servicio de Impuestos Internos. Es el organismo que cobra impuestos y maneja trámites como el inicio de actividades, facturas y el impuesto a la herencia.",
+  "sernac": "Servicio Nacional del Consumidor. Protege a los consumidores ante abusos de empresas (garantías no cumplidas, cláusulas abusivas, publicidad engañosa). Denuncias en sernac.cl o 800 700 100.",
+  "dicom": "Es el registro de deudores morosos. Si no pagas una deuda, quedas en Dicom y afecta tu acceso a créditos. Después de 5 años, la deuda prescribe y debes salir automáticamente.",
+  "prescripción": "Es cuando pasa tanto tiempo sin que alguien te cobre una deuda o sin que actúen en tu contra, que legalmente ya no te pueden exigir nada. En Chile: 5 años para deudas civiles, 1 año para cheques.",
+  "finiquito notarial": "Finiquito firmado ante notario. Vale más que uno firmado sin testigos porque hace plena fe. Siempre firma el finiquito ante notario o inspector del trabajo.",
+  "medida cautelar": "Es una orden del tribunal para protegerte mientras se resuelve un juicio. Ejemplo: prohibición de acercamiento en caso de violencia, embargo de bienes para asegurar una deuda.",
+  "apremio": "Es una medida legal para obligar a alguien a pagar lo que debe. Incluye arresto nocturno, retención del sueldo, suspensión de licencia de conducir. Se usa mucho en pensiones alimenticias impagas.",
+  "causal de despido": "Es la razón legal por la que te despidieron. Las más comunes: necesidades de la empresa (art. 161), falta grave (art. 160), mutuo acuerdo (art. 159). La causal determina tus derechos.",
+  "spa": "Sociedad por Acciones. Es el tipo de sociedad más flexible para emprendedores en Chile. Se constituye en 1 día por internet, permite 1 o más accionistas, y las acciones se pueden vender sin acuerdo de todos.",
+  "tribunal de familia": "Tribunal especializado en temas de familia: divorcio, pensión alimenticia, tuición, visitas, violencia intrafamiliar. Se ubica en casi todas las comunas.",
+  "juzgado de policía local": "Tribunal que ve infracciones municipales y temas de arriendo como cobro de rentas impagas, restitución de inmueble, ruidos molestos.",
+  "ley karin": "Ley 21.643 que regula el acoso laboral y sexual en el trabajo. Obliga a las empresas a tener protocolos y permite al trabajador denunciar.",
+  "patente municipal": "Es un permiso que da la municipalidad para que una empresa o persona natural pueda realizar una actividad comercial o profesional en ese lugar.",
+  "usufructo": "Es el derecho a usar y disfrutar de un bien (casa, terreno) que pertenece a otra persona. Por ejemplo, un viudo puede tener usufructo sobre la casa familiar.",
+  "registro civil": "Es la oficina que maneja certificados de nacimiento, matrimonio, defunción, y también tramita la posesión efectiva sin testamento cuando los bienes son menores a 5.000 UTM.",
+  "visa sujeta a contrato": "Visa de trabajo que depende de tener un contrato laboral vigente. Si te despiden, tienes 30 días para encontrar nuevo empleador o pierdes la visa.",
+  "residencia definitiva": "Permiso para vivir permanentemente en Chile. Se solicita después de 1-2 años con visa temporal. Se revoca si sales del país por más de 2 años seguidos.",
+  "notario": "Es un funcionario público que autoriza y da fe de documentos importantes (contratos, poderes, escrituras, finiquitos). Los documentos ante notario tienen más valor legal.",
 };
 
 // ─── EXPLAINABLE MESSAGE ─────────────────────────────────────────────────────
@@ -978,6 +999,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [devHistory, setDevHistory] = useState([]);
   const [activeTerm, setActiveTerm] = useState(null); // { key, label, explanation } | null
+  const [showTermHint, setShowTermHint] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [voiceState, setVoiceState] = useState('idle'); // idle | recording | transcribing | reviewing
   const [editableTranscript, setEditableTranscript] = useState('');
@@ -994,6 +1016,10 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
+  }, []);
+
+  useEffect(() => {
+    if (!localStorage.getItem('juanita_hintSeen')) setShowTermHint(true);
   }, []);
 
   useEffect(() => {
@@ -1357,6 +1383,23 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                 </div>
               )}
 
+              {showTermHint && messages.length > 1 && (
+                <div style={{
+                  background: '#fef3c7', border: '1px solid #f6d860', borderRadius: 10,
+                  padding: '8px 12px', fontSize: 12, color: '#7c5c00',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                }}>
+                  <span>💡 Los términos con <strong>?</strong> los puedes tocar para ver qué significan.</span>
+                  <button onClick={() => {
+                    setShowTermHint(false);
+                    try { localStorage.setItem('juanita_hintSeen', '1'); } catch(e) {}
+                  }} style={{
+                    background: 'none', border: 'none', cursor: 'pointer', fontSize: 16,
+                    color: '#7c5c00', lineHeight: 1, padding: '0 2px', flexShrink: 0,
+                  }}>×</button>
+                </div>
+              )}
+
               {messages.map((msg) => (
                 <MessageBubble
                   key={msg.id} msg={msg} topic={lockedTopic || pendingTopic}
@@ -1623,7 +1666,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                 Orientación legal general e informativa · No reemplaza a un abogado/a · No constituye asesoría jurídica personalizada · No crea relación abogado-cliente
               </div>
               <div style={{ fontSize: 10, color: "#c0b8b0", textAlign: "center", marginTop: 2 }}>
-                v2.1
+                v2.2
               </div>
             </div>
           </div>
