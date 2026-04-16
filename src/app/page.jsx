@@ -1623,7 +1623,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                 Orientación legal general e informativa · No reemplaza a un abogado/a · No constituye asesoría jurídica personalizada · No crea relación abogado-cliente
               </div>
               <div style={{ fontSize: 10, color: "#c0b8b0", textAlign: "center", marginTop: 2 }}>
-                v2.0
+                v2.1
               </div>
             </div>
           </div>
