@@ -1034,22 +1034,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
     });
   }, [stage, messages.length]);
 
-  // Mostrar modal de evaluación cuando la consulta se cierra
-  useEffect(() => {
-    if (stage === "closed" && !ratingDone) {
-      const t = setTimeout(() => setShowRating(true), 2000);
-      return () => clearTimeout(t);
-    }
-  }, [stage, ratingDone]);
-
-  // Mostrar modal después de 5 minutos de sesión activa (si no se cerró aún)
-  useEffect(() => {
-    if (!timerActive || ratingDone) return;
-    const t = setTimeout(() => {
-      if (!ratingDone) setShowRating(true);
-    }, 5 * 60 * 1000);
-    return () => clearTimeout(t);
-  }, [timerActive, ratingDone]);
+  // El modal de evaluación solo se muestra al agotarse el timer (handleTimerExpire)
 
   // Post-pago: iniciar chat directamente
   useEffect(() => {
