@@ -361,6 +361,8 @@ El usuario pagó una sesión para un área legal específica. Si durante la conv
 `;
 
 
+export const maxDuration = 60; // Vercel: allow up to 60s for streaming responses
+
 export async function POST(request) {
   try {
     const { sessionId, message, imageBase64, history: devHistory } = await request.json();

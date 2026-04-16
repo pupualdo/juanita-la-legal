@@ -1187,9 +1187,13 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
         }
       }
     } catch (err) {
-      const errMsg = err.message && err.message !== 'Failed to fetch'
-        ? `Error: ${err.message}`
-        : 'Hubo un error al responder. Intenta de nuevo.';
+      // Network errors have different messages across browsers/platforms:
+      // Chrome desktop: "Failed to fetch", Chrome Android: "network error",
+      // Safari: "Load failed", Firefox: "NetworkError when attempting to fetch resource."
+      const isNetworkErr = !err.message || /failed to fetch|network error|load failed|networkerror/i.test(err.message);
+      const errMsg = isNetworkErr
+        ? 'Se cortó la conexión. Revisa tu red e intenta de nuevo 🔄'
+        : `Hubo un problema al responder. Intenta de nuevo. (${err.message})`;
       setMessages(prev => prev.map(m => m.id === msgId ? { ...m, text: errMsg } : m));
     } finally {
       setIsStreaming(false);
