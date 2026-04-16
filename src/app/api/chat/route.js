@@ -1,6 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
+import { log } from '@/lib/logger';
 
 const supabase  = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
@@ -365,6 +367,16 @@ export const maxDuration = 60; // Vercel: allow up to 60s for streaming response
 
 export async function POST(request) {
   try {
+    // Rate limit: 30 messages per minute per IP
+    const ip = getClientIp(request);
+    const { allowed, retryAfter } = rateLimit(ip, 'chat', { limit: 30, windowMs: 60_000 });
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Demasiadas solicitudes. Espera un momento antes de continuar.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
+
     const { sessionId, message, imageBase64, history: devHistory } = await request.json();
 
     if (!message && !imageBase64) {
@@ -434,7 +446,7 @@ export async function POST(request) {
               .eq('session_id', capturedSessionId);
           }
         } catch (err) {
-          console.error('Anthropic stream error:', err?.message || err);
+          log.error('chat', 'Anthropic stream error', { err, sessionId });
           controller.enqueue(encoder.encode('data: ' + JSON.stringify({ error: err?.message || 'Error en el chat' }) + '\n\n'));
         } finally {
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
@@ -451,7 +463,7 @@ export async function POST(request) {
       },
     });
   } catch (error) {
-    console.error('Error chat:', error);
+    await log.error('chat', 'Unhandled error in POST /api/chat', { err: error });
     return NextResponse.json({ error: 'Error en el chat' }, { status: 500 });
   }
 }

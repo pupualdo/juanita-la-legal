@@ -550,6 +550,54 @@ function BuySessionButton({ sessionId }) {
   );
 }
 
+// ─── WHATSAPP CTA ─────────────────────────────────────────────────────────────
+// Shows when Juanita's response suggests the user needs a real lawyer.
+// The phone number is read from NEXT_PUBLIC_WHATSAPP_NUMBER env var.
+
+const WHATSAPP_TRIGGERS = [
+  'necesitas un abogado',
+  'necesitarás un abogado',
+  'necesitas asesoría presencial',
+  'te recomiendo consultar con un abogado',
+  'deberías consultar con un abogado',
+  'habla con un abogado',
+  'busca un abogado',
+  'acude a un abogado',
+  'visita una clínica jurídica',
+  'clínica jurídica',
+  'corporación de asistencia judicial',
+];
+
+function WhatsAppCTA({ text }) {
+  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+  if (!phone) return null;
+
+  const lower = text.toLowerCase();
+  const triggered = WHATSAPP_TRIGGERS.some(t => lower.includes(t));
+  if (!triggered) return null;
+
+  const waUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent('Hola, vengo de Juanita La Legal y necesito asesoría en mi caso.')}`;
+
+  return (
+    <a
+      href={waUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        marginTop: 10, padding: '9px 16px', borderRadius: 12,
+        background: '#25D366', color: 'white', textDecoration: 'none',
+        fontSize: 13, fontWeight: 600, boxShadow: '0 2px 8px rgba(37,211,102,0.3)',
+      }}
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      Continuar por WhatsApp
+    </a>
+  );
+}
+
 // ─── MESSAGE FEEDBACK (thumbs) ───────────────────────────────────────────────
 
 function MessageFeedback({ msgId, sessionId, msgPreview }) {
@@ -707,6 +755,7 @@ function MessageBubble({ msg, topic, sessionId, onTermClick, activeTerm }) {
         </div>
         {showContactForm && <ContactForm topic={topic} sessionId={sessionId} />}
         {hasSessionOffer && <BuySessionButton sessionId={sessionId} />}
+        {isJuanita && msg.text !== '...' && <WhatsAppCTA text={msg.text} />}
         {isJuanita && msg.text !== '...' && sessionId && (
           <MessageFeedback
             msgId={msg.id}
@@ -1249,7 +1298,14 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
     const msgId = createId();
     setMessages(prev => [...prev, { id: msgId, type: 'juanita', text: '...' }]);
     let fullText = '';
-    try {
+
+    const MAX_RETRIES = 2;
+    const RETRY_DELAY_MS = 2500;
+
+    const isNetworkError = (err) =>
+      !err.message || /failed to fetch|network error|load failed|networkerror/i.test(err.message);
+
+    const attemptStream = async () => {
       const body = { sessionId: currentSessionId, message };
       if (imageBase64) body.imageBase64 = imageBase64;
       if (process.env.NEXT_PUBLIC_DEV_SKIP_PAYMENT === 'true') {
@@ -1289,18 +1345,38 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
           }
         }
       }
-    } catch (err) {
+    };
+
+    let lastErr = null;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        await attemptStream();
+        lastErr = null;
+        break; // success
+      } catch (err) {
+        lastErr = err;
+        // Only retry on network/connectivity errors, not on API errors (4xx/5xx)
+        if (!isNetworkError(err) || attempt === MAX_RETRIES) break;
+        // Show reconnecting indicator and wait before next attempt
+        setMessages(prev => prev.map(m =>
+          m.id === msgId ? { ...m, text: `Reconectando… (intento ${attempt + 2}/${MAX_RETRIES + 1})` } : m
+        ));
+        await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+        fullText = ''; // reset so we don't double-append on retry
+      }
+    }
+
+    if (lastErr) {
       // Network errors have different messages across browsers/platforms:
       // Chrome desktop: "Failed to fetch", Chrome Android: "network error",
       // Safari: "Load failed", Firefox: "NetworkError when attempting to fetch resource."
-      const isNetworkErr = !err.message || /failed to fetch|network error|load failed|networkerror/i.test(err.message);
-      const errMsg = isNetworkErr
-        ? 'Se cortó la conexión. Revisa tu red e intenta de nuevo 🔄'
-        : `Hubo un problema al responder. Intenta de nuevo. (${err.message})`;
+      const errMsg = isNetworkError(lastErr)
+        ? 'Se cortó la conexión después de varios intentos. Revisa tu red e intenta de nuevo 🔄'
+        : `Hubo un problema al responder. Intenta de nuevo. (${lastErr.message})`;
       setMessages(prev => prev.map(m => m.id === msgId ? { ...m, text: errMsg } : m));
-    } finally {
-      setIsStreaming(false);
     }
+
+    setIsStreaming(false);
     return fullText;
   };
 

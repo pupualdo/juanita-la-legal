@@ -12,6 +12,22 @@ export async function GET(request) {
     const sessionId = searchParams.get('session');
     const status    = searchParams.get('status');
 
+    // Polling path: payment-pending page checks if the webhook already granted access
+    if (status === 'check_session') {
+      if (!sessionId) {
+        return NextResponse.json({ ok: false, reason: 'no_session' });
+      }
+      const { data } = await supabase
+        .from('sessions')
+        .select('expires_at')
+        .eq('session_id', sessionId)
+        .single();
+
+      const active = data?.expires_at && new Date(data.expires_at) > new Date();
+      return NextResponse.json({ ok: !!active });
+    }
+
+    // Direct redirect path: user comes back from MP with status=approved in URL
     if (status !== 'approved') {
       return NextResponse.json({ ok: false, reason: 'not_approved' });
     }
@@ -28,7 +44,8 @@ export async function GET(request) {
     await supabase.from('sessions').upsert({
       session_id: sessionId,
       payment_id: paymentId,
-      expires_at: expiresAt
+      paid_at: new Date().toISOString(),
+      expires_at: expiresAt,
     });
 
     return NextResponse.json({ ok: true, sessionId, expiresAt });
