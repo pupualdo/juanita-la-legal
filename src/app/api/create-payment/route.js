@@ -38,6 +38,11 @@ export async function POST(request) {
 
     log.info('create-payment', 'Creating preference', { sessionId, promoCode: normalizedCode, unitPrice });
 
+    // Trim env var to guard against accidental trailing newlines stored in Vercel
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://juanita-la-legal.vercel.app')
+      .replace(/\\n/g, '')
+      .trim();
+
     const preference = new Preference(mp);
     const result = await preference.create({ body: {
       items: [{
@@ -48,9 +53,9 @@ export async function POST(request) {
         currency_id: 'CLP',
       }],
       back_urls: {
-        success: `${process.env.NEXT_PUBLIC_APP_URL}/success?session=${sessionId}`,
-        failure: `${process.env.NEXT_PUBLIC_APP_URL}/payment-error`,
-        pending: `${process.env.NEXT_PUBLIC_APP_URL}/payment-pending?session=${sessionId}`,
+        success: `${appUrl}/success?session=${sessionId}`,
+        failure: `${appUrl}/payment-error`,
+        pending: `${appUrl}/payment-pending?session=${sessionId}`,
       },
       auto_return: 'approved',
       external_reference: sessionId,

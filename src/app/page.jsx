@@ -727,9 +727,11 @@ function MessageBubble({ msg, topic, sessionId, onTermClick, activeTerm }) {
 
   const isJuanita = msg.type === "juanita";
   const hasSessionOffer = isJuanita && msg.text.includes('sesión adicional');
+  const lower = msg.text.toLowerCase();
   const showContactForm = isJuanita &&
-    (msg.text.includes('Déjanos tus datos') || (msg.text.includes('presupuesto') && msg.text.includes('Teléfono o WhatsApp:'))) &&
-    !hasSessionOffer;
+    !hasSessionOffer &&
+    msg.text !== '...' &&
+    WHATSAPP_TRIGGERS.some(t => lower.includes(t));
 
   return (
     <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexDirection: isJuanita ? "row" : "row-reverse" }}>
