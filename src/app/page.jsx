@@ -1,8 +1,11 @@
 'use client';
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import ReactMarkdown from 'react-markdown';
+import dynamic from 'next/dynamic';
 import remarkGfm from 'remark-gfm';
+
+const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false, loading: () => null });
+import { track } from '@vercel/analytics';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
@@ -568,6 +571,13 @@ const WHATSAPP_TRIGGERS = [
   'corporación de asistencia judicial',
 ];
 
+// Triggers for the contact form — only fires for complex documents that require
+// professional drafting. Uses the exact phrase from the system prompt for
+// complex documents so it doesn't activate on routine "consult a lawyer" closings.
+const CONTACT_FORM_TRIGGERS = [
+  'este tipo de documento requiere un trabajo más especializado',
+];
+
 function WhatsAppCTA({ text }) {
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   if (!phone) return null;
@@ -731,7 +741,7 @@ function MessageBubble({ msg, topic, sessionId, onTermClick, activeTerm }) {
   const showContactForm = isJuanita &&
     !hasSessionOffer &&
     msg.text !== '...' &&
-    WHATSAPP_TRIGGERS.some(t => lower.includes(t));
+    CONTACT_FORM_TRIGGERS.some(t => lower.includes(t));
 
   return (
     <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexDirection: isJuanita ? "row" : "row-reverse" }}>
@@ -820,7 +830,7 @@ function RatingModal({ sessionId, onClose }) {
         {submitted ? (
           <div style={{ textAlign: "center", padding: "12px 0" }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>🙌</div>
-            <div style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 600, color: "#1a3a2a", marginBottom: 8 }}>
+            <div style={{ fontFamily: "var(--font-fraunces), serif", fontSize: 22, fontWeight: 600, color: "#1a3a2a", marginBottom: 8 }}>
               ¡Gracias por tu evaluación!
             </div>
             <div style={{ fontSize: 14, color: "#6a5e50" }}>Nos ayuda a mejorar Juanita.</div>
@@ -829,7 +839,7 @@ function RatingModal({ sessionId, onClose }) {
           <>
             <div style={{ textAlign: "center", marginBottom: 20 }}>
               <div style={{ fontSize: 32, marginBottom: 10 }}>⚖️</div>
-              <div style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 600, color: "#1a3a2a", marginBottom: 6 }}>
+              <div style={{ fontFamily: "var(--font-fraunces), serif", fontSize: 22, fontWeight: 600, color: "#1a3a2a", marginBottom: 6 }}>
                 ¿Cómo te fue con Juanita?
               </div>
               <div style={{ fontSize: 13, color: "#8a7a68" }}>Tu opinión nos ayuda a mejorar</div>
@@ -915,20 +925,42 @@ function HeroSection({ onStart }) {
   return (
     <div style={{
       minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg, #1a3a2a 0%, #0a1a14 60%, #1a2a18 100%)",
-      padding: "40px 20px",
+      position: "relative", overflow: "hidden", padding: "40px 20px",
     }}>
-      <div style={{ maxWidth: 520, textAlign: "center" }}>
+      {/* Fondo biblioteca difuso */}
+      <div style={{
+        position: "absolute", inset: 0,
+        backgroundImage: "url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=300&q=20&fm=webp')",
+        backgroundSize: "cover", backgroundPosition: "center",
+        filter: "blur(10px) brightness(0.35)",
+        transform: "scale(1.12)",
+      }} />
+      {/* Overlay oscuro cálido */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(to bottom, rgba(10,20,15,0.3) 0%, rgba(10,20,15,0.7) 100%)",
+      }} />
+
+      {/* Contenido */}
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 520, textAlign: "center" }}>
+        {/* Avatar circular */}
         <div style={{
-          width: 120, height: 120, borderRadius: "50%",
-          background: "linear-gradient(135deg, #c8e6c0, #8fbc8f)",
+          width: 160, height: 160, borderRadius: "50%",
+          overflow: "hidden",
+          border: "4px solid rgba(255,255,255,0.92)",
           margin: "0 auto 28px",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 52, boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
-        }}>⚖️</div>
+          boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 0 0 8px rgba(255,255,255,0.08)",
+        }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/juanita-avatar.jpg"
+            alt="Juanita La Legal"
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+          />
+        </div>
 
         <h1 style={{
-          fontFamily: "'Fraunces', serif", fontSize: 44, fontWeight: 600,
+          fontFamily: "var(--font-fraunces), serif", fontSize: 44, fontWeight: 600,
           color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 8, lineHeight: 1.2,
         }}>Juanita La Legal</h1>
 
@@ -966,7 +998,7 @@ function HeroSection({ onStart }) {
 
 // ─── PAYMENT WALL ────────────────────────────────────────────────────────────
 
-function PaymentWall({ topic, resumen, sessionId, onBack }) {
+function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, onBack }) {
   const [loading, setLoading] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(null); // { discount, label } | null
@@ -974,7 +1006,15 @@ function PaymentWall({ topic, resumen, sessionId, onBack }) {
   const [promoLoading, setPromoLoading] = useState(false);
   const m = TOPIC_META[topic] || {};
 
-  const BASE_PRICE = 9990;
+  // Returning user changing topic gets $4.000 discount.
+  // Requires: a previous paid session AND a stored topic AND the new topic is different AND not a document.
+  const isTopicChange = !!(prevSessionId && prevTopic && prevTopic !== topic && topic !== 'documento');
+
+  useEffect(() => {
+    track('payment_wall_shown', { tema: topic });
+  }, [topic]);
+
+  const BASE_PRICE = isTopicChange ? 4000 : 9990;
   const finalPrice = promoApplied
     ? Math.round(BASE_PRICE * (1 - promoApplied.discount / 100))
     : BASE_PRICE;
@@ -1006,6 +1046,7 @@ function PaymentWall({ topic, resumen, sessionId, onBack }) {
 
   const handlePay = async () => {
     setLoading(true);
+    track('payment_started', { tema: topic, price: finalPrice });
     try {
       if (isFree) {
         const grantRes = await fetch('/api/grant-access', {
@@ -1020,13 +1061,17 @@ function PaymentWall({ topic, resumen, sessionId, onBack }) {
           return;
         }
         localStorage.setItem('juanita_session', sessionId);
+        localStorage.setItem('juanita_topic', topic);
+        // Clear terms acceptance so the user explicitly re-accepts before
+        // entering the paid session via a promo/friend code.
+        localStorage.removeItem('juanita_terms_accepted');
         window.location.href = '/?paid=true';
         return;
       }
       const res = await fetch('/api/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tema: topic, resumen, sessionId, promoCode: promoCode.trim().toUpperCase() }),
+        body: JSON.stringify({ tema: topic, resumen, sessionId, promoCode: promoCode.trim().toUpperCase(), isReturnUser: isTopicChange }),
       });
       const data = await res.json();
       if (data.checkoutUrl) {
@@ -1056,38 +1101,29 @@ function PaymentWall({ topic, resumen, sessionId, onBack }) {
         </div>
       </div>
 
+      {/* Session scope notice */}
+      <div style={{ background: "#f0f5e8", border: "1px solid #b8d98a", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#3a5a20", lineHeight: 1.5 }}>
+        <strong>📌 Esta sesión cubre solo el tema detectado</strong> durante <strong>10 minutos</strong>. Puedes preguntar todo lo que quieras sobre él. Si necesitas orientación en otro tema, será una nueva consulta.
+      </div>
+
+      {/* Returning user discount badge */}
+      {isTopicChange && (
+        <div style={{ background: "#fffbef", border: "1.5px solid #f0de8a", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#7a5a00", display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 20 }}>🔄</span>
+          <div>
+            <div style={{ fontWeight: 700 }}>Descuento por cambio de tema</div>
+            <div style={{ fontSize: 12, color: "#8a6a20", marginTop: 1 }}>Como ya tienes una sesión previa, esta consulta vale <strong>$4.000</strong> en vez de $9.990.</div>
+          </div>
+        </div>
+      )}
+
       <div style={{ background: "white", borderRadius: 18, padding: "20px", boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: "#1a3a2a", marginBottom: 12 }}>
           🔓 Desbloquea tu consulta guiada
         </div>
-        {["Orientación detallada sobre tus derechos", "Preguntas guiadas para ordenar tu caso", "Riesgos, opciones y próximos pasos concretos", "Derivación a instituciones y recursos de ayuda"].map((item, i) => (
-          <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <span style={{ color: "#4a7a20", fontWeight: 700 }}>✓</span>
-            <span style={{ fontSize: 13, color: "#3a3028" }}>{item}</span>
-          </div>
-        ))}
 
-        <div style={{ background: "#f5f0e8", borderRadius: 10, padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", margin: "14px 0" }}>
-          <span style={{ fontSize: 13, color: "#6a5e50" }}>Consulta completa · pago único</span>
-          <div style={{ textAlign: "right" }}>
-            {promoApplied && (
-              <div style={{ fontSize: 12, color: "#a09080", textDecoration: "line-through" }}>
-                ${BASE_PRICE.toLocaleString('es-CL')}
-              </div>
-            )}
-            <span style={{ fontFamily: "serif", fontSize: 24, fontWeight: 700, color: isFree ? "#4a7a20" : "#1a3a2a" }}>
-              {isFree ? "¡Gratis!" : `$${finalPrice.toLocaleString('es-CL')}`}
-            </span>
-            {promoApplied && (
-              <div style={{ fontSize: 11, color: "#4a7a20", fontWeight: 600 }}>
-                {promoApplied.label} aplicado ✓
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Promo code field */}
-        <div style={{ marginBottom: 14 }}>
+        {/* Promo code field — arriba para que sea visible en móvil */}
+        <div style={{ marginBottom: 12 }}>
           <div style={{ display: "flex", gap: 8 }}>
             <input
               type="text"
@@ -1119,6 +1155,32 @@ function PaymentWall({ topic, resumen, sessionId, onBack }) {
             <div style={{ fontSize: 12, color: "#c0392b", marginTop: 5 }}>{promoError}</div>
           )}
         </div>
+
+        <div style={{ background: "#f5f0e8", borderRadius: 10, padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <span style={{ fontSize: 13, color: "#6a5e50" }}>{isTopicChange ? 'Cambio de tema · pago único' : 'Consulta completa · pago único'}</span>
+          <div style={{ textAlign: "right" }}>
+            {promoApplied && (
+              <div style={{ fontSize: 12, color: "#a09080", textDecoration: "line-through" }}>
+                ${BASE_PRICE.toLocaleString('es-CL')}
+              </div>
+            )}
+            <span style={{ fontFamily: "serif", fontSize: 24, fontWeight: 700, color: isFree ? "#4a7a20" : "#1a3a2a" }}>
+              {isFree ? "¡Gratis!" : `$${finalPrice.toLocaleString('es-CL')}`}
+            </span>
+            {promoApplied && (
+              <div style={{ fontSize: 11, color: "#4a7a20", fontWeight: 600 }}>
+                {promoApplied.label} aplicado ✓
+              </div>
+            )}
+          </div>
+        </div>
+
+        {["Orientación detallada sobre tus derechos", "Preguntas guiadas para ordenar tu caso", "Riesgos, opciones y próximos pasos concretos", "Derivación a instituciones y recursos de ayuda"].map((item, i) => (
+          <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <span style={{ color: "#4a7a20", fontWeight: 700 }}>✓</span>
+            <span style={{ fontSize: 13, color: "#3a3028" }}>{item}</span>
+          </div>
+        ))}
 
         {!loading ? (
           <button onClick={handlePay} style={{
@@ -1152,7 +1214,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const [stage, setStage] = useState(initialPaid ? "resuming" : "input");
   const [messages, setMessages] = useState([{
     id: createId(), type: "juanita",
-    text: "Hola, soy Juanita 👋 Cuéntame en buen chileno cuál es tu problema principal y te ayudo a ordenarlo. En esta consulta veremos un solo tema.\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*",
+    text: "Hola, soy Juanita 👋 Cuéntame en buen chileno cuál es tu problema principal y te ayudo a ordenarlo.\n\n📌 **Cómo funciona:** cada sesión pagada cubre **un solo tema legal** durante **10 minutos**. Puedes preguntar todo lo que quieras sobre ese tema. Si después necesitas orientación en otro tema, es una nueva sesión.\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*",
   }]);
   const [input, setInput] = useState("");
   const [lockedTopic, setLockedTopic] = useState(null);
@@ -1216,17 +1278,23 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
     if (savedTema) setLockedTopic(savedTema);
     setTimerActive(true);
 
+    const topicLabel = savedTema ? (TOPIC_LABELS[savedTema] || savedTema) : null;
+    const topicEmoji = savedTema ? (TOPIC_META[savedTema]?.emoji || '⚖️') : '⚖️';
+    const welcomeText = topicLabel
+      ? `¡Hola! Soy Juanita y ya está todo listo para tu sesión 🎉\n\n**Tema de esta sesión:** ${topicEmoji} ${topicLabel}\n\nDurante los próximos **10 minutos** puedes preguntarme todo lo que quieras sobre **${topicLabel}**. Cuéntame con confianza — te oriento paso a paso.\n\n> ℹ️ Si después necesitas orientación sobre otro tema legal, será una nueva sesión (${'\$'}9.990 CLP).\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*`
+      : `¡Pago confirmado! 🎉 Cuéntame tu problema legal y te oriento paso a paso.\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*`;
+
     if (savedQuery) {
       sessionStorage.removeItem('juanita_query');
       setStage("chat");
-      setMessages([{ id: createId(), type: "user", text: savedQuery }]);
+      setMessages([
+        { id: createId(), type: "juanita", text: welcomeText },
+        { id: createId(), type: "user", text: savedQuery },
+      ]);
       streamChatResponse(savedQuery, [], initialSessionId);
     } else {
       setStage("chat");
-      setMessages([{
-        id: createId(), type: "juanita",
-        text: "¡Pago confirmado! 🎉 Cuéntame tu problema legal y te oriento paso a paso.",
-      }]);
+      setMessages([{ id: createId(), type: "juanita", text: welcomeText }]);
     }
   }, [initialPaid, initialSessionId]);
 
@@ -1256,6 +1324,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
         localStorage.setItem('juanita_session', newSessionId);
         localStorage.setItem('juanita_topic', data.tema);
         sessionStorage.setItem('juanita_query', trimmed);
+        track('classify_completed', { tema: data.tema });
 
         if (process.env.NEXT_PUBLIC_DEV_SKIP_PAYMENT === 'true') {
           // Dev bypass: crear sesión directamente sin pago
@@ -1509,11 +1578,13 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
 
       {/* Payment wall */}
       {stage === "payment" && pendingTopic && (
-        <div style={{ flex: 1, overflowY: "auto" }}>
+        <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
           <PaymentWall
             topic={pendingTopic}
             resumen={classifyResumen}
             sessionId={sessionId}
+            prevSessionId={typeof window !== 'undefined' ? localStorage.getItem('juanita_session') : null}
+            prevTopic={typeof window !== 'undefined' ? localStorage.getItem('juanita_topic') : null}
             onBack={() => { setStage("input"); setMessages(prev => prev.slice(0, -1)); }}
           />
         </div>
@@ -2018,7 +2089,7 @@ function TermsScreen({ onAccept }) {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '24px 16px',
-      fontFamily: "'Instrument Sans', system-ui, sans-serif",
+      fontFamily: "var(--font-instrument-sans), system-ui, sans-serif",
     }}>
       <div style={{
         width: '100%',
@@ -2163,23 +2234,30 @@ function PaidDetector({ onPaid }) {
 
 export default function App() {
   const [screen, setScreen] = useState("hero");
+  const [postTermsScreen, setPostTermsScreen] = useState("chat");
+
+  const navigateWithTerms = (nextScreen) => {
+    const accepted = typeof window !== 'undefined' && localStorage.getItem('juanita_terms_accepted') === '1';
+    if (accepted) {
+      setScreen(nextScreen);
+    } else {
+      setPostTermsScreen(nextScreen);
+      setScreen('terms');
+    }
+  };
 
   useEffect(() => {
     const b = document.querySelector('[data-action="start"]');
-    if (b) b.onclick = () => setScreen('chat');
+    if (b) b.onclick = () => navigateWithTerms('chat');
   }, [screen]);
 
-  const handlePaid = () => {
-    const alreadyAccepted = typeof window !== 'undefined' && localStorage.getItem('juanita_terms_accepted') === '1';
-    setScreen(alreadyAccepted ? "chat-paid" : "terms");
-  };
+  const handlePaid = () => navigateWithTerms('chat-paid');
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@300;600&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Instrument Sans', system-ui, sans-serif; background: #faf8f4; }
+        body { background: #faf8f4; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.92); } }
@@ -2195,9 +2273,9 @@ export default function App() {
         <PaidDetector onPaid={handlePaid} />
       </Suspense>
 
-      {screen === "hero" && <HeroSection onStart={() => setScreen("chat")} />}
+      {screen === "hero" && <HeroSection onStart={() => navigateWithTerms("chat")} />}
       {screen === "chat" && <ChatSection onRestart={() => setScreen("hero")} initialPaid={false} />}
-      {screen === "terms" && <TermsScreen onAccept={() => setScreen("chat-paid")} />}
+      {screen === "terms" && <TermsScreen onAccept={() => setScreen(postTermsScreen)} />}
       {screen === "chat-paid" && (
         <ChatSection
           onRestart={() => setScreen("hero")}
