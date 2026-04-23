@@ -6,8 +6,17 @@ import { test, expect } from '@playwright/test';
  * without making real payments.
  */
 
+// Accept terms in localStorage so the terms screen doesn't block tests.
+// Tests that specifically test the terms flow should NOT use this helper.
+async function acceptTerms(page: any) {
+  await page.addInitScript(() => {
+    localStorage.setItem('juanita_terms_accepted', '1');
+  });
+}
+
 test.describe('Landing page', () => {
   test.beforeEach(async ({ page }) => {
+    await acceptTerms(page);
     await page.goto('/');
   });
 
@@ -31,6 +40,7 @@ test.describe('Landing page', () => {
 
 test.describe('Chat input and suggestion chips', () => {
   test.beforeEach(async ({ page }) => {
+    await acceptTerms(page);
     await page.goto('/');
     await page.click('[data-action="start"]');
     await expect(page.locator('textarea')).toBeVisible({ timeout: 5_000 });
@@ -64,6 +74,7 @@ test.describe('Chat input and suggestion chips', () => {
 
 test.describe('Topic classification flow (mocked)', () => {
   test('classifies message and shows payment wall', async ({ page }) => {
+    await acceptTerms(page);
     // Mock the classify API to return a known topic immediately
     await page.route('**/api/classify', async (route) => {
       await route.fulfill({

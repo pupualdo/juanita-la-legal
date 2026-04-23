@@ -5,8 +5,16 @@ import { test, expect } from '@playwright/test';
  * Uses route mocking to bypass real MercadoPago and test the UI logic.
  */
 
+// Accept terms in localStorage so the terms screen doesn't block tests.
+async function acceptTerms(page: any) {
+  await page.addInitScript(() => {
+    localStorage.setItem('juanita_terms_accepted', '1');
+  });
+}
+
 // Helper: navigate straight to payment wall via mocked classify + initial chat
 async function goToPaymentWall(page: any) {
+  await acceptTerms(page);
   await page.route('**/api/classify', async (route: any) => {
     await route.fulfill({
       status: 200,
