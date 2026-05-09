@@ -1194,15 +1194,15 @@ function HeroSection({ onStart }) {
         {/* Fondo biblioteca difuso */}
         <div style={{
           position: "absolute", inset: 0,
-          backgroundImage: "url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=300&q=20&fm=webp')",
+          backgroundImage: "url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=60&fm=webp')",
           backgroundSize: "cover", backgroundPosition: "center",
-          filter: "blur(10px) brightness(0.35)",
+          filter: "blur(8px) brightness(0.35) saturate(1.1)",
           transform: "scale(1.12)",
         }} />
         {/* Overlay oscuro cálido */}
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, rgba(10,20,15,0.3) 0%, rgba(10,20,15,0.7) 100%)",
+          background: "linear-gradient(to bottom, rgba(15,30,22,0.45) 0%, rgba(10,20,15,0.75) 100%)",
         }} />
 
         {/* Contenido */}

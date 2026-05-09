@@ -13,8 +13,8 @@ const csp = [
   `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
   // Fonts
   `font-src 'self' https://fonts.gstatic.com`,
-  // Images: self + data URIs (avatars / base64 previews) + MP assets
-  `img-src 'self' data: blob: ${MP_DOMAIN} https://*.mercadolibre.com`,
+  // Images: self + data URIs (avatars / base64 previews) + MP assets + Unsplash (hero bg)
+  `img-src 'self' data: blob: ${MP_DOMAIN} https://*.mercadolibre.com https://images.unsplash.com`,
   // XHR/fetch: self + MP APIs + Supabase
   `connect-src 'self' ${MP_DOMAIN} ${MP_SDK} ${SUPABASE} https://api.anthropic.com`,
   // Media (voice transcription blob URLs)
