@@ -1868,18 +1868,30 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
         stream.getTracks().forEach(t => t.stop());
         setVoiceState('transcribing');
         const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        if (blob.size === 0) {
+          alert('No se grabó audio. Intenta de nuevo y habla más cerca del micrófono.');
+          setVoiceState('idle');
+          return;
+        }
         const fd = new FormData();
         fd.append('audio', blob, mimeType === 'audio/webm' ? 'recording.webm' : 'recording.mp4');
         try {
           const res = await fetch('/api/transcribe', { method: 'POST', body: fd });
-          const data = await res.json();
-          if (data.text) {
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            alert(`Error al transcribir: ${data.error || res.statusText || 'desconocido'}`);
+            setVoiceState('idle');
+            return;
+          }
+          if (data.text && data.text.trim()) {
             setEditableTranscript(data.text);
             setVoiceState('reviewing');
           } else {
+            alert('La transcripción salió vacía. Intenta hablar más fuerte o más cerca del micrófono.');
             setVoiceState('idle');
           }
-        } catch {
+        } catch (err) {
+          alert(`No se pudo conectar al servicio de transcripción: ${err.message || err}`);
           setVoiceState('idle');
         }
       };
