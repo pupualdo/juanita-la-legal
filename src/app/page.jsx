@@ -1879,7 +1879,12 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
           const res = await fetch('/api/transcribe', { method: 'POST', body: fd });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) {
-            alert(`Error al transcribir: ${data.error || res.statusText || 'desconocido'}`);
+            const err = String(data.error || '').toLowerCase();
+            const isQuota = err.includes('quota') || err.includes('billing') || err.includes('insufficient');
+            const friendly = isQuota
+              ? 'El servicio de voz no está disponible ahora. Por favor, escribe tu mensaje.'
+              : 'No pudimos transcribir tu audio. Intenta de nuevo o escríbelo por texto.';
+            alert(friendly);
             setVoiceState('idle');
             return;
           }
@@ -1890,8 +1895,8 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
             alert('La transcripción salió vacía. Intenta hablar más fuerte o más cerca del micrófono.');
             setVoiceState('idle');
           }
-        } catch (err) {
-          alert(`No se pudo conectar al servicio de transcripción: ${err.message || err}`);
+        } catch {
+          alert('No se pudo conectar al servicio de transcripción. Revisa tu conexión e intenta de nuevo.');
           setVoiceState('idle');
         }
       };
