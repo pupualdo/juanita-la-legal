@@ -1231,9 +1231,44 @@ function HeroSection({ onStart }) {
           <p style={{ fontSize: 18, color: "#8fbc8f", marginBottom: 6 }}>
             Te orientamos en buen chileno.
           </p>
-          <p style={{ fontSize: 14, color: "rgba(245,240,232,0.5)", marginBottom: 40 }}>
+          <p style={{ fontSize: 14, color: "rgba(245,240,232,0.5)", marginBottom: 18 }}>
             Primera orientación legal clara, rápida y pagable. $9.990 por consulta.
           </p>
+
+          {/* Banner de marcha blanca con código LANZAMIENTO */}
+          <div style={{
+            marginBottom: 28,
+            background: "linear-gradient(135deg, rgba(200,160,64,0.20) 0%, rgba(200,160,64,0.10) 100%)",
+            border: "1px solid rgba(200,160,64,0.50)",
+            borderRadius: 14,
+            padding: "12px 16px",
+            display: "flex", alignItems: "center", gap: 12,
+            textAlign: "left",
+            boxShadow: "0 4px 16px rgba(200,160,64,0.18)",
+          }}>
+            <span style={{ fontSize: 24, flexShrink: 0 }}>🎉</span>
+            <div style={{ flex: 1, lineHeight: 1.45 }}>
+              <div style={{
+                fontSize: 11, fontWeight: 700, color: "#f0d068",
+                textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 3,
+              }}>
+                Marcha blanca
+              </div>
+              <div style={{ fontSize: 13, color: "rgba(245,240,232,0.95)" }}>
+                Estamos lanzando — usa el código{" "}
+                <strong style={{
+                  background: "rgba(200,160,64,0.35)",
+                  color: "#fff5d9",
+                  padding: "2px 8px",
+                  borderRadius: 5,
+                  fontFamily: "monospace",
+                  letterSpacing: 0.8,
+                  fontSize: 12,
+                }}>LANZAMIENTO</strong>{" "}
+                y obtén <strong style={{ color: "#f0d068" }}>50% de descuento</strong> en tu consulta.
+              </div>
+            </div>
+          </div>
 
           <button data-action="start" onClick={onStart} style={{
             background: "#c8a040", color: "white", border: "none",
