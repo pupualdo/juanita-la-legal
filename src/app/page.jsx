@@ -1250,7 +1250,7 @@ function HeroSection({ onStart }) {
           <div style={{ display: "grid", gap: 8 }}>
             {[
               { icon: "⚖️", text: "Basado en derecho chileno vigente" },
-              { icon: "💬", text: "3 horas de chat con respuestas claras" },
+              { icon: "⚡", text: "Sesión rápida y enfocada · respuestas al toque" },
               { icon: "🤝", text: "Te decimos honestamente cuándo sí necesitas abogado" },
               { icon: "🔒", text: "Sin compromiso ni letra chica · pago único" },
             ].map((item, i) => (
