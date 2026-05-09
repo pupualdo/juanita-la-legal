@@ -545,15 +545,15 @@ function JuanitaMessage({ text, onTermClick, activeTerm }) {
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        p: ({ children }) => <p style={{ margin: '0 0 8px', lineHeight: 1.65 }}>{children}</p>,
-        h2: ({ children }) => <h2 style={{ color: '#1a3a2a', fontSize: 15, fontWeight: 700, margin: '12px 0 6px', lineHeight: 1.3 }}>{children}</h2>,
-        h3: ({ children }) => <h3 style={{ color: '#1a3a2a', fontSize: 14, fontWeight: 600, margin: '10px 0 4px', lineHeight: 1.3 }}>{children}</h3>,
-        ul: ({ children }) => <ul style={{ paddingLeft: 18, margin: '4px 0 8px' }}>{children}</ul>,
-        ol: ({ children }) => <ol style={{ paddingLeft: 18, margin: '4px 0 8px' }}>{children}</ol>,
-        li: ({ children }) => <li style={{ marginBottom: 3, lineHeight: 1.6 }}>{children}</li>,
-        hr: () => <hr style={{ border: 'none', borderTop: '1px solid #e0d8c8', margin: '10px 0' }} />,
+        p: ({ children }) => <p style={{ margin: '0 0 10px', lineHeight: 1.6 }}>{children}</p>,
+        h2: ({ children }) => <h2 style={{ color: '#1a3a2a', fontSize: 18, fontWeight: 700, margin: '14px 0 8px', lineHeight: 1.3 }}>{children}</h2>,
+        h3: ({ children }) => <h3 style={{ color: '#1a3a2a', fontSize: 16, fontWeight: 600, margin: '12px 0 6px', lineHeight: 1.3 }}>{children}</h3>,
+        ul: ({ children }) => <ul style={{ paddingLeft: 20, margin: '4px 0 10px' }}>{children}</ul>,
+        ol: ({ children }) => <ol style={{ paddingLeft: 20, margin: '4px 0 10px' }}>{children}</ol>,
+        li: ({ children }) => <li style={{ marginBottom: 4, lineHeight: 1.6 }}>{children}</li>,
+        hr: () => <hr style={{ border: 'none', borderTop: '1px solid #e0d8c8', margin: '12px 0' }} />,
         strong: LegalStrong,
-        table: ({ children }) => <div style={{ overflowX: 'auto', margin: '8px 0' }}><table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 14 }}>{children}</table></div>,
+        table: ({ children }) => <div style={{ overflowX: 'auto', margin: '8px 0' }}><table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 15 }}>{children}</table></div>,
         th: ({ children }) => <th style={{ background: '#1a3a2a', color: '#fff', padding: '8px 12px', textAlign: 'left', fontWeight: 600 }}>{children}</th>,
         td: ({ children }) => <td style={{ borderBottom: '1px solid #e0d8c8', padding: '8px 12px' }}>{children}</td>,
         tr: ({ children }) => <tr style={{ borderBottom: '1px solid #e0d8c8' }}>{children}</tr>,
@@ -885,13 +885,13 @@ function MessageBubble({ msg, topic, sessionId, onTermClick, activeTerm }) {
           fontSize: 14, flexShrink: 0, marginTop: 2,
         }}>⚖️</div>
       )}
-      <div style={{ maxWidth: "78%", display: "flex", flexDirection: "column" }}>
+      <div style={{ maxWidth: "92%", display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
         <div style={{
-          padding: "10px 14px",
+          padding: "12px 16px",
           background: isJuanita ? "white" : "#1a3a2a",
           color: isJuanita ? "#2a2018" : "#e8f5e2",
           borderRadius: isJuanita ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
-          fontSize: 14, lineHeight: 1.65,
+          fontSize: 16, lineHeight: 1.6,
           boxShadow: isJuanita ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
         }}>
           {isJuanita
@@ -1994,7 +1994,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
               const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
               setUserScrolledUp(!nearBottom);
             }}
-            style={{ height: "100%", overflowY: "auto", padding: "18px 16px", display: "flex", flexDirection: "column", gap: 14 }}
+            style={{ height: "100%", overflowY: "auto", padding: "18px 10px", display: "flex", flexDirection: "column", gap: 14 }}
           >
             <div style={{ maxWidth: 600, margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", gap: 14 }}>
 
