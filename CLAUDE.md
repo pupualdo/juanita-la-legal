@@ -246,7 +246,7 @@ Si se agrega un nuevo dominio externo (CDN, API, font), actualizar el CSP ahí.
 - **Rama:** todo en `master` (no hay PR flow actualmente)
 - **Secrets:** nunca hardcodear, siempre `process.env.VARIABLE`
 - **Classify mock en tests:** retornar `{ tema: 'laboral', resumen: '...' }` — no `topic`
-- **Session duration:** 3 horas (`SESSION_DURATION_MS = 3 * 60 * 60 * 1000`)
+- **Session duration:** El timer visible en el chat son **10 minutos** (`<ConsultTimer totalSeconds={10 * 60} />` en `page.jsx:1900`). La ventana persistida en Supabase (`expires_at`) son **3 horas** (`SESSION_DURATION_MS = 3 * 60 * 60 * 1000` en `webhook-mp`, `verify-payment`, `grant-access`, `dev-session`) — sirve para reconectarse si recargan la página, pero el contador activo es de 10 min.
 
 ---
 

@@ -47,6 +47,139 @@ const TOPIC_KEYWORDS = {
   contratos: ["contrato","incumplimiento","proveedor","consumidor","sernac","garantia producto","reclamo","pagare","letra","cobro"],
 };
 
+const TOPIC_DETAILS = {
+  familia: {
+    incluye: [
+      "Pensión de alimentos: cómo pedirla, calcularla o defenderse de un cobro injusto",
+      "Visitas, régimen comunicacional y cuidado personal de hijos",
+      "Divorcio (de común acuerdo o unilateral) y compensación económica",
+      "Violencia intrafamiliar (VIF) y medidas de protección",
+    ],
+    ejemplos: [
+      "Mi ex no me pasa la pensión hace meses, ¿qué hago?",
+      "Quiero divorciarme y tenemos hijos chicos",
+      "Mi pareja me agredió, necesito una orden de alejamiento",
+    ],
+  },
+  laboral: {
+    incluye: [
+      "Despidos: cuándo son injustificados y qué indemnización corresponde",
+      "Finiquitos, sueldos impagos, cotizaciones y liquidaciones",
+      "Renuncia, contrato de trabajo y horas extras",
+      "Acoso laboral y autodespido",
+    ],
+    ejemplos: [
+      "Me despidieron sin causa y no me pagan finiquito",
+      "Mi jefe no paga cotizaciones hace meses",
+      "Tengo dudas con mi contrato y mis derechos",
+    ],
+  },
+  arriendo: {
+    incluye: [
+      "Garantía no devuelta, deudas de arriendo y cuentas",
+      "Desalojo, término de contrato y plazos",
+      "Daños al inmueble y responsabilidades",
+      "Contratos verbales o sin escritura",
+    ],
+    ejemplos: [
+      "Mi arrendador no me devuelve la garantía",
+      "El arrendatario no paga y no quiere irse",
+      "Quiero terminar mi contrato anticipadamente",
+    ],
+  },
+  herencia: {
+    incluye: [
+      "Posesión efectiva: cómo iniciarla y qué se necesita",
+      "Testamentos, herederos y reparto de bienes",
+      "Conflictos entre herederos y bienes en disputa",
+      "Deudas heredadas y aceptación con beneficio de inventario",
+    ],
+    ejemplos: [
+      "Falleció un familiar, ¿cómo hacemos la posesión efectiva?",
+      "Hay herencia y los herederos no se ponen de acuerdo",
+      "Aparecieron deudas del fallecido, ¿las heredo?",
+    ],
+  },
+  migracion: {
+    incluye: [
+      "Visas, permanencia definitiva y nacionalización",
+      "Regularización migratoria y plazos vencidos",
+      "Rechazos previos, recursos y reconsideraciones",
+      "Trámites en Extranjería y SERMIG",
+    ],
+    ejemplos: [
+      "Tengo visa vencida, ¿cómo regularizo mi situación?",
+      "Me rechazaron la permanencia, ¿qué puedo hacer?",
+      "Quiero traer a mi familia a Chile",
+    ],
+  },
+  terrenos: {
+    incluye: [
+      "Regularización de títulos y posesión efectiva de inmuebles",
+      "Deslindes, servidumbres y conflictos vecinales",
+      "Ocupación ilegal y desalojo",
+      "Inscripción en el Conservador de Bienes Raíces",
+    ],
+    ejemplos: [
+      "Tengo un terreno sin escritura, ¿cómo lo regularizo?",
+      "Hay alguien ocupando mi terreno",
+      "Disputa de deslindes con el vecino",
+    ],
+  },
+  deudas: {
+    incluye: [
+      "Salir de Dicom y boletín comercial",
+      "Renegociación, insolvencia y Ley 20.720 (quiebra de personas)",
+      "Embargos, remates y cobranzas judiciales",
+      "Defensa frente a cobros injustos o prescritos",
+    ],
+    ejemplos: [
+      "Estoy en Dicom y quiero salir, ¿qué opciones tengo?",
+      "Me llegó una demanda de cobranza, ¿qué hago?",
+      "Quiero renegociar mis deudas o ir a insolvencia",
+    ],
+  },
+  empresas: {
+    incluye: [
+      "Constituir empresa: SpA, EIRL, Ltda. y sociedades en un día",
+      "Inicio de actividades en SII y patente municipal",
+      "Facturación, boletas y obligaciones tributarias básicas",
+      "Pacto de socios y temas societarios",
+    ],
+    ejemplos: [
+      "Quiero crear una empresa o pyme en Chile",
+      "Necesito iniciar actividades en el SII",
+      "Voy a abrir negocio con un socio, ¿qué firmamos?",
+    ],
+  },
+  contratos: {
+    incluye: [
+      "Incumplimiento de contratos y reclamos",
+      "Garantía de productos y derechos del consumidor (SERNAC)",
+      "Pagarés, letras y documentos de cobro",
+      "Contratos con proveedores y servicios",
+    ],
+    ejemplos: [
+      "Me vendieron un producto malo y la empresa no responde",
+      "Firmé un contrato y la otra parte no cumple",
+      "Me cobran un pagaré que no reconozco",
+    ],
+  },
+  otros: {
+    incluye: [
+      "Cualquier consulta legal que no encaje en los temas anteriores",
+      "Orientación sobre derechos y trámites en general",
+      "A qué institución dirigirte según tu caso",
+    ],
+    ejemplos: [
+      "Tengo una duda legal y no sé en qué área cae",
+      "¿A dónde voy con este problema?",
+    ],
+  },
+};
+
+const TOPIC_NO_INCLUYE = "Juanita orienta — no representa en tribunales ni firma documentos por ti. Si tu caso necesita un abogado/a, te decimos claramente y te indicamos a dónde acudir (clínicas jurídicas universitarias, Corporación de Asistencia Judicial, etc.).";
+
 const QUESTION_SETS = {
   familia: [
     "¿Cuál es el problema principal? (pensión, visitas, divorcio, VIF u otro)",
@@ -412,15 +545,15 @@ function JuanitaMessage({ text, onTermClick, activeTerm }) {
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        p: ({ children }) => <p style={{ margin: '0 0 8px', lineHeight: 1.65 }}>{children}</p>,
-        h2: ({ children }) => <h2 style={{ color: '#1a3a2a', fontSize: 15, fontWeight: 700, margin: '12px 0 6px', lineHeight: 1.3 }}>{children}</h2>,
-        h3: ({ children }) => <h3 style={{ color: '#1a3a2a', fontSize: 14, fontWeight: 600, margin: '10px 0 4px', lineHeight: 1.3 }}>{children}</h3>,
-        ul: ({ children }) => <ul style={{ paddingLeft: 18, margin: '4px 0 8px' }}>{children}</ul>,
-        ol: ({ children }) => <ol style={{ paddingLeft: 18, margin: '4px 0 8px' }}>{children}</ol>,
-        li: ({ children }) => <li style={{ marginBottom: 3, lineHeight: 1.6 }}>{children}</li>,
-        hr: () => <hr style={{ border: 'none', borderTop: '1px solid #e0d8c8', margin: '10px 0' }} />,
+        p: ({ children }) => <p style={{ margin: '0 0 10px', lineHeight: 1.6 }}>{children}</p>,
+        h2: ({ children }) => <h2 style={{ color: '#1a3a2a', fontSize: 19, fontWeight: 700, margin: '14px 0 8px', lineHeight: 1.3 }}>{children}</h2>,
+        h3: ({ children }) => <h3 style={{ color: '#1a3a2a', fontSize: 17, fontWeight: 600, margin: '12px 0 6px', lineHeight: 1.3 }}>{children}</h3>,
+        ul: ({ children }) => <ul style={{ paddingLeft: 20, margin: '4px 0 10px' }}>{children}</ul>,
+        ol: ({ children }) => <ol style={{ paddingLeft: 20, margin: '4px 0 10px' }}>{children}</ol>,
+        li: ({ children }) => <li style={{ marginBottom: 4, lineHeight: 1.6 }}>{children}</li>,
+        hr: () => <hr style={{ border: 'none', borderTop: '1px solid #e0d8c8', margin: '12px 0' }} />,
         strong: LegalStrong,
-        table: ({ children }) => <div style={{ overflowX: 'auto', margin: '8px 0' }}><table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 14 }}>{children}</table></div>,
+        table: ({ children }) => <div style={{ overflowX: 'auto', margin: '8px 0' }}><table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 16 }}>{children}</table></div>,
         th: ({ children }) => <th style={{ background: '#1a3a2a', color: '#fff', padding: '8px 12px', textAlign: 'left', fontWeight: 600 }}>{children}</th>,
         td: ({ children }) => <td style={{ borderBottom: '1px solid #e0d8c8', padding: '8px 12px' }}>{children}</td>,
         tr: ({ children }) => <tr style={{ borderBottom: '1px solid #e0d8c8' }}>{children}</tr>,
@@ -752,13 +885,13 @@ function MessageBubble({ msg, topic, sessionId, onTermClick, activeTerm }) {
           fontSize: 14, flexShrink: 0, marginTop: 2,
         }}>⚖️</div>
       )}
-      <div style={{ maxWidth: "78%", display: "flex", flexDirection: "column" }}>
+      <div style={{ maxWidth: "94%", display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
         <div style={{
-          padding: "10px 14px",
+          padding: "13px 16px",
           background: isJuanita ? "white" : "#1a3a2a",
           color: isJuanita ? "#2a2018" : "#e8f5e2",
           borderRadius: isJuanita ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
-          fontSize: 14, lineHeight: 1.65,
+          fontSize: 17, lineHeight: 1.6,
           boxShadow: isJuanita ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
         }}>
           {isJuanita
@@ -919,80 +1052,341 @@ function RatingModal({ sessionId, onClose }) {
   );
 }
 
-// ─── HERO ─────────────────────────────────────────────────────────────────────
+// ─── TOPIC DETAIL MODAL ──────────────────────────────────────────────────────
 
-function HeroSection({ onStart }) {
+function TopicDetailModal({ topicKey, onClose, onStart }) {
+  const m = TOPIC_META[topicKey];
+  const details = TOPIC_DETAILS[topicKey];
+  if (!m || !details) return null;
+
   return (
-    <div style={{
-      minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-      position: "relative", overflow: "hidden", padding: "40px 20px",
-    }}>
-      {/* Fondo biblioteca difuso */}
-      <div style={{
-        position: "absolute", inset: 0,
-        backgroundImage: "url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=300&q=20&fm=webp')",
-        backgroundSize: "cover", backgroundPosition: "center",
-        filter: "blur(10px) brightness(0.35)",
-        transform: "scale(1.12)",
-      }} />
-      {/* Overlay oscuro cálido */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "linear-gradient(to bottom, rgba(10,20,15,0.3) 0%, rgba(10,20,15,0.7) 100%)",
-      }} />
-
-      {/* Contenido */}
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 520, textAlign: "center" }}>
-        {/* Avatar circular */}
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 100,
+        background: "rgba(10,20,15,0.72)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 16, animation: "fadeUp 0.18s ease-out",
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: "white", borderRadius: 20, maxWidth: 520, width: "100%",
+          maxHeight: "90vh", overflowY: "auto",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+        }}
+      >
+        {/* Header */}
         <div style={{
-          width: 160, height: 160, borderRadius: "50%",
-          overflow: "hidden",
-          border: "4px solid rgba(255,255,255,0.92)",
-          margin: "0 auto 28px",
-          boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 0 0 8px rgba(255,255,255,0.08)",
+          background: m.bg, borderBottom: `2px solid ${m.border}`,
+          padding: "20px 24px", borderRadius: "20px 20px 0 0",
+          display: "flex", alignItems: "center", gap: 14,
         }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/juanita-avatar.jpg"
-            alt="Juanita La Legal"
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
-          />
+          <div style={{ fontSize: 40 }}>{m.emoji}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: m.color, textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>
+              Tema
+            </div>
+            <div style={{ fontSize: 19, fontWeight: 700, color: "#2a2018", lineHeight: 1.2 }}>
+              {TOPIC_LABELS[topicKey]}
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Cerrar"
+            style={{
+              background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer",
+              width: 32, height: 32, borderRadius: "50%", fontSize: 18, color: "#5a4a3a",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >×</button>
         </div>
 
-        <h1 style={{
-          fontFamily: "var(--font-fraunces), serif", fontSize: 44, fontWeight: 600,
-          color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 8, lineHeight: 1.2,
-        }}>Juanita La Legal</h1>
+        {/* Body */}
+        <div style={{ padding: "20px 24px 8px" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: m.color, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
+            En qué te orienta Juanita
+          </div>
+          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px" }}>
+            {details.incluye.map((item, i) => (
+              <li key={i} style={{ display: "flex", gap: 10, marginBottom: 10, alignItems: "flex-start" }}>
+                <span style={{ color: m.color, fontWeight: 700, fontSize: 15, flexShrink: 0, lineHeight: 1.5 }}>✓</span>
+                <span style={{ fontSize: 15, color: "#2a2018", lineHeight: 1.55 }}>{item}</span>
+              </li>
+            ))}
+          </ul>
 
-        <p style={{ fontSize: 18, color: "#8fbc8f", marginBottom: 6 }}>
-          Te orientamos en buen chileno.
-        </p>
-        <p style={{ fontSize: 14, color: "rgba(245,240,232,0.5)", marginBottom: 40 }}>
-          Primera orientación legal clara, rápida y pagable. $9.990 por consulta.
-        </p>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#5a4a3a", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
+            Ejemplos típicos
+          </div>
+          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px" }}>
+            {details.ejemplos.map((item, i) => (
+              <li key={i} style={{
+                background: "#faf6ee", border: "1px solid #ece4d4", borderRadius: 10,
+                padding: "10px 12px", marginBottom: 8,
+                fontSize: 14, color: "#3a3028", lineHeight: 1.5, fontStyle: "italic",
+              }}>
+                "{item}"
+              </li>
+            ))}
+          </ul>
 
-        <button data-action="start" onClick={onStart} style={{
-          background: "#c8a040", color: "white", border: "none",
-          borderRadius: 16, padding: "14px 36px", fontSize: 16, fontWeight: 600,
-          cursor: "pointer", boxShadow: "0 8px 24px rgba(200,160,64,0.35)",
-          transition: "transform 0.15s",
-        }}
-          onMouseEnter={e => e.target.style.transform = "scale(1.03)"}
-          onMouseLeave={e => e.target.style.transform = "scale(1)"}
-        >
-          Iniciar consulta
-        </button>
+          <div style={{
+            background: "#f5f1ea", border: "1px solid #e0d5c0", borderRadius: 10,
+            padding: "12px 14px", marginBottom: 4,
+            fontSize: 13, color: "#5a4a3a", lineHeight: 1.55,
+          }}>
+            <strong style={{ color: "#3a3028" }}>Importante:</strong> {TOPIC_NO_INCLUYE}
+          </div>
+        </div>
 
-        <div style={{ marginTop: 24, display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-          {Object.entries(TOPIC_META).map(([k, m]) => (
-            <span key={k} style={{
-              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: 20, padding: "3px 10px", fontSize: 11, color: "rgba(245,240,232,0.6)",
-            }}>{m.emoji} {TOPIC_LABELS[k]}</span>
-          ))}
+        {/* Footer / CTA */}
+        <div style={{
+          padding: "16px 24px 20px",
+          borderTop: "1px solid #f0eadf",
+          display: "flex", gap: 10,
+        }}>
+          <button
+            onClick={onClose}
+            style={{
+              flex: "0 0 auto", background: "transparent", border: "1.5px solid #d8cfc0",
+              color: "#6a5e50", borderRadius: 12, padding: "12px 18px",
+              fontSize: 14, fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            Volver
+          </button>
+          <button
+            onClick={onStart}
+            style={{
+              flex: 1, background: "#1a3a2a", color: "white", border: "none",
+              borderRadius: 12, padding: "12px 18px",
+              fontSize: 15, fontWeight: 600, cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(26,58,42,0.25)",
+            }}
+          >
+            Consultar sobre {TOPIC_LABELS[topicKey].toLowerCase()}
+          </button>
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── HERO ─────────────────────────────────────────────────────────────────────
+
+function HeroSection({ onStart }) {
+  const [openTopic, setOpenTopic] = useState(null);
+  const aboutRef = useRef(null);
+
+  const scrollToAbout = () => {
+    aboutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  return (
+    <>
+      {/* HERO — diseño original mantenido */}
+      <div style={{
+        minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+        position: "relative", overflow: "hidden", padding: "40px 20px",
+      }}>
+        {/* Fondo biblioteca difuso */}
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=60&fm=webp')",
+          backgroundSize: "cover", backgroundPosition: "center",
+          filter: "blur(8px) brightness(0.35) saturate(1.1)",
+          transform: "scale(1.12)",
+        }} />
+        {/* Overlay oscuro cálido */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to bottom, rgba(15,30,22,0.45) 0%, rgba(10,20,15,0.75) 100%)",
+        }} />
+
+        {/* Contenido */}
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 520, textAlign: "center" }}>
+          {/* Avatar circular */}
+          <div style={{
+            width: 160, height: 160, borderRadius: "50%",
+            overflow: "hidden",
+            border: "4px solid rgba(255,255,255,0.92)",
+            margin: "0 auto 28px",
+            boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 0 0 8px rgba(255,255,255,0.08)",
+          }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/juanita-avatar.jpg"
+              alt="Juanita La Legal"
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+            />
+          </div>
+
+          <h1 style={{
+            fontFamily: "var(--font-fraunces), serif", fontSize: 44, fontWeight: 600,
+            color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 8, lineHeight: 1.2,
+          }}>Juanita La Legal</h1>
+
+          <p style={{ fontSize: 18, color: "#8fbc8f", marginBottom: 6 }}>
+            Te orientamos en buen chileno.
+          </p>
+          <p style={{ fontSize: 14, color: "rgba(245,240,232,0.5)", marginBottom: 40 }}>
+            Primera orientación legal clara, rápida y pagable. $9.990 por consulta.
+          </p>
+
+          <button data-action="start" onClick={onStart} style={{
+            background: "#c8a040", color: "white", border: "none",
+            borderRadius: 16, padding: "14px 36px", fontSize: 16, fontWeight: 600,
+            cursor: "pointer", boxShadow: "0 8px 24px rgba(200,160,64,0.35)",
+            transition: "transform 0.15s",
+          }}
+            onMouseEnter={e => e.target.style.transform = "scale(1.03)"}
+            onMouseLeave={e => e.target.style.transform = "scale(1)"}
+          >
+            Iniciar consulta
+          </button>
+
+          {/* Label instructivo */}
+          <div style={{
+            marginTop: 32, marginBottom: 14,
+            fontSize: 13, color: "rgba(245,240,232,0.85)",
+            fontWeight: 500, letterSpacing: 0.3,
+          }}>
+            👇 Toca un tema para ver qué incluye y ejemplos de consultas
+          </div>
+
+          {/* Chips clickeables — visualmente obvios */}
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+            {Object.entries(TOPIC_META).map(([k, m]) => (
+              <button
+                key={k}
+                onClick={() => setOpenTopic(k)}
+                style={{
+                  background: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(255,255,255,0.28)",
+                  borderRadius: 22, padding: "8px 14px 8px 12px", fontSize: 14,
+                  color: "rgba(245,240,232,0.95)", cursor: "pointer",
+                  fontFamily: "inherit", fontWeight: 500,
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  transition: "background 0.15s, transform 0.15s, border-color 0.15s",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.20)";
+                  e.currentTarget.style.borderColor = "rgba(200,160,64,0.6)";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.12)";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.28)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                <span>{m.emoji}</span>
+                <span>{TOPIC_LABELS[k]}</span>
+                <span style={{
+                  fontSize: 11, opacity: 0.7, marginLeft: 2,
+                  fontWeight: 700,
+                }}>›</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Discreto: invita a saber más */}
+          <button
+            onClick={scrollToAbout}
+            style={{
+              marginTop: 28, background: "transparent", border: "none",
+              color: "rgba(245,240,232,0.45)", fontSize: 12, cursor: "pointer",
+              fontFamily: "inherit", letterSpacing: 0.5,
+              display: "inline-flex", alignItems: "center", gap: 6,
+            }}
+          >
+            ¿Qué es Juanita? <span style={{ fontSize: 14 }}>↓</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ABOUT — nueva sección debajo del hero */}
+      <div ref={aboutRef} style={{
+        background: "linear-gradient(to bottom, #faf8f4 0%, #f0ece2 100%)",
+        padding: "64px 20px",
+      }}>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div style={{
+            fontSize: 12, fontWeight: 700, color: "#c8a040", textTransform: "uppercase",
+            letterSpacing: 1.5, marginBottom: 14, textAlign: "center",
+          }}>
+            ¿Qué es Juanita?
+          </div>
+          <h2 style={{
+            fontFamily: "var(--font-fraunces), serif", fontSize: 28, fontWeight: 600,
+            color: "#1a3a2a", textAlign: "center", marginBottom: 18, lineHeight: 1.25,
+          }}>
+            Tu primera puerta a la orientación legal en Chile
+          </h2>
+          <p style={{
+            fontSize: 16, color: "#3a3028", lineHeight: 1.65, textAlign: "center",
+            marginBottom: 36,
+          }}>
+            Te explicamos tus derechos en buen chileno, te ordenamos los pasos a seguir y te decimos cuándo necesitas un abogado de verdad.
+          </p>
+
+          <div style={{ display: "grid", gap: 14, marginBottom: 36 }}>
+            {[
+              { icon: "⚖️", title: "Basado en derecho chileno vigente", text: "Información actualizada de leyes y procedimientos en Chile." },
+              { icon: "⚡", title: "Sesión rápida y enfocada", text: "Respuestas al toque, sin esperas ni vueltas." },
+              { icon: "🤝", title: "Honestos contigo", text: "Si tu caso necesita un abogado/a, te lo decimos claramente." },
+              { icon: "🔒", title: "Sin letra chica", text: "Pago único de $9.990. Sin suscripciones ni compromisos." },
+            ].map((item, i) => (
+              <div key={i} style={{
+                background: "white", borderRadius: 14, padding: "16px 18px",
+                display: "flex", gap: 14, alignItems: "flex-start",
+                border: "1px solid #ece4d4",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+              }}>
+                <div style={{
+                  fontSize: 24, flexShrink: 0, width: 44, height: 44,
+                  borderRadius: "50%", background: "#f5f1ea",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>{item.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#1a3a2a", marginBottom: 4 }}>
+                    {item.title}
+                  </div>
+                  <div style={{ fontSize: 14, color: "#5a4a3a", lineHeight: 1.5 }}>
+                    {item.text}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: "center" }}>
+            <button onClick={onStart} style={{
+              background: "#1a3a2a", color: "white", border: "none",
+              borderRadius: 14, padding: "14px 32px", fontSize: 15, fontWeight: 600,
+              cursor: "pointer", boxShadow: "0 4px 12px rgba(26,58,42,0.2)",
+              fontFamily: "inherit",
+            }}>
+              Iniciar mi consulta
+            </button>
+            <div style={{ marginTop: 14, fontSize: 12, color: "#8a7a68" }}>
+              Toca cualquier tema arriba para ver qué incluye antes de pagar.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {openTopic && (
+        <TopicDetailModal
+          topicKey={openTopic}
+          onClose={() => setOpenTopic(null)}
+          onStart={() => { setOpenTopic(null); onStart(); }}
+        />
+      )}
+    </>
   );
 }
 
@@ -1474,18 +1868,35 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
         stream.getTracks().forEach(t => t.stop());
         setVoiceState('transcribing');
         const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        if (blob.size === 0) {
+          alert('No se grabó audio. Intenta de nuevo y habla más cerca del micrófono.');
+          setVoiceState('idle');
+          return;
+        }
         const fd = new FormData();
         fd.append('audio', blob, mimeType === 'audio/webm' ? 'recording.webm' : 'recording.mp4');
         try {
           const res = await fetch('/api/transcribe', { method: 'POST', body: fd });
-          const data = await res.json();
-          if (data.text) {
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            const err = String(data.error || '').toLowerCase();
+            const isQuota = err.includes('quota') || err.includes('billing') || err.includes('insufficient');
+            const friendly = isQuota
+              ? 'El servicio de voz no está disponible ahora. Por favor, escribe tu mensaje.'
+              : 'No pudimos transcribir tu audio. Intenta de nuevo o escríbelo por texto.';
+            alert(friendly);
+            setVoiceState('idle');
+            return;
+          }
+          if (data.text && data.text.trim()) {
             setEditableTranscript(data.text);
             setVoiceState('reviewing');
           } else {
+            alert('La transcripción salió vacía. Intenta hablar más fuerte o más cerca del micrófono.');
             setVoiceState('idle');
           }
         } catch {
+          alert('No se pudo conectar al servicio de transcripción. Revisa tu conexión e intenta de nuevo.');
           setVoiceState('idle');
         }
       };
@@ -1618,7 +2029,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
               const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
               setUserScrolledUp(!nearBottom);
             }}
-            style={{ height: "100%", overflowY: "auto", padding: "18px 16px", display: "flex", flexDirection: "column", gap: 14 }}
+            style={{ height: "100%", overflowY: "auto", padding: "18px 10px", display: "flex", flexDirection: "column", gap: 14 }}
           >
             <div style={{ maxWidth: 600, margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", gap: 14 }}>
 
