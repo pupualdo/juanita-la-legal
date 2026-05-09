@@ -47,6 +47,139 @@ const TOPIC_KEYWORDS = {
   contratos: ["contrato","incumplimiento","proveedor","consumidor","sernac","garantia producto","reclamo","pagare","letra","cobro"],
 };
 
+const TOPIC_DETAILS = {
+  familia: {
+    incluye: [
+      "Pensión de alimentos: cómo pedirla, calcularla o defenderse de un cobro injusto",
+      "Visitas, régimen comunicacional y cuidado personal de hijos",
+      "Divorcio (de común acuerdo o unilateral) y compensación económica",
+      "Violencia intrafamiliar (VIF) y medidas de protección",
+    ],
+    ejemplos: [
+      "Mi ex no me pasa la pensión hace meses, ¿qué hago?",
+      "Quiero divorciarme y tenemos hijos chicos",
+      "Mi pareja me agredió, necesito una orden de alejamiento",
+    ],
+  },
+  laboral: {
+    incluye: [
+      "Despidos: cuándo son injustificados y qué indemnización corresponde",
+      "Finiquitos, sueldos impagos, cotizaciones y liquidaciones",
+      "Renuncia, contrato de trabajo y horas extras",
+      "Acoso laboral y autodespido",
+    ],
+    ejemplos: [
+      "Me despidieron sin causa y no me pagan finiquito",
+      "Mi jefe no paga cotizaciones hace meses",
+      "Tengo dudas con mi contrato y mis derechos",
+    ],
+  },
+  arriendo: {
+    incluye: [
+      "Garantía no devuelta, deudas de arriendo y cuentas",
+      "Desalojo, término de contrato y plazos",
+      "Daños al inmueble y responsabilidades",
+      "Contratos verbales o sin escritura",
+    ],
+    ejemplos: [
+      "Mi arrendador no me devuelve la garantía",
+      "El arrendatario no paga y no quiere irse",
+      "Quiero terminar mi contrato anticipadamente",
+    ],
+  },
+  herencia: {
+    incluye: [
+      "Posesión efectiva: cómo iniciarla y qué se necesita",
+      "Testamentos, herederos y reparto de bienes",
+      "Conflictos entre herederos y bienes en disputa",
+      "Deudas heredadas y aceptación con beneficio de inventario",
+    ],
+    ejemplos: [
+      "Falleció un familiar, ¿cómo hacemos la posesión efectiva?",
+      "Hay herencia y los herederos no se ponen de acuerdo",
+      "Aparecieron deudas del fallecido, ¿las heredo?",
+    ],
+  },
+  migracion: {
+    incluye: [
+      "Visas, permanencia definitiva y nacionalización",
+      "Regularización migratoria y plazos vencidos",
+      "Rechazos previos, recursos y reconsideraciones",
+      "Trámites en Extranjería y SERMIG",
+    ],
+    ejemplos: [
+      "Tengo visa vencida, ¿cómo regularizo mi situación?",
+      "Me rechazaron la permanencia, ¿qué puedo hacer?",
+      "Quiero traer a mi familia a Chile",
+    ],
+  },
+  terrenos: {
+    incluye: [
+      "Regularización de títulos y posesión efectiva de inmuebles",
+      "Deslindes, servidumbres y conflictos vecinales",
+      "Ocupación ilegal y desalojo",
+      "Inscripción en el Conservador de Bienes Raíces",
+    ],
+    ejemplos: [
+      "Tengo un terreno sin escritura, ¿cómo lo regularizo?",
+      "Hay alguien ocupando mi terreno",
+      "Disputa de deslindes con el vecino",
+    ],
+  },
+  deudas: {
+    incluye: [
+      "Salir de Dicom y boletín comercial",
+      "Renegociación, insolvencia y Ley 20.720 (quiebra de personas)",
+      "Embargos, remates y cobranzas judiciales",
+      "Defensa frente a cobros injustos o prescritos",
+    ],
+    ejemplos: [
+      "Estoy en Dicom y quiero salir, ¿qué opciones tengo?",
+      "Me llegó una demanda de cobranza, ¿qué hago?",
+      "Quiero renegociar mis deudas o ir a insolvencia",
+    ],
+  },
+  empresas: {
+    incluye: [
+      "Constituir empresa: SpA, EIRL, Ltda. y sociedades en un día",
+      "Inicio de actividades en SII y patente municipal",
+      "Facturación, boletas y obligaciones tributarias básicas",
+      "Pacto de socios y temas societarios",
+    ],
+    ejemplos: [
+      "Quiero crear una empresa o pyme en Chile",
+      "Necesito iniciar actividades en el SII",
+      "Voy a abrir negocio con un socio, ¿qué firmamos?",
+    ],
+  },
+  contratos: {
+    incluye: [
+      "Incumplimiento de contratos y reclamos",
+      "Garantía de productos y derechos del consumidor (SERNAC)",
+      "Pagarés, letras y documentos de cobro",
+      "Contratos con proveedores y servicios",
+    ],
+    ejemplos: [
+      "Me vendieron un producto malo y la empresa no responde",
+      "Firmé un contrato y la otra parte no cumple",
+      "Me cobran un pagaré que no reconozco",
+    ],
+  },
+  otros: {
+    incluye: [
+      "Cualquier consulta legal que no encaje en los temas anteriores",
+      "Orientación sobre derechos y trámites en general",
+      "A qué institución dirigirte según tu caso",
+    ],
+    ejemplos: [
+      "Tengo una duda legal y no sé en qué área cae",
+      "¿A dónde voy con este problema?",
+    ],
+  },
+};
+
+const TOPIC_NO_INCLUYE = "Juanita orienta — no representa en tribunales ni firma documentos por ti. Si tu caso necesita un abogado/a, te decimos claramente y te indicamos a dónde acudir (clínicas jurídicas universitarias, Corporación de Asistencia Judicial, etc.).";
+
 const QUESTION_SETS = {
   familia: [
     "¿Cuál es el problema principal? (pensión, visitas, divorcio, VIF u otro)",
@@ -919,9 +1052,133 @@ function RatingModal({ sessionId, onClose }) {
   );
 }
 
+// ─── TOPIC DETAIL MODAL ──────────────────────────────────────────────────────
+
+function TopicDetailModal({ topicKey, onClose, onStart }) {
+  const m = TOPIC_META[topicKey];
+  const details = TOPIC_DETAILS[topicKey];
+  if (!m || !details) return null;
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 100,
+        background: "rgba(10,20,15,0.72)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 16, animation: "fadeUp 0.18s ease-out",
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: "white", borderRadius: 20, maxWidth: 520, width: "100%",
+          maxHeight: "90vh", overflowY: "auto",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          background: m.bg, borderBottom: `2px solid ${m.border}`,
+          padding: "20px 24px", borderRadius: "20px 20px 0 0",
+          display: "flex", alignItems: "center", gap: 14,
+        }}>
+          <div style={{ fontSize: 40 }}>{m.emoji}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: m.color, textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>
+              Tema
+            </div>
+            <div style={{ fontSize: 19, fontWeight: 700, color: "#2a2018", lineHeight: 1.2 }}>
+              {TOPIC_LABELS[topicKey]}
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Cerrar"
+            style={{
+              background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer",
+              width: 32, height: 32, borderRadius: "50%", fontSize: 18, color: "#5a4a3a",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >×</button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: "20px 24px 8px" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: m.color, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
+            En qué te orienta Juanita
+          </div>
+          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px" }}>
+            {details.incluye.map((item, i) => (
+              <li key={i} style={{ display: "flex", gap: 10, marginBottom: 10, alignItems: "flex-start" }}>
+                <span style={{ color: m.color, fontWeight: 700, fontSize: 15, flexShrink: 0, lineHeight: 1.5 }}>✓</span>
+                <span style={{ fontSize: 15, color: "#2a2018", lineHeight: 1.55 }}>{item}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#5a4a3a", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
+            Ejemplos típicos
+          </div>
+          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px" }}>
+            {details.ejemplos.map((item, i) => (
+              <li key={i} style={{
+                background: "#faf6ee", border: "1px solid #ece4d4", borderRadius: 10,
+                padding: "10px 12px", marginBottom: 8,
+                fontSize: 14, color: "#3a3028", lineHeight: 1.5, fontStyle: "italic",
+              }}>
+                "{item}"
+              </li>
+            ))}
+          </ul>
+
+          <div style={{
+            background: "#f5f1ea", border: "1px solid #e0d5c0", borderRadius: 10,
+            padding: "12px 14px", marginBottom: 4,
+            fontSize: 13, color: "#5a4a3a", lineHeight: 1.55,
+          }}>
+            <strong style={{ color: "#3a3028" }}>Importante:</strong> {TOPIC_NO_INCLUYE}
+          </div>
+        </div>
+
+        {/* Footer / CTA */}
+        <div style={{
+          padding: "16px 24px 20px",
+          borderTop: "1px solid #f0eadf",
+          display: "flex", gap: 10,
+        }}>
+          <button
+            onClick={onClose}
+            style={{
+              flex: "0 0 auto", background: "transparent", border: "1.5px solid #d8cfc0",
+              color: "#6a5e50", borderRadius: 12, padding: "12px 18px",
+              fontSize: 14, fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            Volver
+          </button>
+          <button
+            onClick={onStart}
+            style={{
+              flex: 1, background: "#1a3a2a", color: "white", border: "none",
+              borderRadius: 12, padding: "12px 18px",
+              fontSize: 15, fontWeight: 600, cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(26,58,42,0.25)",
+            }}
+          >
+            Consultar sobre {TOPIC_LABELS[topicKey].toLowerCase()}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── HERO ─────────────────────────────────────────────────────────────────────
 
 function HeroSection({ onStart }) {
+  const [openTopic, setOpenTopic] = useState(null);
+
   return (
     <div style={{
       minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
@@ -942,13 +1199,13 @@ function HeroSection({ onStart }) {
       }} />
 
       {/* Contenido */}
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 520, textAlign: "center" }}>
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 560, textAlign: "center", width: "100%" }}>
         {/* Avatar circular */}
         <div style={{
           width: 160, height: 160, borderRadius: "50%",
           overflow: "hidden",
           border: "4px solid rgba(255,255,255,0.92)",
-          margin: "0 auto 28px",
+          margin: "0 auto 24px",
           boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 0 0 8px rgba(255,255,255,0.08)",
         }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -961,19 +1218,55 @@ function HeroSection({ onStart }) {
 
         <h1 style={{
           fontFamily: "var(--font-fraunces), serif", fontSize: 44, fontWeight: 600,
-          color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 8, lineHeight: 1.2,
+          color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 10, lineHeight: 1.2,
         }}>Juanita La Legal</h1>
 
-        <p style={{ fontSize: 18, color: "#8fbc8f", marginBottom: 6 }}>
+        <p style={{ fontSize: 19, color: "#8fbc8f", marginBottom: 8, fontWeight: 500 }}>
           Te orientamos en buen chileno.
         </p>
-        <p style={{ fontSize: 14, color: "rgba(245,240,232,0.5)", marginBottom: 40 }}>
+        <p style={{ fontSize: 16, color: "rgba(245,240,232,0.7)", marginBottom: 28, lineHeight: 1.5 }}>
           Primera orientación legal clara, rápida y pagable. $9.990 por consulta.
         </p>
 
+        {/* Reseña: ¿Qué es Juanita? */}
+        <div style={{
+          background: "rgba(255,255,255,0.06)",
+          border: "1px solid rgba(255,255,255,0.12)",
+          borderRadius: 16,
+          padding: "18px 20px",
+          marginBottom: 28,
+          textAlign: "left",
+          backdropFilter: "blur(4px)",
+        }}>
+          <div style={{
+            fontSize: 12, fontWeight: 700, color: "#c8a040", textTransform: "uppercase", letterSpacing: 1.2,
+            marginBottom: 10, textAlign: "center",
+          }}>
+            ¿Qué es Juanita?
+          </div>
+          <p style={{ fontSize: 15, color: "rgba(245,240,232,0.92)", lineHeight: 1.6, marginBottom: 14 }}>
+            Juanita es tu primera puerta a la orientación legal en Chile. Te explicamos tus derechos en buen chileno, te ordenamos los pasos a seguir y te decimos cuándo necesitas un abogado de verdad.
+          </p>
+          <div style={{ display: "grid", gap: 8 }}>
+            {[
+              { icon: "⚖️", text: "Basado en derecho chileno vigente" },
+              { icon: "💬", text: "3 horas de chat con respuestas claras" },
+              { icon: "🤝", text: "Te decimos honestamente cuándo sí necesitas abogado" },
+              { icon: "🔒", text: "Sin compromiso ni letra chica · pago único" },
+            ].map((item, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
+                <span style={{ fontSize: 14, color: "rgba(245,240,232,0.85)", lineHeight: 1.45 }}>
+                  {item.text}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <button data-action="start" onClick={onStart} style={{
           background: "#c8a040", color: "white", border: "none",
-          borderRadius: 16, padding: "14px 36px", fontSize: 16, fontWeight: 600,
+          borderRadius: 16, padding: "16px 40px", fontSize: 17, fontWeight: 600,
           cursor: "pointer", boxShadow: "0 8px 24px rgba(200,160,64,0.35)",
           transition: "transform 0.15s",
         }}
@@ -983,15 +1276,50 @@ function HeroSection({ onStart }) {
           Iniciar consulta
         </button>
 
-        <div style={{ marginTop: 24, display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-          {Object.entries(TOPIC_META).map(([k, m]) => (
-            <span key={k} style={{
-              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: 20, padding: "3px 10px", fontSize: 11, color: "rgba(245,240,232,0.6)",
-            }}>{m.emoji} {TOPIC_LABELS[k]}</span>
-          ))}
+        {/* Temas en los que orientamos */}
+        <div style={{ marginTop: 32 }}>
+          <div style={{
+            fontSize: 12, fontWeight: 700, color: "rgba(245,240,232,0.55)",
+            textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12,
+          }}>
+            Temas en los que orientamos · toca para ver detalle
+          </div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+            {Object.entries(TOPIC_META).map(([k, m]) => (
+              <button
+                key={k}
+                onClick={() => setOpenTopic(k)}
+                style={{
+                  background: "rgba(255,255,255,0.10)",
+                  border: "1px solid rgba(255,255,255,0.20)",
+                  borderRadius: 22, padding: "8px 14px", fontSize: 13,
+                  color: "rgba(245,240,232,0.92)", cursor: "pointer",
+                  fontFamily: "inherit", fontWeight: 500,
+                  transition: "background 0.15s, transform 0.15s",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.18)";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.10)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                {m.emoji} {TOPIC_LABELS[k]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+
+      {openTopic && (
+        <TopicDetailModal
+          topicKey={openTopic}
+          onClose={() => setOpenTopic(null)}
+          onStart={() => { setOpenTopic(null); onStart(); }}
+        />
+      )}
     </div>
   );
 }
