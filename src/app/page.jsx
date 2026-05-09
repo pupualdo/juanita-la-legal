@@ -546,14 +546,14 @@ function JuanitaMessage({ text, onTermClick, activeTerm }) {
       remarkPlugins={[remarkGfm]}
       components={{
         p: ({ children }) => <p style={{ margin: '0 0 10px', lineHeight: 1.6 }}>{children}</p>,
-        h2: ({ children }) => <h2 style={{ color: '#1a3a2a', fontSize: 18, fontWeight: 700, margin: '14px 0 8px', lineHeight: 1.3 }}>{children}</h2>,
-        h3: ({ children }) => <h3 style={{ color: '#1a3a2a', fontSize: 16, fontWeight: 600, margin: '12px 0 6px', lineHeight: 1.3 }}>{children}</h3>,
+        h2: ({ children }) => <h2 style={{ color: '#1a3a2a', fontSize: 19, fontWeight: 700, margin: '14px 0 8px', lineHeight: 1.3 }}>{children}</h2>,
+        h3: ({ children }) => <h3 style={{ color: '#1a3a2a', fontSize: 17, fontWeight: 600, margin: '12px 0 6px', lineHeight: 1.3 }}>{children}</h3>,
         ul: ({ children }) => <ul style={{ paddingLeft: 20, margin: '4px 0 10px' }}>{children}</ul>,
         ol: ({ children }) => <ol style={{ paddingLeft: 20, margin: '4px 0 10px' }}>{children}</ol>,
         li: ({ children }) => <li style={{ marginBottom: 4, lineHeight: 1.6 }}>{children}</li>,
         hr: () => <hr style={{ border: 'none', borderTop: '1px solid #e0d8c8', margin: '12px 0' }} />,
         strong: LegalStrong,
-        table: ({ children }) => <div style={{ overflowX: 'auto', margin: '8px 0' }}><table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 15 }}>{children}</table></div>,
+        table: ({ children }) => <div style={{ overflowX: 'auto', margin: '8px 0' }}><table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 16 }}>{children}</table></div>,
         th: ({ children }) => <th style={{ background: '#1a3a2a', color: '#fff', padding: '8px 12px', textAlign: 'left', fontWeight: 600 }}>{children}</th>,
         td: ({ children }) => <td style={{ borderBottom: '1px solid #e0d8c8', padding: '8px 12px' }}>{children}</td>,
         tr: ({ children }) => <tr style={{ borderBottom: '1px solid #e0d8c8' }}>{children}</tr>,
@@ -885,13 +885,13 @@ function MessageBubble({ msg, topic, sessionId, onTermClick, activeTerm }) {
           fontSize: 14, flexShrink: 0, marginTop: 2,
         }}>⚖️</div>
       )}
-      <div style={{ maxWidth: "92%", display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
+      <div style={{ maxWidth: "94%", display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
         <div style={{
-          padding: "12px 16px",
+          padding: "13px 16px",
           background: isJuanita ? "white" : "#1a3a2a",
           color: isJuanita ? "#2a2018" : "#e8f5e2",
           borderRadius: isJuanita ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
-          fontSize: 16, lineHeight: 1.6,
+          fontSize: 17, lineHeight: 1.6,
           boxShadow: isJuanita ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
         }}>
           {isJuanita
@@ -1247,30 +1247,48 @@ function HeroSection({ onStart }) {
             Iniciar consulta
           </button>
 
-          {/* Chips clickeables — estilo minimalista original */}
-          <div style={{ marginTop: 24, display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+          {/* Label instructivo */}
+          <div style={{
+            marginTop: 32, marginBottom: 14,
+            fontSize: 13, color: "rgba(245,240,232,0.85)",
+            fontWeight: 500, letterSpacing: 0.3,
+          }}>
+            👇 Toca un tema para ver qué incluye y ejemplos de consultas
+          </div>
+
+          {/* Chips clickeables — visualmente obvios */}
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
             {Object.entries(TOPIC_META).map(([k, m]) => (
               <button
                 key={k}
                 onClick={() => setOpenTopic(k)}
                 style={{
-                  background: "rgba(255,255,255,0.07)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  borderRadius: 20, padding: "3px 10px", fontSize: 11,
-                  color: "rgba(245,240,232,0.6)", cursor: "pointer",
-                  fontFamily: "inherit",
-                  transition: "background 0.15s, color 0.15s",
+                  background: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(255,255,255,0.28)",
+                  borderRadius: 22, padding: "8px 14px 8px 12px", fontSize: 14,
+                  color: "rgba(245,240,232,0.95)", cursor: "pointer",
+                  fontFamily: "inherit", fontWeight: 500,
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  transition: "background 0.15s, transform 0.15s, border-color 0.15s",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.14)";
-                  e.currentTarget.style.color = "rgba(245,240,232,0.9)";
+                  e.currentTarget.style.background = "rgba(255,255,255,0.20)";
+                  e.currentTarget.style.borderColor = "rgba(200,160,64,0.6)";
+                  e.currentTarget.style.transform = "translateY(-1px)";
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.07)";
-                  e.currentTarget.style.color = "rgba(245,240,232,0.6)";
+                  e.currentTarget.style.background = "rgba(255,255,255,0.12)";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.28)";
+                  e.currentTarget.style.transform = "translateY(0)";
                 }}
               >
-                {m.emoji} {TOPIC_LABELS[k]}
+                <span>{m.emoji}</span>
+                <span>{TOPIC_LABELS[k]}</span>
+                <span style={{
+                  fontSize: 11, opacity: 0.7, marginLeft: 2,
+                  fontWeight: 700,
+                }}>›</span>
               </button>
             ))}
           </div>
