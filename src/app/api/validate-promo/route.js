@@ -1,38 +1,51 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-// Fallback codes (always valid, even if Supabase is down)
+// Fallback hardcoded (por si Supabase no está disponible)
 const FALLBACK_CODES = {
-  AMIGOS2026:  { discount: 100, label: '100% gratis' },
-  LANZAMIENTO: { discount: 50,  label: '50% descuento' },
-  JUANITA10:   { discount: 10,  label: '10% descuento' },
+  AMIGOS2026:  { discount: 100 },
+  LANZAMIENTO: { discount: 50 },
+  JUANITA10:   { discount: 10 },
 };
 
 export async function POST(request) {
   const { code } = await request.json();
   const clean = String(code).toUpperCase().trim();
 
-  // 1. Try Supabase promo_codes table
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
     try {
       const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+
       const { data } = await supabase
         .from('promo_codes')
-        .select('discount, label, active')
+        .select('discount, max_uses, used_count, session_minutes')
         .eq('code', clean)
         .single();
 
       if (data) {
-        if (!data.active) return NextResponse.json({ valid: false });
-        return NextResponse.json({ valid: true, discount: data.discount, label: data.label });
+        // Código agotado (max_uses 0 = sin límite, 9999 = ilimitado en UI)
+        if (data.max_uses > 0 && data.max_uses < 9999 && data.used_count >= data.max_uses) {
+          return NextResponse.json({ valid: false, reason: 'agotado' });
+        }
+
+        // Incrementar contador de usos (best-effort)
+        supabase
+          .from('promo_codes')
+          .update({ used_count: (data.used_count ?? 0) + 1 })
+          .eq('code', clean)
+          .then(() => {});
+
+        const label = data.discount === 100 ? '100% gratis' : `${data.discount}% descuento`;
+        return NextResponse.json({ valid: true, discount: data.discount, label });
       }
     } catch {
-      // Supabase unavailable — fall through to hardcoded list
+      // Supabase no disponible — usar fallback
     }
   }
 
-  // 2. Fallback to hardcoded list
+  // Fallback hardcoded
   const entry = FALLBACK_CODES[clean];
   if (!entry) return NextResponse.json({ valid: false });
-  return NextResponse.json({ valid: true, discount: entry.discount, label: entry.label });
+  const label = entry.discount === 100 ? '100% gratis' : `${entry.discount}% descuento`;
+  return NextResponse.json({ valid: true, discount: entry.discount, label });
 }
