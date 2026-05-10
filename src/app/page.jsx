@@ -1083,12 +1083,12 @@ function TopicDetailModal({ topicKey, onClose, onStart }) {
           padding: "20px 24px", borderRadius: "20px 20px 0 0",
           display: "flex", alignItems: "center", gap: 14,
         }}>
-          <div style={{ fontSize: 40 }}>{m.emoji}</div>
+          <div style={{ fontSize: 42 }}>{m.emoji}</div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: m.color, textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: m.color, textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 }}>
               Tema
             </div>
-            <div style={{ fontSize: 19, fontWeight: 700, color: "#2a2018", lineHeight: 1.2 }}>
+            <div style={{ fontSize: 21, fontWeight: 700, color: "#2a2018", lineHeight: 1.2 }}>
               {TOPIC_LABELS[topicKey]}
             </div>
           </div>
@@ -1105,27 +1105,27 @@ function TopicDetailModal({ topicKey, onClose, onStart }) {
 
         {/* Body */}
         <div style={{ padding: "20px 24px 8px" }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: m.color, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: m.color, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 12 }}>
             En qué te orienta Juanita
           </div>
-          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px" }}>
+          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 22px" }}>
             {details.incluye.map((item, i) => (
-              <li key={i} style={{ display: "flex", gap: 10, marginBottom: 10, alignItems: "flex-start" }}>
-                <span style={{ color: m.color, fontWeight: 700, fontSize: 15, flexShrink: 0, lineHeight: 1.5 }}>✓</span>
-                <span style={{ fontSize: 15, color: "#2a2018", lineHeight: 1.55 }}>{item}</span>
+              <li key={i} style={{ display: "flex", gap: 10, marginBottom: 12, alignItems: "flex-start" }}>
+                <span style={{ color: m.color, fontWeight: 700, fontSize: 17, flexShrink: 0, lineHeight: 1.5 }}>✓</span>
+                <span style={{ fontSize: 16, color: "#2a2018", lineHeight: 1.55 }}>{item}</span>
               </li>
             ))}
           </ul>
 
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#5a4a3a", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#5a4a3a", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 12 }}>
             Ejemplos típicos
           </div>
-          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px" }}>
+          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 22px" }}>
             {details.ejemplos.map((item, i) => (
               <li key={i} style={{
                 background: "#faf6ee", border: "1px solid #ece4d4", borderRadius: 10,
-                padding: "10px 12px", marginBottom: 8,
-                fontSize: 14, color: "#3a3028", lineHeight: 1.5, fontStyle: "italic",
+                padding: "12px 14px", marginBottom: 9,
+                fontSize: 15, color: "#3a3028", lineHeight: 1.5, fontStyle: "italic",
               }}>
                 "{item}"
               </li>
@@ -1134,8 +1134,8 @@ function TopicDetailModal({ topicKey, onClose, onStart }) {
 
           <div style={{
             background: "#f5f1ea", border: "1px solid #e0d5c0", borderRadius: 10,
-            padding: "12px 14px", marginBottom: 4,
-            fontSize: 13, color: "#5a4a3a", lineHeight: 1.55,
+            padding: "13px 15px", marginBottom: 4,
+            fontSize: 14, color: "#5a4a3a", lineHeight: 1.55,
           }}>
             <strong style={{ color: "#3a3028" }}>Importante:</strong> {TOPIC_NO_INCLUYE}
           </div>
@@ -1151,8 +1151,8 @@ function TopicDetailModal({ topicKey, onClose, onStart }) {
             onClick={onClose}
             style={{
               flex: "0 0 auto", background: "transparent", border: "1.5px solid #d8cfc0",
-              color: "#6a5e50", borderRadius: 12, padding: "12px 18px",
-              fontSize: 14, fontWeight: 600, cursor: "pointer",
+              color: "#6a5e50", borderRadius: 12, padding: "13px 20px",
+              fontSize: 15, fontWeight: 600, cursor: "pointer",
             }}
           >
             Volver
@@ -1161,8 +1161,8 @@ function TopicDetailModal({ topicKey, onClose, onStart }) {
             onClick={onStart}
             style={{
               flex: 1, background: "#1a3a2a", color: "white", border: "none",
-              borderRadius: 12, padding: "12px 18px",
-              fontSize: 15, fontWeight: 600, cursor: "pointer",
+              borderRadius: 12, padding: "13px 20px",
+              fontSize: 16, fontWeight: 600, cursor: "pointer",
               boxShadow: "0 4px 12px rgba(26,58,42,0.25)",
             }}
           >
@@ -1228,10 +1228,10 @@ function HeroSection({ onStart }) {
             color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 8, lineHeight: 1.2,
           }}>Juanita La Legal</h1>
 
-          <p style={{ fontSize: 18, color: "#8fbc8f", marginBottom: 6 }}>
+          <p style={{ fontSize: 20, color: "#8fbc8f", marginBottom: 8, fontWeight: 500 }}>
             Te orientamos en buen chileno.
           </p>
-          <p style={{ fontSize: 14, color: "rgba(245,240,232,0.5)", marginBottom: 18 }}>
+          <p style={{ fontSize: 16, color: "rgba(245,240,232,0.7)", marginBottom: 18, lineHeight: 1.5 }}>
             Primera orientación legal clara, rápida y pagable. $9.990 por consulta.
           </p>
 
@@ -1246,24 +1246,24 @@ function HeroSection({ onStart }) {
             textAlign: "left",
             boxShadow: "0 4px 16px rgba(200,160,64,0.18)",
           }}>
-            <span style={{ fontSize: 24, flexShrink: 0 }}>🎉</span>
-            <div style={{ flex: 1, lineHeight: 1.45 }}>
+            <span style={{ fontSize: 26, flexShrink: 0 }}>🎉</span>
+            <div style={{ flex: 1, lineHeight: 1.5 }}>
               <div style={{
-                fontSize: 11, fontWeight: 700, color: "#f0d068",
-                textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 3,
+                fontSize: 12, fontWeight: 700, color: "#f0d068",
+                textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4,
               }}>
                 Marcha blanca
               </div>
-              <div style={{ fontSize: 13, color: "rgba(245,240,232,0.95)" }}>
+              <div style={{ fontSize: 15, color: "rgba(245,240,232,0.95)" }}>
                 Estamos lanzando — usa el código{" "}
                 <strong style={{
                   background: "rgba(200,160,64,0.35)",
                   color: "#fff5d9",
-                  padding: "2px 8px",
+                  padding: "3px 9px",
                   borderRadius: 5,
                   fontFamily: "monospace",
                   letterSpacing: 0.8,
-                  fontSize: 12,
+                  fontSize: 14,
                 }}>LANZAMIENTO</strong>{" "}
                 y obtén <strong style={{ color: "#f0d068" }}>50% de descuento</strong> en tu consulta.
               </div>
@@ -1272,7 +1272,7 @@ function HeroSection({ onStart }) {
 
           <button data-action="start" onClick={onStart} style={{
             background: "#c8a040", color: "white", border: "none",
-            borderRadius: 16, padding: "14px 36px", fontSize: 16, fontWeight: 600,
+            borderRadius: 16, padding: "16px 40px", fontSize: 18, fontWeight: 600,
             cursor: "pointer", boxShadow: "0 8px 24px rgba(200,160,64,0.35)",
             transition: "transform 0.15s",
           }}
@@ -1285,7 +1285,7 @@ function HeroSection({ onStart }) {
           {/* Label instructivo */}
           <div style={{
             marginTop: 32, marginBottom: 14,
-            fontSize: 13, color: "rgba(245,240,232,0.85)",
+            fontSize: 14, color: "rgba(245,240,232,0.92)",
             fontWeight: 500, letterSpacing: 0.3,
           }}>
             👇 Toca un tema para ver qué incluye y ejemplos de consultas
@@ -1300,7 +1300,7 @@ function HeroSection({ onStart }) {
                 style={{
                   background: "rgba(255,255,255,0.12)",
                   border: "1px solid rgba(255,255,255,0.28)",
-                  borderRadius: 22, padding: "8px 14px 8px 12px", fontSize: 14,
+                  borderRadius: 22, padding: "10px 16px 10px 14px", fontSize: 15,
                   color: "rgba(245,240,232,0.95)", cursor: "pointer",
                   fontFamily: "inherit", fontWeight: 500,
                   display: "inline-flex", alignItems: "center", gap: 6,
@@ -1350,19 +1350,19 @@ function HeroSection({ onStart }) {
       }}>
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
           <div style={{
-            fontSize: 12, fontWeight: 700, color: "#c8a040", textTransform: "uppercase",
+            fontSize: 13, fontWeight: 700, color: "#c8a040", textTransform: "uppercase",
             letterSpacing: 1.5, marginBottom: 14, textAlign: "center",
           }}>
             ¿Qué es Juanita?
           </div>
           <h2 style={{
-            fontFamily: "var(--font-fraunces), serif", fontSize: 28, fontWeight: 600,
-            color: "#1a3a2a", textAlign: "center", marginBottom: 18, lineHeight: 1.25,
+            fontFamily: "var(--font-fraunces), serif", fontSize: 30, fontWeight: 600,
+            color: "#1a3a2a", textAlign: "center", marginBottom: 20, lineHeight: 1.25,
           }}>
             Tu primera puerta a la orientación legal en Chile
           </h2>
           <p style={{
-            fontSize: 16, color: "#3a3028", lineHeight: 1.65, textAlign: "center",
+            fontSize: 17, color: "#3a3028", lineHeight: 1.65, textAlign: "center",
             marginBottom: 36,
           }}>
             Te explicamos tus derechos en buen chileno, te ordenamos los pasos a seguir y te decimos cuándo necesitas un abogado de verdad.
@@ -1382,15 +1382,15 @@ function HeroSection({ onStart }) {
                 boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
               }}>
                 <div style={{
-                  fontSize: 24, flexShrink: 0, width: 44, height: 44,
+                  fontSize: 26, flexShrink: 0, width: 46, height: 46,
                   borderRadius: "50%", background: "#f5f1ea",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>{item.icon}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: "#1a3a2a", marginBottom: 4 }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "#1a3a2a", marginBottom: 5 }}>
                     {item.title}
                   </div>
-                  <div style={{ fontSize: 14, color: "#5a4a3a", lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 15, color: "#5a4a3a", lineHeight: 1.55 }}>
                     {item.text}
                   </div>
                 </div>
@@ -1401,13 +1401,13 @@ function HeroSection({ onStart }) {
           <div style={{ textAlign: "center" }}>
             <button onClick={onStart} style={{
               background: "#1a3a2a", color: "white", border: "none",
-              borderRadius: 14, padding: "14px 32px", fontSize: 15, fontWeight: 600,
+              borderRadius: 14, padding: "16px 36px", fontSize: 17, fontWeight: 600,
               cursor: "pointer", boxShadow: "0 4px 12px rgba(26,58,42,0.2)",
               fontFamily: "inherit",
             }}>
               Iniciar mi consulta
             </button>
-            <div style={{ marginTop: 14, fontSize: 12, color: "#8a7a68" }}>
+            <div style={{ marginTop: 14, fontSize: 13, color: "#8a7a68" }}>
               Toca cualquier tema arriba para ver qué incluye antes de pagar.
             </div>
           </div>
@@ -2071,15 +2071,15 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
               {/* Sugerencias solo al inicio */}
               {stage === "input" && messages.length === 1 && (
                 <div>
-                  <div style={{ fontSize: 11, color: "#8a7a68", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
+                  <div style={{ fontSize: 12, color: "#8a7a68", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
                     Consultas frecuentes
                   </div>
                   {SUGGESTIONS.map((s, i) => (
                     <button key={i} data-action="suggest" data-text={s} onClick={() => handleInitialSubmit(s)} style={{
                       display: "block", width: "100%", background: "white", border: "1px solid #e0d8c8",
-                      borderRadius: 10, padding: "9px 13px", fontSize: 13, color: "#3a3028",
-                      textAlign: "left", cursor: "pointer", marginBottom: 6,
-                      fontFamily: "inherit",
+                      borderRadius: 10, padding: "11px 15px", fontSize: 15, color: "#3a3028",
+                      textAlign: "left", cursor: "pointer", marginBottom: 7,
+                      fontFamily: "inherit", lineHeight: 1.4,
                     }}>{s}</button>
                   ))}
                 </div>
@@ -2300,7 +2300,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                   }}
                   onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                   style={{
-                    flex: 1, border: "none", outline: "none", fontSize: 16, color: "#2a2018",
+                    flex: 1, border: "none", outline: "none", fontSize: 17, color: "#2a2018",
                     background: "transparent", resize: "none", maxHeight: 120, lineHeight: 1.5,
                     fontFamily: "inherit", minHeight: 44,
                   }}
@@ -2364,10 +2364,18 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                   </svg>
                 </button>
               </div>
-              <div style={{ fontSize: 11, color: "#a09080", textAlign: "center", marginTop: 6 }}>
+              <div style={{
+                fontSize: 12, color: "#8a7a68", textAlign: "center", marginTop: 8,
+                display: "flex", justifyContent: "center", gap: 14, flexWrap: "wrap",
+              }}>
+                <span>🎙️ Voz: toca el micrófono para hablar</span>
+                <span style={{ color: "#c8a040" }}>·</span>
+                <span>📎 Docs: adjunta imágenes o PDF</span>
+              </div>
+              <div style={{ fontSize: 12, color: "#a09080", textAlign: "center", marginTop: 8 }}>
                 Orientación legal general e informativa · No reemplaza a un abogado/a · No constituye asesoría jurídica personalizada · No crea relación abogado-cliente
               </div>
-              <div style={{ fontSize: 10, color: "#c0b8b0", textAlign: "center", marginTop: 2 }}>
+              <div style={{ fontSize: 11, color: "#c0b8b0", textAlign: "center", marginTop: 2 }}>
                 v2.2
               </div>
             </div>
