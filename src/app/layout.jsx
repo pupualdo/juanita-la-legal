@@ -23,7 +23,7 @@ const instrumentSans = Instrument_Sans({
   preload: true,
 });
 
-const APP_URL = 'https://juanita-la-legal.vercel.app';
+const APP_URL = 'https://juanitalalegal.cl';
 
 export const metadata = {
   metadataBase: new URL(APP_URL),
