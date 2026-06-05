@@ -1614,7 +1614,19 @@ function PreChatWall({ topic, messages, input, setInput, onSend, onPay, exchange
                 background: "#f0ebe3", color: "#2d2217", borderRadius: "14px 14px 14px 4px",
                 padding: "10px 14px", maxWidth: "88%", fontSize: 13, lineHeight: 1.6,
               }}>
-                {m.text}
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    p: ({ children }) => <p style={{ margin: '0 0 8px', lineHeight: 1.6 }}>{children}</p>,
+                    ul: ({ children }) => <ul style={{ paddingLeft: 18, margin: '4px 0 8px' }}>{children}</ul>,
+                    ol: ({ children }) => <ol style={{ paddingLeft: 18, margin: '4px 0 8px' }}>{children}</ol>,
+                    li: ({ children }) => <li style={{ marginBottom: 3, lineHeight: 1.5 }}>{children}</li>,
+                    strong: ({ children }) => <strong style={{ fontWeight: 700 }}>{children}</strong>,
+                    em: ({ children }) => <em style={{ fontStyle: 'italic' }}>{children}</em>,
+                  }}
+                >
+                  {m.text}
+                </ReactMarkdown>
               </div>
             )}
           </div>
