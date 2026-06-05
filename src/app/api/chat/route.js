@@ -411,22 +411,36 @@ export async function POST(request) {
       history = devHistory || [];
     } else if (prechat) {
       // Pre-chat mode: upsert session in Supabase for lead tracking + history
-      const { data: existingPrechat } = await supabase
-        .from('sessions')
-        .select('*')
-        .eq('session_id', sessionId)
-        .single();
+      try {
+        const { data: existingPrechat, error: prechatErr } = await supabase
+          .from('sessions')
+          .select('*')
+          .eq('session_id', sessionId)
+          .single();
 
-      if (existingPrechat) {
-        history = Array.isArray(existingPrechat.history) ? existingPrechat.history : [];
-      } else {
-        // Create pre-chat session — no expiration yet, status marks it as pre-pago
-        await supabase.from('sessions').insert({
-          session_id: sessionId,
-          status: 'prechat',
-          history: [],
-          created_at: new Date().toISOString(),
-        });
+        if (prechatErr && prechatErr.code !== 'PGRST116') { // PGRST116 = not found, expected
+          log.error('chat', 'Error loading prechat session', { err: prechatErr, sessionId });
+        }
+
+        if (existingPrechat) {
+          history = Array.isArray(existingPrechat.history) ? existingPrechat.history : [];
+          log.info('chat', 'Prechat session loaded', { sessionId, historyLen: history.length });
+        } else {
+          // Create pre-chat session — no expiration yet, status marks it as pre-pago
+          const { error: insertErr } = await supabase.from('sessions').insert({
+            session_id: sessionId,
+            status: 'prechat',
+            history: [],
+            created_at: new Date().toISOString(),
+          });
+          if (insertErr) {
+            log.error('chat', 'Error creating prechat session', { err: insertErr, sessionId });
+          }
+          history = [];
+          log.info('chat', 'Prechat session created', { sessionId });
+        }
+      } catch (prechatSessionErr) {
+        log.error('chat', 'Unexpected error in prechat session handling', { err: prechatSessionErr, sessionId });
         history = [];
       }
     } else {
@@ -484,10 +498,17 @@ export async function POST(request) {
             const updatedHistory = [...capturedHistory, { role: 'assistant', content: fullReply }];
             // Extender sesión 15 min desde ahora en cada mensaje
             const newExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-            await supabase
-              .from('sessions')
-              .update({ history: updatedHistory, expires_at: newExpiresAt })
-              .eq('session_id', capturedSessionId);
+            try {
+              const { error: updateErr } = await supabase
+                .from('sessions')
+                .update({ history: updatedHistory, expires_at: newExpiresAt })
+                .eq('session_id', capturedSessionId);
+              if (updateErr) {
+                log.error('chat', 'Error updating session history', { err: updateErr, sessionId: capturedSessionId, historyLen: updatedHistory.length });
+              }
+            } catch (postStreamErr) {
+              log.error('chat', 'Unexpected error updating session history', { err: postStreamErr, sessionId: capturedSessionId });
+            }
           }
         } catch (err) {
           log.error('chat', 'Anthropic stream error', { err, sessionId });

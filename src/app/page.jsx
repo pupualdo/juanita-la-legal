@@ -2589,7 +2589,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
     } else {
       // Continuar el pre-chat
       streamChatResponse(
-        `[PRE-CHAT — intercambio ${newCount}/3] Responde a la consulta con empatía. Haz preguntas para clarificar. NO des orientación legal completa. Sugiere sutilmente que la consulta pagada ($4.995) le dará la orientación detallada.`,
+        `[PRE-CHAT — intercambio ${newCount}/3] El usuario responde: "${trimmed}". Responde con empatía. Haz preguntas para clarificar lo que no haya quedado claro. NO des orientación legal completa. Sugiere sutilmente que la consulta pagada ($4.995) le dará la orientación detallada paso a paso.`,
         [],
         sessionId,
         undefined,
