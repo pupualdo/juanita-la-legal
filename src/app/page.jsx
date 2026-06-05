@@ -1770,8 +1770,8 @@ function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
           body: JSON.stringify({ sessionId, amount: finalPrice, topic }),
         });
         const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
+        if (data.url && data.token) {
+          window.location.href = data.url + '?token_ws=' + data.token;
         } else {
           setLoading(false);
           alert(data.error || 'Error al iniciar WebPay. Intenta de nuevo.');
@@ -2285,8 +2285,8 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, onBa
           body: JSON.stringify({ sessionId, amount: finalPrice, topic }),
         });
         const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
+        if (data.url && data.token) {
+          window.location.href = data.url + '?token_ws=' + data.token;
         } else {
           setLoading(false);
           alert(data.error || 'Error al iniciar WebPay. Intenta de nuevo.');
