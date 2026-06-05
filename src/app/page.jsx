@@ -1761,6 +1761,25 @@ function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
         window.location.href = '/?paid=true';
         return;
       }
+
+      // ── WebPay: API real de Transbank ──
+      if (method === 'webpay') {
+        const res = await fetch('/api/webpay/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, amount: finalPrice, topic }),
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          setLoading(false);
+          alert(data.error || 'Error al iniciar WebPay. Intenta de nuevo.');
+        }
+        return;
+      }
+
+      // ── Mercado Pago ──
       const res = await fetch('/api/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2257,6 +2276,25 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, onBa
         window.location.href = '/?paid=true';
         return;
       }
+
+      // ── WebPay: API real de Transbank ──
+      if (method === 'webpay') {
+        const res = await fetch('/api/webpay/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, amount: finalPrice, topic }),
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          setLoading(false);
+          alert(data.error || 'Error al iniciar WebPay. Intenta de nuevo.');
+        }
+        return;
+      }
+
+      // ── Mercado Pago ──
       const res = await fetch('/api/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
