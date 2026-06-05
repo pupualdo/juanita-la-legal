@@ -1698,6 +1698,12 @@ function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
   const [promoError, setPromoError] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
   const [loading, setLoading] = useState(false);
+  // ── Receipt upload state ──
+  const [receiptFile, setReceiptFile] = useState(null);
+  const [receiptPreview, setReceiptPreview] = useState(null);
+  const [receiptVerifying, setReceiptVerifying] = useState(false);
+  const [receiptResult, setReceiptResult] = useState(null); // { ok, message } | null
+  const receiptInputRef = useRef(null);
 
   const BASE_PRICE = 9990;
   const DISCOUNT_PRICE = 4995;
@@ -1763,6 +1769,46 @@ function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
       setLoading(false);
       alert('Error de conexión. Intenta de nuevo.');
     }
+  };
+
+  // ── Verificar comprobante de transferencia ──
+  const handleReceiptVerify = async () => {
+    if (!receiptFile || !sessionId) return;
+    setReceiptVerifying(true);
+    setReceiptResult(null);
+    try {
+      const formData = new FormData();
+      formData.append('receipt', receiptFile);
+      formData.append('sessionId', sessionId);
+      formData.append('expectedAmount', String(finalPrice));
+
+      const res = await fetch('/api/verify-receipt', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (data.ok) {
+        setReceiptResult({ ok: true, message: data.message || '✅ Comprobante verificado. Activando acceso...' });
+        localStorage.setItem('juanita_session', sessionId);
+        localStorage.setItem('juanita_topic', topic);
+        localStorage.removeItem('juanita_terms_accepted');
+        setTimeout(() => { window.location.href = '/?paid=true'; }, 1500);
+      } else {
+        setReceiptResult({ ok: false, message: data.error || 'No se pudo verificar el comprobante.' });
+      }
+    } catch {
+      setReceiptResult({ ok: false, message: 'Error de conexión. Intenta de nuevo.' });
+    }
+    setReceiptVerifying(false);
+  };
+
+  const handleReceiptSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setReceiptFile(file);
+    setReceiptResult(null);
+    // Generate preview
+    const reader = new FileReader();
+    reader.onload = (ev) => setReceiptPreview(ev.target.result);
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -1899,14 +1945,11 @@ function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
               border: "1px solid #ece4d4",
             }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: "#1a3a2a", marginBottom: 8 }}>
-                🏦 Transferencia bancaria
-              </div>
-              <div style={{ fontSize: 12, color: "#6a5e50", lineHeight: 1.6, marginBottom: 8 }}>
-                Transfiere y escríbenos a <strong>contacto@juanitalalegal.cl</strong> con tu comprobante.
+                🏦 Transferencia bancaria — verificación automática
               </div>
               <div style={{
                 background: "white", borderRadius: 8, padding: "10px 12px",
-                border: "1px dashed #d8cfc0", fontSize: 12, color: "#3a3028", lineHeight: 1.8,
+                border: "1px dashed #d8cfc0", fontSize: 12, color: "#3a3028", lineHeight: 1.8, marginBottom: 10,
               }}>
                 <div><strong>Banco:</strong> [Tus datos bancarios aquí]</div>
                 <div><strong>Titular:</strong> [Nombre titular]</div>
@@ -1914,6 +1957,85 @@ function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
                 <div><strong>Cuenta:</strong> [Tipo] N° [Número]</div>
                 <div><strong>Monto:</strong> ${finalPrice.toLocaleString('es-CL')} CLP</div>
               </div>
+
+              {/* ── Receipt upload ── */}
+              {receiptResult?.ok ? (
+                <div style={{
+                  background: "#e8f5e2", borderRadius: 10, padding: "12px", textAlign: "center",
+                  border: "1px solid #b8d98a",
+                }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "#4a7a20" }}>{receiptResult.message}</div>
+                </div>
+              ) : (
+                <>
+                  <input
+                    ref={receiptInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/heic"
+                    onChange={handleReceiptSelect}
+                    style={{ display: 'none' }}
+                  />
+                  {!receiptFile ? (
+                    <button
+                      onClick={() => receiptInputRef.current?.click()}
+                      style={{
+                        width: "100%", background: "white", border: "2px dashed #d8cfc0",
+                        borderRadius: 10, padding: "20px", cursor: "pointer",
+                        color: "#6a5e50", fontSize: 13, fontFamily: "inherit",
+                        display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                      }}
+                    >
+                      <span style={{ fontSize: 24 }}>📎</span>
+                      <span>Toca para subir tu comprobante de transferencia</span>
+                      <span style={{ fontSize: 11, color: "#a09080" }}>JPG, PNG o WebP · máx 10MB</span>
+                    </button>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {receiptPreview && (
+                        <div style={{
+                          borderRadius: 8, overflow: "hidden", border: "1px solid #d8cfc0",
+                          maxHeight: 200, display: "flex", justifyContent: "center",
+                        }}>
+                          <img src={receiptPreview} alt="Comprobante" style={{ maxWidth: "100%", maxHeight: 200, objectFit: "contain" }} />
+                        </div>
+                      )}
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          onClick={() => receiptInputRef.current?.click()}
+                          style={{
+                            flex: 1, background: "white", border: "1px solid #d8cfc0",
+                            borderRadius: 8, padding: "8px", fontSize: 12, color: "#6a5e50",
+                            cursor: "pointer", fontFamily: "inherit",
+                          }}
+                        >
+                          Cambiar archivo
+                        </button>
+                        <button
+                          onClick={handleReceiptVerify}
+                          disabled={receiptVerifying}
+                          style={{
+                            flex: 1, background: receiptVerifying ? "#c0b8a8" : "#1a3a2a",
+                            color: "white", border: "none", borderRadius: 8,
+                            padding: "8px", fontSize: 12, fontWeight: 600,
+                            cursor: receiptVerifying ? "not-allowed" : "pointer",
+                            fontFamily: "inherit",
+                          }}
+                        >
+                          {receiptVerifying ? "🔍 Verificando..." : "✓ Verificar comprobante"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {receiptResult && !receiptResult.ok && (
+                    <div style={{
+                      background: "#fff2ee", borderRadius: 8, padding: "8px 12px",
+                      marginTop: 8, border: "1px solid #f5b8a0",
+                    }}>
+                      <div style={{ fontSize: 12, color: "#c44a12", lineHeight: 1.5 }}>{receiptResult.message}</div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>
