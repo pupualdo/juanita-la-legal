@@ -2208,10 +2208,10 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const [prechatExchanges, setPrechatExchanges] = useState(0);
   const [demoUsed, setDemoUsed] = useState(() => {
     if (typeof window === 'undefined') return true;
-    const ts = localStorage.getItem('juanita_demo_ts');
+    const ts = sessionStorage.getItem('juanita_demo_ts');
     if (!ts) return false;
-    // Demo expira después de 24 horas
-    return (Date.now() - parseInt(ts, 10)) < 24 * 60 * 60 * 1000;
+    // Demo válido durante la sesión del navegador (sessionStorage se borra al cerrar)
+    return true;
   });
 
   useEffect(() => {
@@ -2340,7 +2340,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
           }
         } else if (!demoUsed && !initialPaid) {
           // ── PRE-CHAT: chat real limitado a 3 intercambios ──
-          localStorage.setItem('juanita_demo_ts', String(Date.now()));
+          sessionStorage.setItem('juanita_demo_ts', String(Date.now()));
           setDemoUsed(true);
           setLockedTopic(data.tema);
           setPendingTopic(data.tema);
