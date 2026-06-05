@@ -482,9 +482,11 @@ export async function POST(request) {
           }
           if (!isDevMode && capturedSessionId) {
             const updatedHistory = [...capturedHistory, { role: 'assistant', content: fullReply }];
+            // Extender sesión 15 min desde ahora en cada mensaje
+            const newExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
             await supabase
               .from('sessions')
-              .update({ history: updatedHistory })
+              .update({ history: updatedHistory, expires_at: newExpiresAt })
               .eq('session_id', capturedSessionId);
           }
         } catch (err) {
