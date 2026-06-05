@@ -27,7 +27,10 @@ export async function POST(request) {
       );
     }
 
-    const { tema, resumen, sessionId, promoCode } = await request.json();
+    const { tema, resumen, sessionId, promoCode, method } = await request.json();
+
+    // Payment method: 'webpay' or 'mercadopago' (default for backward compat)
+    const paymentMethod = method === 'webpay' ? 'webpay' : 'mercadopago';
 
     // Server-side promo validation — never trust the client-reported price
     const normalizedCode = promoCode ? String(promoCode).toUpperCase().trim() : null;
@@ -41,7 +44,7 @@ export async function POST(request) {
     const preference = new Preference(mp);
     const result = await preference.create({ body: {
       items: [{
-        title: `Consulta Legal Juanita La Legal — ${tema}`,
+        title: `Consulta Legal Juanita La Legal — ${tema}${paymentMethod === 'webpay' ? ' (WebPay)' : ''}`,
         description: resumen,
         unit_price: unitPrice,
         quantity: 1,
