@@ -398,7 +398,7 @@ export async function POST(request) {
       );
     }
 
-    const { sessionId, message, imageBase64, history: devHistory } = await request.json();
+    const { sessionId, message, imageBase64, history: devHistory, prechat } = await request.json();
 
     if (!message && !imageBase64) {
       return NextResponse.json({ error: 'Mensaje vacío' }, { status: 400 });
@@ -409,6 +409,9 @@ export async function POST(request) {
     if (process.env.DEV_SKIP_PAYMENT === 'true') {
       // Dev mode: skip session validation, use history from request
       history = devHistory || [];
+    } else if (prechat) {
+      // Pre-chat mode: no session in Supabase, no history persistence
+      history = [];
     } else {
       const { data: session } = await supabase
         .from('sessions')
@@ -448,6 +451,7 @@ export async function POST(request) {
     let fullReply = '';
     const capturedSessionId = sessionId;
     const capturedHistory = newHistory;
+    const isPrechat = !!prechat;
     const isDevMode = process.env.DEV_SKIP_PAYMENT === 'true';
 
     const readable = new ReadableStream({
@@ -459,7 +463,7 @@ export async function POST(request) {
               controller.enqueue(encoder.encode('data: ' + JSON.stringify({ text: event.delta.text }) + '\n\n'));
             }
           }
-          if (!isDevMode && capturedSessionId) {
+          if (!isDevMode && !isPrechat && capturedSessionId) {
             const updatedHistory = [...capturedHistory, { role: 'assistant', content: fullReply }];
             await supabase
               .from('sessions')

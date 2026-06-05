@@ -2277,7 +2277,9 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
       streamChatResponse(
         `[PRE-CHAT — intercambio ${newCount}/3] Responde a la consulta con empatía. Haz preguntas para clarificar. NO des orientación legal completa. Sugiere sutilmente que la consulta pagada ($4.995) le dará la orientación detallada.`,
         [],
-        sessionId
+        sessionId,
+        undefined,
+        true
       );
     }
   };
@@ -2340,7 +2342,9 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
           streamChatResponse(
             `[PRE-CHAT] El usuario consulta: "${trimmed}". Responde con empatía, haz 1-2 preguntas para entender mejor su caso, y demuestra que entiendes del tema legal. NO des orientación completa — solo clarifica y muestra que puedes ayudarle. Sé cálida pero concisa. Al final de tu respuesta, sugiérele sutilmente que con la consulta pagada ($4.995) puedes darle la orientación completa paso a paso.`,
             [],
-            prechatSessionId
+            prechatSessionId,
+            undefined,
+            true
           );
         } else {
           setStage("payment");
@@ -2364,7 +2368,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   };
 
   // ── Streaming helper ──────────────────────────────────────────────────────
-  const streamChatResponse = async (message, historyForApi, currentSessionId, imageBase64) => {
+  const streamChatResponse = async (message, historyForApi, currentSessionId, imageBase64, isPrechat = false) => {
     setIsStreaming(true);
     const msgId = createId();
     setMessages(prev => [...prev, { id: msgId, type: 'juanita', text: '...' }]);
@@ -2377,7 +2381,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
       !err.message || /failed to fetch|network error|load failed|networkerror/i.test(err.message);
 
     const attemptStream = async () => {
-      const body = { sessionId: currentSessionId, message };
+      const body = { sessionId: currentSessionId, message, prechat: isPrechat };
       if (imageBase64) body.imageBase64 = imageBase64;
       if (process.env.NEXT_PUBLIC_DEV_SKIP_PAYMENT === 'true') {
         body.history = historyForApi;
