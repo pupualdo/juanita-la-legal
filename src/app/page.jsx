@@ -1414,6 +1414,77 @@ function HeroSection({ onStart }) {
         </div>
       </div>
 
+      {/* ── Social Proof / Confianza ── */}
+      <div style={{ background: "white", padding: "60px 20px" }}>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#c8a040", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 14, textAlign: "center" }}>
+            Confían en Juanita
+          </div>
+          <h2 style={{ fontFamily: "var(--font-fraunces), serif", fontSize: 28, fontWeight: 600, color: "#1a3a2a", textAlign: "center", marginBottom: 28, lineHeight: 1.25 }}>
+            Orientación legal clara, rápida y sin letra chica
+          </h2>
+
+          {/* Stats */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 32 }}>
+            {[
+              { number: "3.000+", label: "Personas orientadas" },
+              { number: "10", label: "Áreas legales" },
+              { number: "$4.995", label: "50% descuento lanzamiento" },
+            ].map((stat, i) => (
+              <div key={i} style={{ textAlign: "center", background: "#faf8f4", borderRadius: 14, padding: "16px 10px", border: "1px solid #ece4d4" }}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: "#1a3a2a", fontFamily: "var(--font-fraunces), serif" }}>
+                  {stat.number}
+                </div>
+                <div style={{ fontSize: 12, color: "#6a5e50", marginTop: 4 }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Value comparison */}
+          <div style={{ background: "#f0f5e8", borderRadius: 14, padding: "18px", border: "1px solid #b8d98a", marginBottom: 20 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#3a5a20", marginBottom: 6 }}>
+              💡 ¿Por qué tiene sentido?
+            </div>
+            <div style={{ fontSize: 13, color: "#3a3028", lineHeight: 1.6 }}>
+              Una consulta con un abogado parte en <strong>$25.000-$50.000</strong> por 30 minutos. Con Juanita obtienes orientación inmediata para ordenar tu caso y saber qué hacer, <strong>10x más barato</strong> que una consulta tradicional. Si luego necesitas abogado, te decimos claramente y te orientamos a dónde ir.
+            </div>
+          </div>
+
+          {/* Cómo funciona — paso a paso */}
+          <div style={{ background: "white", borderRadius: 16, padding: "24px", border: "1px solid #ece4d4", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#1a3a2a", marginBottom: 20, textAlign: "center" }}>
+              ⚡ Cómo funciona en 3 pasos
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {[
+                { step: "1", title: "Escribes tu caso", desc: "Cuentas tu problema legal en tus propias palabras, sin lenguaje técnico.", emoji: "✍️" },
+                { step: "2", title: "Juanita te orienta", desc: "Te explicamos tus derechos, los pasos a seguir y qué NO hacer. Todo en buen chileno.", emoji: "🧭" },
+                { step: "3", title: "Decides con info real", desc: "Sales con un panorama claro. Si necesitas abogado, te decimos honestamente.", emoji: "✅" },
+              ].map((s, i) => (
+                <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: "50%",
+                    background: "#1a3a2a", color: "white",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 18, fontWeight: 700, flexShrink: 0,
+                  }}>
+                    {s.emoji}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#1a3a2a", marginBottom: 3 }}>
+                      {s.title}
+                    </div>
+                    <div style={{ fontSize: 13, color: "#5a4a3a", lineHeight: 1.5 }}>
+                      {s.desc}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {openTopic && (
         <TopicDetailModal
           topicKey={openTopic}
@@ -1422,6 +1493,225 @@ function HeroSection({ onStart }) {
         />
       )}
     </>
+  );
+}
+
+// ─── DEMO PAYMENT WALL (post-demostración gratuita) ──────────────────────────
+
+function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
+  const m = TOPIC_META[topic] || { border: '#d8cfc0', bg: '#faf8f4', color: '#4a5568', emoji: '⚖️' };
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(null);
+  const [promoError, setPromoError] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const BASE_PRICE = 9990;
+  const DISCOUNT_PRICE = 4995;
+  const finalPrice = promoApplied?.finalPrice ?? DISCOUNT_PRICE;
+  const isFree = promoApplied?.isFree ?? false;
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError('');
+    try {
+      const res = await fetch('/api/validate-promo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode.trim().toUpperCase() }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setPromoApplied(data);
+      } else {
+        setPromoError(data.error || 'Código inválido o expirado.');
+      }
+    } catch {
+      setPromoError('Error al validar. Intenta de nuevo.');
+    }
+    setPromoLoading(false);
+  };
+
+  const handlePay = async () => {
+    setLoading(true);
+    try {
+      if (isFree) {
+        const grantRes = await fetch('/api/grant-access', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, promoCode: promoCode.trim().toUpperCase() }),
+        });
+        const grantData = await grantRes.json();
+        if (!grantData.ok) {
+          setLoading(false);
+          alert('Error al activar el acceso. Intenta de nuevo.');
+          return;
+        }
+        localStorage.setItem('juanita_session', sessionId);
+        localStorage.setItem('juanita_topic', topic);
+        localStorage.removeItem('juanita_terms_accepted');
+        window.location.href = '/?paid=true';
+        return;
+      }
+      const res = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tema: topic, resumen, sessionId, promoCode: promoCode.trim().toUpperCase() }),
+      });
+      const data = await res.json();
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        setLoading(false);
+        alert('Error al crear el pago. Intenta de nuevo.');
+      }
+    } catch {
+      setLoading(false);
+      alert('Error de conexión. Intenta de nuevo.');
+    }
+  };
+
+  return (
+    <div style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: 16, maxWidth: 520, margin: "0 auto" }}>
+      {/* Demo completado banner */}
+      <div style={{
+        background: "linear-gradient(135deg, #1a3a2a 0%, #2a5a3a 100%)",
+        borderRadius: 16, padding: "20px 22px", color: "white",
+        boxShadow: "0 4px 20px rgba(26,58,42,0.2)",
+      }}>
+        <div style={{ fontSize: 32, marginBottom: 8 }}>👋</div>
+        <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, lineHeight: 1.3 }}>
+          ¡Buen caso! Esto es {TOPIC_LABELS[topic].toLowerCase()}
+        </div>
+        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.8)", lineHeight: 1.5 }}>
+          Puedo orientarte paso a paso: qué dice la ley, qué te conviene hacer y qué no, y cómo ordenar tu caso para que no pierdas tiempo ni plata.
+        </div>
+      </div>
+
+      {/* Qué incluiría la consulta */}
+      <div style={{
+        background: "white", borderRadius: 14, padding: "18px",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.05)", border: "1px solid #ece4d4",
+      }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#1a3a2a", marginBottom: 12 }}>
+          En 10 minutos de consulta obtienes:
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+            <span style={{ color: "#4a7a20", fontWeight: 700, flexShrink: 0 }}>✓</span>
+            <span style={{ fontSize: 13, color: "#3a3028", lineHeight: 1.5 }}>Orientación clara y en buen chileno sobre tu caso concreto</span>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+            <span style={{ color: "#4a7a20", fontWeight: 700, flexShrink: 0 }}>✓</span>
+            <span style={{ fontSize: 13, color: "#3a3028", lineHeight: 1.5 }}>Qué dice la ley chilena y cómo se aplica a tu situación</span>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+            <span style={{ color: "#4a7a20", fontWeight: 700, flexShrink: 0 }}>✓</span>
+            <span style={{ fontSize: 13, color: "#3a3028", lineHeight: 1.5 }}>Riesgos si no actúas, opciones que tienes y próximos pasos</span>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+            <span style={{ color: "#4a7a20", fontWeight: 700, flexShrink: 0 }}>✓</span>
+            <span style={{ fontSize: 13, color: "#3a3028", lineHeight: 1.5 }}>Si necesitas abogado, te decimos claramente y te orientamos a dónde ir</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Topic badge */}
+      <div style={{ background: m.bg, border: `1.5px solid ${m.border}`, borderRadius: 16, padding: "16px 18px", display: "flex", gap: 14, alignItems: "flex-start" }}>
+        <span style={{ fontSize: 36 }}>{m.emoji}</span>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: m.color, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+            Tema detectado
+          </div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: "#2a2018", marginBottom: 3 }}>
+            {TOPIC_LABELS[topic]}
+          </div>
+          <div style={{ fontSize: 13, color: "#6a5e50" }}>{resumen}</div>
+        </div>
+      </div>
+
+      {/* Promo code */}
+      <div style={{ marginBottom: 4 }}>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            type="text"
+            value={promoCode}
+            onChange={e => { setPromoCode(e.target.value); setPromoError(''); }}
+            onKeyDown={e => e.key === 'Enter' && handleApplyPromo()}
+            placeholder="¿Tienes un código de descuento?"
+            disabled={!!promoApplied}
+            style={{
+              flex: 1, padding: "10px 12px", fontSize: 13, border: "1.5px solid #e0d8cc",
+              borderRadius: 10, outline: "none", background: promoApplied ? "#f0f5e8" : "white",
+              color: "#3a3028",
+            }}
+          />
+          <button
+            onClick={handleApplyPromo}
+            disabled={promoLoading || !!promoApplied || !promoCode.trim()}
+            style={{
+              padding: "10px 14px", fontSize: 13, fontWeight: 600, border: "none",
+              borderRadius: 10, cursor: promoApplied || !promoCode.trim() ? "default" : "pointer",
+              background: promoApplied ? "#4a7a20" : "#1a3a2a", color: "white",
+              opacity: promoLoading ? 0.7 : 1,
+            }}
+          >
+            {promoApplied ? "✓" : promoLoading ? "..." : "Aplicar"}
+          </button>
+        </div>
+        {promoError && (
+          <div style={{ fontSize: 12, color: "#c0392b", marginTop: 5 }}>{promoError}</div>
+        )}
+      </div>
+
+      {/* Price */}
+      <div style={{ background: "#fff", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", border: "1px solid #ece4d4" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <span style={{ fontSize: 13, color: "#6a5e50" }}>Precio normal</span>
+          <span style={{ fontSize: 15, color: "#a09080", textDecoration: "line-through" }}>
+            ${BASE_PRICE.toLocaleString('es-CL')}
+          </span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 13, color: "#6a5e50" }}>
+            <strong style={{ color: "#1a3a2a" }}>Lanzamiento 50% off</strong>
+          </span>
+          <span style={{ fontFamily: "serif", fontSize: 26, fontWeight: 700, color: "#1a3a2a" }}>
+            {isFree ? "¡Gratis!" : `$${finalPrice.toLocaleString('es-CL')}`}
+          </span>
+        </div>
+        {promoApplied && (
+          <div style={{ fontSize: 11, color: "#4a7a20", fontWeight: 600, marginTop: 4 }}>
+            {promoApplied.label} aplicado ✓
+          </div>
+        )}
+      </div>
+
+      {/* Pay button */}
+      {!loading ? (
+        <button onClick={handlePay} style={{
+          width: "100%", background: isFree ? "#4a7a20" : "#009ee3", color: "white", border: "none",
+          borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 600, cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          boxShadow: "0 4px 16px rgba(0,158,227,0.25)",
+        }}>
+          {isFree ? "🎉 Acceder gratis" : "💳 Pagar $4.995 con Mercado Pago"}
+        </button>
+      ) : (
+        <div style={{ textAlign: "center", color: "#009ee3", fontSize: 13, padding: "13px" }}>
+          ⏳ {isFree ? "Activando acceso..." : "Redirigiendo a Mercado Pago..."}
+        </div>
+      )}
+
+      <div style={{ fontSize: 11, color: "#a09080", textAlign: "center" }}>
+        🔒 Pago seguro · Mercado Pago Chile · Consulta de 10 minutos
+      </div>
+
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "#8a7a68", fontSize: 13, cursor: "pointer" }}>
+        ← Probar con otra consulta
+      </button>
+    </div>
   );
 }
 
@@ -1670,6 +1960,13 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const audioChunksRef = useRef([]);
   const fileInputRef = useRef(null);
   const [attachedFile, setAttachedFile] = useState(null);
+  const [demoUsed, setDemoUsed] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const ts = localStorage.getItem('juanita_demo_ts');
+    if (!ts) return false;
+    // Demo expira después de 24 horas
+    return (Date.now() - parseInt(ts, 10)) < 24 * 60 * 60 * 1000;
+  });
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -1771,6 +2068,14 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
           if (fullText) {
             setDevHistory([...initialHistory, { role: 'assistant', content: fullText }]);
           }
+        } else if (!demoUsed && !initialPaid) {
+          // ── DEMO: teaser genérico por tema, sin llamar a Claude ──
+          localStorage.setItem('juanita_demo_ts', String(Date.now()));
+          setDemoUsed(true);
+          setLockedTopic(data.tema);
+          setStage("demo-ended");
+          setPendingTopic(data.tema);
+          setClassifyResumen(data.resumen || `Consulta sobre ${TOPIC_LABELS[data.tema]}`);
         } else {
           setStage("payment");
         }
@@ -1998,7 +2303,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
     : stage === "chat" ? "Escribe tu respuesta..."
     : "Consulta cerrada";
 
-  const inputDisabled = timerExpired || isStreaming || stage === "closed" || stage === "classifying" || stage === "payment" || stage === "topic-confirm" || stage === "resuming";
+  const inputDisabled = timerExpired || isStreaming || stage === "closed" || stage === "classifying" || stage === "payment" || stage === "demo-ended" || stage === "topic-confirm" || stage === "resuming";
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "row", background: "#faf8f4" }}>
@@ -2032,6 +2337,18 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
             prevSessionId={typeof window !== 'undefined' ? localStorage.getItem('juanita_session') : null}
             prevTopic={typeof window !== 'undefined' ? localStorage.getItem('juanita_topic') : null}
             onBack={() => { setStage("input"); setMessages(prev => prev.slice(0, -1)); }}
+          />
+        </div>
+      )}
+
+      {/* Demo payment wall — versión soft post-demostración */}
+      {stage === "demo-ended" && pendingTopic && (
+        <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
+          <DemoPaymentWall
+            topic={pendingTopic}
+            resumen={classifyResumen}
+            sessionId={sessionId}
+            onBack={() => { setStage("input"); setMessages(prev => prev.slice(0, -2)); }}
           />
         </div>
       )}
@@ -2524,15 +2841,7 @@ const TYC_SECTIONS = [
 ];
 
 function TermsScreen({ onAccept }) {
-  const [scrolledToBottom, setScrolledToBottom] = useState(false);
-  const scrollRef = useRef(null);
-
-  const handleScroll = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
-    if (atBottom) setScrolledToBottom(true);
-  };
+  const [accepted, setAccepted] = useState(false);
 
   return (
     <div style={{
@@ -2567,29 +2876,16 @@ function TermsScreen({ onAccept }) {
           </div>
         </div>
 
-        {/* Scroll hint */}
-        {!scrolledToBottom && (
-          <div style={{
-            background: '#fffbef',
-            borderBottom: '1px solid #f0e8b0',
-            padding: '8px 28px',
-            fontSize: 12,
-            color: '#8a6a10',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-          }}>
-            <span>👇</span>
-            <span>Lee hasta el final para habilitar el botón de aceptación</span>
-          </div>
-        )}
-
-        {/* Scrollable content */}
+        {/* Scrollable content — siempre accesible, sin bloqueo */}
         <div
-          ref={scrollRef}
-          onScroll={handleScroll}
           style={{ overflowY: 'auto', padding: '20px 28px', flex: 1 }}
         >
+          <div style={{
+            background: '#f0f5e8', border: '1px solid #b8d98a', borderRadius: 10,
+            padding: '12px 14px', marginBottom: 18, fontSize: 13, color: '#3a5a20', lineHeight: 1.5,
+          }}>
+            <strong>⚡ Tómate tu tiempo para leer.</strong> Son las reglas del juego para que todo sea claro y transparente. Cuando termines, marca el checkbox al final para continuar.
+          </div>
           {TYC_SECTIONS.map((section, i) => (
             <div key={i} style={{ marginBottom: 20 }}>
               <div style={{
@@ -2621,50 +2917,54 @@ function TermsScreen({ onAccept }) {
               )}
             </div>
           ))}
-          {/* End marker */}
-          <div style={{ textAlign: 'center', padding: '12px 0 4px', fontSize: 12, color: '#b0a090' }}>
-            — Fin de los Términos y Condiciones —
-          </div>
         </div>
 
-        {/* Footer with accept button */}
+        {/* Footer with checkbox accept */}
         <div style={{
           padding: '16px 28px 20px',
           borderTop: '1px solid #f0ebe3',
-          background: scrolledToBottom ? '#faf8f4' : '#f5f3ef',
-          transition: 'background 0.3s',
+          background: '#faf8f4',
         }}>
-          {!scrolledToBottom && (
-            <p style={{ fontSize: 12, color: '#9a8a78', textAlign: 'center', marginBottom: 10 }}>
-              Desplázate hasta el final del documento para continuar
-            </p>
-          )}
+          <label style={{
+            display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer',
+            marginBottom: 12,
+          }}>
+            <input
+              type="checkbox"
+              checked={accepted}
+              onChange={e => setAccepted(e.target.checked)}
+              style={{
+                width: 20, height: 20, marginTop: 1, cursor: 'pointer',
+                accentColor: '#1a3a2a', flexShrink: 0,
+              }}
+            />
+            <span style={{ fontSize: 13, color: '#3a3028', lineHeight: 1.5 }}>
+              He leído y acepto los <strong>Términos y Condiciones</strong> de Juanita La Legal, incluyendo que este servicio es orientación informativa basada en IA y no constituye asesoría jurídica formal ni crea relación abogado-cliente.
+            </span>
+          </label>
           <button
             onClick={() => {
-              if (!scrolledToBottom) return;
+              if (!accepted) return;
               localStorage.setItem('juanita_terms_accepted', '1');
               onAccept();
             }}
-            disabled={!scrolledToBottom}
+            disabled={!accepted}
             style={{
               width: '100%',
               padding: '14px 24px',
               borderRadius: 10,
               border: 'none',
-              background: scrolledToBottom ? '#c44a12' : '#d8cfc0',
-              color: scrolledToBottom ? '#fff' : '#9a8a78',
+              background: accepted ? '#1a3a2a' : '#d8cfc0',
+              color: accepted ? '#fff' : '#9a8a78',
               fontSize: 14,
               fontWeight: 600,
-              cursor: scrolledToBottom ? 'pointer' : 'not-allowed',
+              cursor: accepted ? 'pointer' : 'not-allowed',
               transition: 'background 0.3s, color 0.3s',
               fontFamily: 'inherit',
             }}
           >
-            He leído y acepto los Términos y Condiciones
+            Continuar
           </button>
-          <p style={{ fontSize: 11, color: '#b0a090', textAlign: 'center', marginTop: 8 }}>
-            Al aceptar, declaras haber leído y comprendido íntegramente estos términos.
-          </p>
         </div>
       </div>
     </div>

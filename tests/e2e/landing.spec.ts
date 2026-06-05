@@ -11,6 +11,7 @@ import { test, expect } from '@playwright/test';
 async function acceptTerms(page: any) {
   await page.addInitScript(() => {
     localStorage.setItem('juanita_terms_accepted', '1');
+    localStorage.setItem('juanita_demo_ts', String(Date.now()));
   });
 }
 
@@ -26,9 +27,9 @@ test.describe('Landing page', () => {
   });
 
   test('shows legal area chips in hero', async ({ page }) => {
-    await expect(page.getByText('Derecho Laboral')).toBeVisible();
-    await expect(page.getByText('Derecho de Familia')).toBeVisible();
-    await expect(page.getByText('Arriendo y Vivienda')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Derecho Laboral/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Derecho de Familia/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Arriendo y Vivienda/ })).toBeVisible();
   });
 
   test('navigates to chat screen on CTA click', async ({ page }) => {
@@ -75,6 +76,7 @@ test.describe('Chat input and suggestion chips', () => {
 test.describe('Topic classification flow (mocked)', () => {
   test('classifies message and shows payment wall', async ({ page }) => {
     await acceptTerms(page);
+
     // Mock the classify API to return a known topic immediately
     await page.route('**/api/classify', async (route) => {
       await route.fulfill({

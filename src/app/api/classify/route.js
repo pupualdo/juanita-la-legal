@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 const SYSTEM_PROMPT = `Eres un clasificador legal para Chile.
 Devuelve SOLO un JSON sin texto adicional ni markdown.
@@ -36,6 +37,13 @@ export async function POST(request) {
   try {
     const { query } = await request.json();
     if (!query) return NextResponse.json({ error: 'Query requerida' }, { status: 400 });
+
+    // Rate limit: máximo 12 clasificaciones por minuto por IP
+    const ip = getClientIp(request);
+    const { allowed } = rateLimit(ip, 'classify', { limit: 12, windowMs: 60_000 });
+    if (!allowed) {
+      return NextResponse.json({ error: 'Demasiadas consultas. Espera unos segundos.' }, { status: 429 });
+    }
 
     const apiKey = process.env.JUANITA_ANTHROPIC_KEY;
     if (!apiKey) {
