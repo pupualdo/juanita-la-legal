@@ -1557,6 +1557,126 @@ function HeroSection({ onStart }) {
   );
 }
 
+// ─── PRE-CHAT WALL (chat real limitado antes del pago) ─────────────────────
+
+function PreChatWall({ topic, messages, input, setInput, onSend, onPay, exchanges, isStreaming, maxExchanges, sessionId }) {
+  const m = TOPIC_META[topic] || { border: '#d8cfc0', bg: '#faf8f4', color: '#4a5568', emoji: '⚖️' };
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const remaining = maxExchanges - exchanges;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", maxWidth: 640, margin: "0 auto", padding: "10px 16px" }}>
+      {/* Header con info del límite */}
+      <div style={{
+        background: "#f0f5e8", borderRadius: 10, padding: "8px 14px", marginBottom: 10,
+        border: "1px solid #b8d98a", fontSize: 12, color: "#3a5a20",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+      }}>
+        <span>{m.emoji} <strong>{TOPIC_LABELS[topic]}</strong> — orientación gratuita</span>
+        <span style={{
+          background: remaining <= 1 ? "#fff2ee" : "#e8f0d8",
+          color: remaining <= 1 ? "#c44a12" : "#4a7a20",
+          padding: "2px 8px", borderRadius: 8, fontSize: 11, fontWeight: 600,
+        }}>
+          {remaining} mensaje{remaining !== 1 ? "s" : ""} restante{remaining !== 1 ? "s" : ""}
+        </span>
+      </div>
+
+      {/* Chat messages */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 0 10px" }}>
+        {messages.slice(1).filter(m => m.type !== "system" || m.text.includes("Tema:")).map((m, i) => (
+          <div key={i} style={{
+            marginBottom: 10,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: m.type === "user" ? "flex-end" : "flex-start",
+          }}>
+            {m.type === "system" && (
+              <div style={{ fontSize: 11, color: "#8a7a60", fontStyle: "italic", margin: "6px 0", textAlign: "center", width: "100%" }}>
+                {m.text}
+              </div>
+            )}
+            {m.type === "user" && (
+              <div style={{
+                background: "#1a3a2a", color: "#c8e6c0", borderRadius: "14px 14px 4px 14px",
+                padding: "10px 14px", maxWidth: "80%", fontSize: 13, lineHeight: 1.5,
+              }}>
+                {m.text}
+              </div>
+            )}
+            {m.type === "juanita" && (
+              <div style={{
+                background: "#f0ebe3", color: "#2d2217", borderRadius: "14px 14px 14px 4px",
+                padding: "10px 14px", maxWidth: "88%", fontSize: 13, lineHeight: 1.6,
+              }}>
+                {m.text}
+              </div>
+            )}
+          </div>
+        ))}
+        {isStreaming && (
+          <div style={{ fontSize: 13, color: "#a09080", padding: "10px 0" }}>
+            Juanita está escribiendo...
+          </div>
+        )}
+        <div ref={scrollRef} />
+      </div>
+
+      {/* Input */}
+      {exchanges < maxExchanges ? (
+        <div style={{
+          display: "flex", gap: 8, padding: "10px 0 14px",
+          borderTop: "1px solid #ece4d4",
+        }}>
+          <input
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && !isStreaming) onSend(); }}
+            placeholder="Responde a Juanita..."
+            disabled={isStreaming}
+            style={{
+              flex: 1, border: "1.5px solid #d8cfc0", borderRadius: 10,
+              padding: "10px 14px", fontSize: 13, color: "#2a2018",
+              background: "white", outline: "none",
+            }}
+          />
+          <button
+            onClick={() => onSend()}
+            disabled={!input.trim() || isStreaming}
+            style={{
+              background: input.trim() && !isStreaming ? "#1a3a2a" : "#c0b8a8",
+              color: input.trim() && !isStreaming ? "#c8e6c0" : "#8a7a68",
+              border: "none", borderRadius: 10, padding: "10px 16px",
+              fontSize: 13, fontWeight: 600, cursor: input.trim() && !isStreaming ? "pointer" : "not-allowed",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Enviar
+          </button>
+        </div>
+      ) : (
+        <div style={{ padding: "12px 0 14px", borderTop: "1px solid #ece4d4" }}>
+          <button onClick={onPay} style={{
+            width: "100%", background: "#009ee3", color: "white", border: "none",
+            borderRadius: 12, padding: "14px", fontSize: 15, fontWeight: 600, cursor: "pointer",
+          }}>
+            💳 Pagar $4.995 con Mercado Pago
+          </button>
+          <div style={{ fontSize: 11, color: "#a09080", textAlign: "center", marginTop: 8 }}>
+            Consulta completa paso a paso · 10 minutos de orientación
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── DEMO PAYMENT WALL (post-demostración gratuita) ──────────────────────────
 
 function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
@@ -1751,14 +1871,40 @@ function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
 
       {/* Pay button */}
       {!loading ? (
-        <button onClick={handlePay} style={{
-          width: "100%", background: isFree ? "#4a7a20" : "#009ee3", color: "white", border: "none",
-          borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 600, cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          boxShadow: "0 4px 16px rgba(0,158,227,0.25)",
-        }}>
-          {isFree ? "🎉 Acceder gratis" : "💳 Pagar $4.995 con Mercado Pago"}
-        </button>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <button onClick={handlePay} style={{
+            width: "100%", background: isFree ? "#4a7a20" : "#009ee3", color: "white", border: "none",
+            borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 600, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            boxShadow: "0 4px 16px rgba(0,158,227,0.25)",
+          }}>
+            {isFree ? "🎉 Acceder gratis" : "💳 Pagar $4.995 con WebPay / Tarjeta"}
+          </button>
+
+          {!isFree && (
+            <div style={{
+              background: "#faf8f4", borderRadius: 12, padding: "14px",
+              border: "1px solid #ece4d4",
+            }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#1a3a2a", marginBottom: 8 }}>
+                🏦 Transferencia bancaria
+              </div>
+              <div style={{ fontSize: 12, color: "#6a5e50", lineHeight: 1.6, marginBottom: 8 }}>
+                Transfiere y escríbenos a <strong>contacto@juanitalalegal.cl</strong> con tu comprobante.
+              </div>
+              <div style={{
+                background: "white", borderRadius: 8, padding: "10px 12px",
+                border: "1px dashed #d8cfc0", fontSize: 12, color: "#3a3028", lineHeight: 1.8,
+              }}>
+                <div><strong>Banco:</strong> [Tus datos bancarios aquí]</div>
+                <div><strong>Titular:</strong> [Nombre titular]</div>
+                <div><strong>RUT:</strong> [RUT]</div>
+                <div><strong>Cuenta:</strong> [Tipo] N° [Número]</div>
+                <div><strong>Monto:</strong> ${finalPrice.toLocaleString('es-CL')} CLP</div>
+              </div>
+            </div>
+          )}
+        </div>
       ) : (
         <div style={{ textAlign: "center", color: "#009ee3", fontSize: 13, padding: "13px" }}>
           ⏳ {isFree ? "Activando acceso..." : "Redirigiendo a Mercado Pago..."}
@@ -1766,7 +1912,7 @@ function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
       )}
 
       <div style={{ fontSize: 11, color: "#a09080", textAlign: "center" }}>
-        🔒 Pago seguro · Mercado Pago Chile · Consulta de 10 minutos
+        🔒 Pago seguro · WebPay / Mercado Pago Chile · Consulta de 10 minutos
       </div>
 
       <button onClick={onBack} style={{ background: "none", border: "none", color: "#8a7a68", fontSize: 13, cursor: "pointer" }}>
@@ -1963,13 +2109,39 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, onBa
         ))}
 
         {!loading ? (
-          <button onClick={handlePay} style={{
-            width: "100%", background: isFree ? "#4a7a20" : "#009ee3", color: "white", border: "none",
-            borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 600, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          }}>
-            {isFree ? "🎉 Acceder gratis" : "💳 Pagar con Mercado Pago"}
-          </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button onClick={handlePay} style={{
+              width: "100%", background: isFree ? "#4a7a20" : "#009ee3", color: "white", border: "none",
+              borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 600, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            }}>
+              {isFree ? "🎉 Acceder gratis" : "💳 Pagar con WebPay / Tarjeta"}
+            </button>
+
+            {!isFree && (
+              <div style={{
+                background: "#faf8f4", borderRadius: 12, padding: "14px",
+                border: "1px solid #ece4d4",
+              }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#1a3a2a", marginBottom: 8 }}>
+                  🏦 Transferencia bancaria
+                </div>
+                <div style={{ fontSize: 12, color: "#6a5e50", lineHeight: 1.6, marginBottom: 8 }}>
+                  Transfiere a la cuenta y escríbenos a <strong>contacto@juanitalalegal.cl</strong> con tu comprobante.
+                </div>
+                <div style={{
+                  background: "white", borderRadius: 8, padding: "10px 12px",
+                  border: "1px dashed #d8cfc0", fontSize: 12, color: "#3a3028", lineHeight: 1.8,
+                }}>
+                  <div><strong>Banco:</strong> [Tus datos bancarios aquí]</div>
+                  <div><strong>Titular:</strong> [Nombre titular]</div>
+                  <div><strong>RUT:</strong> [RUT]</div>
+                  <div><strong>Cuenta:</strong> [Tipo] N° [Número]</div>
+                  <div><strong>Monto:</strong> ${finalPrice.toLocaleString('es-CL')} CLP</div>
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
           <div style={{ textAlign: "center", color: "#009ee3", fontSize: 13, padding: "13px" }}>
             ⏳ {isFree ? "Activando acceso..." : "Redirigiendo a Mercado Pago..."}
@@ -1977,7 +2149,7 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, onBa
         )}
 
         <div style={{ fontSize: 11, color: "#a09080", textAlign: "center", marginTop: 8 }}>
-          🔒 Pago seguro · Mercado Pago Chile · No guardamos datos de tarjeta
+          🔒 Pago seguro · WebPay / Mercado Pago Chile · No guardamos datos de tarjeta
         </div>
       </div>
 
@@ -2021,6 +2193,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const audioChunksRef = useRef([]);
   const fileInputRef = useRef(null);
   const [attachedFile, setAttachedFile] = useState(null);
+  const [prechatExchanges, setPrechatExchanges] = useState(0);
   const [demoUsed, setDemoUsed] = useState(() => {
     if (typeof window === 'undefined') return true;
     const ts = localStorage.getItem('juanita_demo_ts');
@@ -2087,6 +2260,28 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
 
   const addMsg = (msg) => setMessages(prev => [...prev, { id: createId(), ...msg }]);
 
+  // ── Pre-chat: enviar mensaje durante chat pre-pago ─────────────────────────
+  const handlePrechatSend = async (text) => {
+    const trimmed = text || input.trim();
+    if (!trimmed || isStreaming) return;
+    const newCount = prechatExchanges + 1;
+    setPrechatExchanges(newCount);
+    setInput("");
+    addMsg({ type: "user", text: trimmed });
+    if (newCount >= 3) {
+      // Límite alcanzado — último mensaje de Juanita y mostrar pago
+      setStage("payment");
+      addMsg({ type: "juanita", text: `Gracias por compartir tu caso conmigo 🙏\n\nCon lo que me has contado, ya tengo un muy buen panorama. Puedo orientarte paso a paso sobre tus derechos, lo que te conviene hacer y cómo prepararte.\n\n**Son $4.995 CLP por la consulta completa.** ¿Continuamos?` });
+    } else {
+      // Continuar el pre-chat
+      streamChatResponse(
+        `[PRE-CHAT — intercambio ${newCount}/3] Responde a la consulta con empatía. Haz preguntas para clarificar. NO des orientación legal completa. Sugiere sutilmente que la consulta pagada ($4.995) le dará la orientación detallada.`,
+        [],
+        sessionId
+      );
+    }
+  };
+
   // ── Clasificar con backend real ────────────────────────────────────────────
   const handleInitialSubmit = async (text) => {
     const trimmed = text || input.trim();
@@ -2130,13 +2325,23 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
             setDevHistory([...initialHistory, { role: 'assistant', content: fullText }]);
           }
         } else if (!demoUsed && !initialPaid) {
-          // ── DEMO: teaser genérico por tema, sin llamar a Claude ──
+          // ── PRE-CHAT: chat real limitado a 3 intercambios ──
           localStorage.setItem('juanita_demo_ts', String(Date.now()));
           setDemoUsed(true);
           setLockedTopic(data.tema);
-          setStage("demo-ended");
           setPendingTopic(data.tema);
           setClassifyResumen(data.resumen || `Consulta sobre ${TOPIC_LABELS[data.tema]}`);
+          setPrechatExchanges(0);
+          setStage("prechat");
+          // Llamar a /api/chat para la primera respuesta de Juanita
+          const prechatSessionId = crypto.randomUUID();
+          setSessionId(prechatSessionId);
+          addMsg({ type: "system", text: `Tema: ${TOPIC_LABELS[data.tema]} ${TOPIC_META[data.tema]?.emoji}. Conversación de orientación gratuita (máx. 3 intercambios).` });
+          streamChatResponse(
+            `[PRE-CHAT] El usuario consulta: "${trimmed}". Responde con empatía, haz 1-2 preguntas para entender mejor su caso, y demuestra que entiendes del tema legal. NO des orientación completa — solo clarifica y muestra que puedes ayudarle. Sé cálida pero concisa. Al final de tu respuesta, sugiérele sutilmente que con la consulta pagada ($4.995) puedes darle la orientación completa paso a paso.`,
+            [],
+            prechatSessionId
+          );
         } else {
           setStage("payment");
         }
@@ -2402,15 +2607,30 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
         </div>
       )}
 
-      {/* Demo payment wall — versión soft post-demostración */}
-      {stage === "demo-ended" && pendingTopic && (
+      {/* Pre-chat — chat real limitado antes del pago */}
+      {(stage === "prechat" || stage === "demo-ended") && pendingTopic && (
         <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
-          <DemoPaymentWall
-            topic={pendingTopic}
-            resumen={classifyResumen}
-            sessionId={sessionId}
-            onBack={() => { setStage("input"); setMessages(prev => prev.slice(0, -2)); }}
-          />
+          {stage === "prechat" ? (
+            <PreChatWall
+              topic={pendingTopic}
+              messages={messages}
+              input={input}
+              setInput={setInput}
+              onSend={handlePrechatSend}
+              onPay={() => setStage("payment")}
+              exchanges={prechatExchanges}
+              isStreaming={isStreaming}
+              maxExchanges={3}
+              sessionId={sessionId}
+            />
+          ) : (
+            <DemoPaymentWall
+              topic={pendingTopic}
+              resumen={classifyResumen}
+              sessionId={sessionId}
+              onBack={() => { setStage("input"); setMessages(prev => prev.slice(0, -2)); }}
+            />
+          )}
         </div>
       )}
 
@@ -2903,6 +3123,14 @@ const TYC_SECTIONS = [
 
 function TermsScreen({ onAccept }) {
   const [accepted, setAccepted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   return (
     <div style={{
@@ -2924,7 +3152,7 @@ function TermsScreen({ onAccept }) {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        maxHeight: '90vh',
+        maxHeight: isMobile ? '90vh' : 'none',
       }}>
         {/* Header */}
         <div style={{ padding: '24px 28px 16px', borderBottom: '1px solid #f0ebe3' }}>
