@@ -410,8 +410,25 @@ export async function POST(request) {
       // Dev mode: skip session validation, use history from request
       history = devHistory || [];
     } else if (prechat) {
-      // Pre-chat mode: no session in Supabase, no history persistence
-      history = [];
+      // Pre-chat mode: upsert session in Supabase for lead tracking + history
+      const { data: existingPrechat } = await supabase
+        .from('sessions')
+        .select('*')
+        .eq('session_id', sessionId)
+        .single();
+
+      if (existingPrechat) {
+        history = Array.isArray(existingPrechat.history) ? existingPrechat.history : [];
+      } else {
+        // Create pre-chat session — no expiration yet, status marks it as pre-pago
+        await supabase.from('sessions').insert({
+          session_id: sessionId,
+          status: 'prechat',
+          history: [],
+          created_at: new Date().toISOString(),
+        });
+        history = [];
+      }
     } else {
       const { data: session } = await supabase
         .from('sessions')
@@ -463,7 +480,7 @@ export async function POST(request) {
               controller.enqueue(encoder.encode('data: ' + JSON.stringify({ text: event.delta.text }) + '\n\n'));
             }
           }
-          if (!isDevMode && !isPrechat && capturedSessionId) {
+          if (!isDevMode && capturedSessionId) {
             const updatedHistory = [...capturedHistory, { role: 'assistant', content: fullReply }];
             await supabase
               .from('sessions')
