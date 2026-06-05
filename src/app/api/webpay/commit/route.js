@@ -1,4 +1,4 @@
-import { WebpayPlus, Options, IntegrationCommerceCodes, IntegrationApiKeys } from 'transbank-sdk';
+import { WebpayPlus, Options, Environment, IntegrationCommerceCodes, IntegrationApiKeys } from 'transbank-sdk';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { log } from '@/lib/logger';
@@ -7,6 +7,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 
 const COMMERCE_CODE = process.env.WEBPAY_COMMERCE_CODE || IntegrationCommerceCodes.WEBPAY_PLUS;
 const API_KEY = process.env.WEBPAY_API_KEY || IntegrationApiKeys.WEBPAY;
+const ENVIRONMENT = process.env.WEBPAY_COMMERCE_CODE ? Environment.Production : Environment.Integration;
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://juanitalalegal.cl';
 
@@ -44,7 +45,7 @@ async function handleCommit(request) {
     log.info('webpay-commit', 'Confirmando transacción', { token: tokenWs });
 
     const tx = new WebpayPlus.Transaction(
-      new Options(COMMERCE_CODE, API_KEY, process.env.WEBPAY_COMMERCE_CODE ? 'LIVE' : 'INTEGRATION')
+      new Options(COMMERCE_CODE, API_KEY, ENVIRONMENT)
     );
 
     const response = await tx.commit(tokenWs);

@@ -1991,10 +1991,10 @@ function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
                 background: "white", borderRadius: 8, padding: "10px 12px",
                 border: "1px dashed #d8cfc0", fontSize: 12, color: "#3a3028", lineHeight: 1.8, marginBottom: 10,
               }}>
-                <div><strong>Banco:</strong> [Tus datos bancarios aquí]</div>
-                <div><strong>Titular:</strong> [Nombre titular]</div>
-                <div><strong>RUT:</strong> [RUT]</div>
-                <div><strong>Cuenta:</strong> [Tipo] N° [Número]</div>
+                <div><strong>Banco:</strong> Banco de Chile</div>
+                <div><strong>Titular:</strong> Asesorías del Meridiano Limitada</div>
+                <div><strong>RUT:</strong> 77.604.764-3</div>
+                <div><strong>Cuenta:</strong> Cuenta Corriente N° 3190709310</div>
                 <div><strong>Monto:</strong> ${finalPrice.toLocaleString('es-CL')} CLP</div>
               </div>
 
@@ -2447,10 +2447,10 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, onBa
                   background: "white", borderRadius: 8, padding: "10px 12px",
                   border: "1px dashed #d8cfc0", fontSize: 12, color: "#3a3028", lineHeight: 1.8,
                 }}>
-                  <div><strong>Banco:</strong> [Tus datos bancarios aquí]</div>
-                  <div><strong>Titular:</strong> [Nombre titular]</div>
-                  <div><strong>RUT:</strong> [RUT]</div>
-                  <div><strong>Cuenta:</strong> [Tipo] N° [Número]</div>
+                  <div><strong>Banco:</strong> Banco de Chile</div>
+                  <div><strong>Titular:</strong> Asesorías del Meridiano Limitada</div>
+                  <div><strong>RUT:</strong> 77.604.764-3</div>
+                  <div><strong>Cuenta:</strong> Cuenta Corriente N° 3190709310</div>
                   <div><strong>Monto:</strong> ${finalPrice.toLocaleString('es-CL')} CLP</div>
                 </div>
               </div>

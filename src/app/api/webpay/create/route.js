@@ -1,4 +1,4 @@
-import { WebpayPlus, Options, IntegrationCommerceCodes, IntegrationApiKeys } from 'transbank-sdk';
+import { WebpayPlus, Options, Environment, IntegrationCommerceCodes, IntegrationApiKeys } from 'transbank-sdk';
 import { NextResponse } from 'next/server';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { log } from '@/lib/logger';
@@ -8,6 +8,7 @@ import { log } from '@/lib/logger';
 // En producción, setear WEBPAY_COMMERCE_CODE y WEBPAY_API_KEY en Vercel.
 const COMMERCE_CODE = process.env.WEBPAY_COMMERCE_CODE || IntegrationCommerceCodes.WEBPAY_PLUS;
 const API_KEY = process.env.WEBPAY_API_KEY || IntegrationApiKeys.WEBPAY;
+const ENVIRONMENT = process.env.WEBPAY_COMMERCE_CODE ? Environment.Production : Environment.Integration;
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://juanitalalegal.cl';
 
@@ -41,7 +42,7 @@ export async function POST(request) {
     log.info('webpay-create', 'Creating WebPay transaction', { sessionId, buyOrder, amount: amountClp });
 
     const tx = new WebpayPlus.Transaction(
-      new Options(COMMERCE_CODE, API_KEY, process.env.WEBPAY_COMMERCE_CODE ? 'LIVE' : 'INTEGRATION')
+      new Options(COMMERCE_CODE, API_KEY, ENVIRONMENT)
     );
 
     const response = await tx.create(buyOrder, tbkSessionId, amountClp, returnUrl);
