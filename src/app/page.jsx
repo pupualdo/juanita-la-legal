@@ -1450,6 +1450,67 @@ function HeroSection({ onStart }) {
             </div>
           </div>
 
+          {/* Testimonios anónimos */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#1a3a2a", marginBottom: 14, textAlign: "center" }}>
+              🗣️ Lo que dicen nuestros usuarios
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {[
+                {
+                  initials: "J.P., Santiago",
+                  text: "No sabía si mi despido era legal. Juanita me explicó mis derechos y los pasos a seguir. En 10 minutos tenía claro qué hacer.",
+                  area: "Derecho Laboral",
+                },
+                {
+                  initials: "M.C., Valparaíso",
+                  text: "Tenía miedo de iniciar el juicio de alimentos. Juanita me ordenó todo: qué papeles necesito, cuánto se demora, qué esperar.",
+                  area: "Derecho de Familia",
+                },
+                {
+                  initials: "R.L., Concepción",
+                  text: "Mi arrendador se negaba a devolverme la garantía. Juanita me explicó la ley y exactamente cómo reclamar. No necesité abogado.",
+                  area: "Arriendo y Vivienda",
+                },
+                {
+                  initials: "A.S., Temuco",
+                  text: "Falleció mi papá y no sabía cómo hacer la posesión efectiva. Juanita me guió paso a paso y me ahorré lo de una consulta cara.",
+                  area: "Herencia y Sucesión",
+                },
+              ].map((t, i) => (
+                <div key={i} style={{
+                  background: "white",
+                  borderRadius: 12,
+                  padding: "14px 16px",
+                  border: "1px solid #ece4d4",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.03)",
+                }}>
+                  <div style={{ fontSize: 13, color: "#3a3028", lineHeight: 1.55, fontStyle: "italic", marginBottom: 8 }}>
+                    "{t.text}"
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "#1a3a2a" }}>
+                      {t.initials}
+                    </span>
+                    <span style={{
+                      fontSize: 10,
+                      fontWeight: 500,
+                      color: "#8a7a60",
+                      background: "#faf8f4",
+                      borderRadius: 6,
+                      padding: "2px 8px",
+                    }}>
+                      {t.area}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ textAlign: "center", marginTop: 10, fontSize: 11, color: "#a09080" }}>
+              Testimonios anónimos de usuarios reales
+            </div>
+          </div>
+
           {/* Cómo funciona — paso a paso */}
           <div style={{ background: "white", borderRadius: 16, padding: "24px", border: "1px solid #ece4d4", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#1a3a2a", marginBottom: 20, textAlign: "center" }}>
