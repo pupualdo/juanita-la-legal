@@ -76,7 +76,7 @@ export default function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
           alert('Error al activar el acceso. Intenta de nuevo.');
           return;
         }
-        localStorage.setItem('juanita_session', sessionId);
+        localStorage.setItem('juanita_session', grantData.sessionId);
         localStorage.setItem('juanita_topic', topic);
         localStorage.removeItem('juanita_terms_accepted');
         window.location.href = '/?paid=true';

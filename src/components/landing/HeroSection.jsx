@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { track } from '@vercel/analytics';
-import { TOPIC_META, SUGGESTIONS } from '@/lib/constants';
+import { TOPIC_LABELS, TOPIC_META, SUGGESTIONS } from '@/lib/constants';
 import TopicDetailModal from './TopicDetailModal';
 export default function HeroSection({ onStart }) {
   const [openTopic, setOpenTopic] = useState(null);
@@ -58,7 +58,7 @@ export default function HeroSection({ onStart }) {
           <p style={{ fontSize: 20, color: "#8fbc8f", marginBottom: 8, fontWeight: 500 }}>
             Te orientamos en buen chileno.
           </p>
-          <p style={{ fontSize: 16, color: "rgba(245,240,232,0.7)", marginBottom: 18, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 16, color: "rgba(245,240,232,0.85)", marginBottom: 18, lineHeight: 1.5 }}>
             Primera orientación legal clara, rápida y pagable. $9.990 por consulta.
           </p>
 
@@ -160,7 +160,7 @@ export default function HeroSection({ onStart }) {
             onClick={scrollToAbout}
             style={{
               marginTop: 28, background: "transparent", border: "none",
-              color: "rgba(245,240,232,0.45)", fontSize: 12, cursor: "pointer",
+              color: "rgba(245,240,232,0.70)", fontSize: 13, cursor: "pointer",
               fontFamily: "inherit", letterSpacing: 0.5,
               display: "inline-flex", alignItems: "center", gap: 6,
             }}
@@ -234,7 +234,7 @@ export default function HeroSection({ onStart }) {
             }}>
               Iniciar mi consulta
             </button>
-            <div style={{ marginTop: 14, fontSize: 13, color: "#8a7a68" }}>
+            <div style={{ marginTop: 14, fontSize: 14, color: "#8a7a68" }}>
               Toca cualquier tema arriba para ver qué incluye antes de pagar.
             </div>
           </div>
@@ -320,7 +320,7 @@ export default function HeroSection({ onStart }) {
                       {t.initials}
                     </span>
                     <span style={{
-                      fontSize: 10,
+                      fontSize: 12,
                       fontWeight: 500,
                       color: "#8a7a60",
                       background: "#faf8f4",
@@ -333,7 +333,7 @@ export default function HeroSection({ onStart }) {
                 </div>
               ))}
             </div>
-            <div style={{ textAlign: "center", marginTop: 10, fontSize: 11, color: "#a09080" }}>
+            <div style={{ textAlign: "center", marginTop: 10, fontSize: 12, color: "#a09080" }}>
               Testimonios anónimos de usuarios reales
             </div>
           </div>

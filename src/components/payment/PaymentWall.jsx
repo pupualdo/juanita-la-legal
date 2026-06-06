@@ -80,7 +80,7 @@ export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, 
           alert('Error al activar el acceso. Intenta de nuevo.');
           return;
         }
-        localStorage.setItem('juanita_session', sessionId);
+        localStorage.setItem('juanita_session', grantData.sessionId);
         localStorage.setItem('juanita_topic', topic);
         // Clear terms acceptance so the user explicitly re-accepts before
         // entering the paid session via a promo/friend code.

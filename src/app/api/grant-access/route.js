@@ -1,16 +1,29 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
+import { randomUUID } from 'crypto';
 
 // Fallback hardcoded — códigos 100% gratis que existen aunque Supabase caiga
 const FALLBACK_FREE_CODES = ['AMIGOS2026', 'MEJORAMIGO2026'];
 
 export async function POST(request) {
   try {
-    const { sessionId, promoCode } = await request.json();
+    // Rate limiting: 5 req/min por IP
+    const ip = getClientIp(request);
+    const { allowed, retryAfter } = rateLimit(ip, 'grant-access', { limit: 5, windowMs: 60_000 });
+    if (!allowed) {
+      return NextResponse.json({ ok: false, reason: 'too_many_requests', retryAfter }, { status: 429 });
+    }
 
-    if (!sessionId || !promoCode) {
+    const { sessionId: clientSessionId, promoCode } = await request.json();
+
+    if (!promoCode) {
       return NextResponse.json({ ok: false, reason: 'missing_params' }, { status: 400 });
     }
+
+    // Generar sessionId en el servidor — no aceptar IDs del cliente
+    // Si el cliente manda uno, lo ignoramos por seguridad
+    const sessionId = randomUUID();
 
     const clean = String(promoCode).toUpperCase().trim();
 
