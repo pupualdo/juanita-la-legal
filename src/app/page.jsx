@@ -1711,28 +1711,38 @@ function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
   const DISCOUNT_PRICE = 4995;
   const finalPrice = promoApplied?.finalPrice ?? DISCOUNT_PRICE;
   const isFree = promoApplied?.isFree ?? false;
-
-  const handleApplyPromo = async () => {
-    if (!promoCode.trim()) return;
+  const handleApplyPromo = async (codeArg) => {
+    const code = (typeof codeArg === 'string' ? codeArg : promoCode).trim();
+    if (!code) return;
     setPromoLoading(true);
     setPromoError('');
+    setPromoApplied(null);
     try {
       const res = await fetch('/api/validate-promo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: promoCode.trim().toUpperCase() }),
+        body: JSON.stringify({ code }),
       });
       const data = await res.json();
       if (data.valid) {
-        setPromoApplied(data);
+        setPromoApplied({ discount: data.discount, label: data.label });
       } else {
-        setPromoError(data.error || 'Código inválido o expirado.');
+        setPromoError('Código no válido. Intenta con otro.');
       }
     } catch {
-      setPromoError('Error al validar. Intenta de nuevo.');
+      setPromoError('Error al validar el código.');
     }
     setPromoLoading(false);
   };
+
+  // Auto-aplicar código de descuento desde el popup de lanzamiento
+  useEffect(() => {
+    if (autoPromo) {
+      setPromoCode(autoPromo);
+      handleApplyPromo(autoPromo);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPromo]);
 
   const handlePay = async () => {
     // Show payment method selection first
@@ -2197,9 +2207,62 @@ function PaymentMethodScreen({ topic, finalPrice, isFree, promoCode, onSelect, o
   );
 }
 
+// ─── LAUNCH DISCOUNT MODAL ───────────────────────────────────────────────────
+
+function LaunchDiscountModal({ onApply, onClose }) {
+  return (
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 400 }} />
+      <div style={{
+        position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+        width: "min(420px, 92vw)", background: "#fffdf8", borderRadius: 22, zIndex: 401,
+        padding: "26px 24px 22px", boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
+        border: "1.5px solid #f0de8a", animation: "fadeUp 0.25s ease", textAlign: "center",
+      }}>
+        <button onClick={onClose} style={{
+          position: "absolute", top: 12, right: 14, background: "none", border: "none",
+          fontSize: 22, color: "#b0a690", cursor: "pointer", lineHeight: 1,
+        }}>×</button>
+
+        <div style={{ fontSize: 40, marginBottom: 6 }}>🎉</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#b8860b", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 6 }}>
+          Oferta de lanzamiento
+        </div>
+        <div style={{ fontSize: 23, fontWeight: 800, color: "#1a3a2a", fontFamily: "serif", lineHeight: 1.2, marginBottom: 8 }}>
+          50% de descuento<br />en tu consulta completa
+        </div>
+        <div style={{ fontSize: 14, color: "#6a5e50", lineHeight: 1.5, marginBottom: 16 }}>
+          Resuelve tu caso ahora por <strong style={{ color: "#1a3a2a" }}>$4.995</strong> en vez de $9.990. Solo por lanzamiento.
+        </div>
+
+        <div style={{
+          background: "#1a3a2a", color: "#f5f0e8", borderRadius: 12, padding: "10px 14px",
+          fontSize: 13, marginBottom: 16, letterSpacing: 1,
+        }}>
+          Código: <strong style={{ fontSize: 16, letterSpacing: 2 }}>LANZAMIENTO</strong>
+        </div>
+
+        <button onClick={onApply} style={{
+          width: "100%", background: "#009ee3", color: "white", border: "none",
+          borderRadius: 13, padding: "14px", fontSize: 16, fontWeight: 700, cursor: "pointer",
+          boxShadow: "0 4px 16px rgba(0,158,227,0.35)",
+        }}>
+          Aplicar 50% y pagar ahora
+        </button>
+        <button onClick={onClose} style={{
+          width: "100%", background: "none", border: "none", color: "#a09080",
+          fontSize: 13, cursor: "pointer", marginTop: 10,
+        }}>
+          No, gracias
+        </button>
+      </div>
+    </>
+  );
+}
+
 // ─── PAYMENT WALL ────────────────────────────────────────────────────────────
 
-function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, onBack }) {
+function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, autoPromo, onBack }) {
   const [loading, setLoading] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(null); // { discount, label } | null
@@ -2222,8 +2285,9 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, onBa
     : BASE_PRICE;
   const isFree = finalPrice === 0;
 
-  const handleApplyPromo = async () => {
-    if (!promoCode.trim()) return;
+  const handleApplyPromo = async (codeArg) => {
+    const code = (typeof codeArg === 'string' ? codeArg : promoCode).trim();
+    if (!code) return;
     setPromoLoading(true);
     setPromoError('');
     setPromoApplied(null);
@@ -2231,7 +2295,7 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, onBa
       const res = await fetch('/api/validate-promo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: promoCode }),
+        body: JSON.stringify({ code }),
       });
       const data = await res.json();
       if (data.valid) {
@@ -2241,10 +2305,18 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, onBa
       }
     } catch {
       setPromoError('Error al validar el código.');
-    } finally {
-      setPromoLoading(false);
     }
+    setPromoLoading(false);
   };
+
+  // Auto-aplicar código de descuento desde el popup de lanzamiento
+  useEffect(() => {
+    if (autoPromo) {
+      setPromoCode(autoPromo);
+      handleApplyPromo(autoPromo);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPromo]);
 
   const handlePay = async () => {
     // Show payment method selection first
@@ -2507,6 +2579,8 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   const audioChunksRef = useRef([]);
   const fileInputRef = useRef(null);
   const [attachedFile, setAttachedFile] = useState(null);
+  const [showDiscountModal, setShowDiscountModal] = useState(false);
+  const [autoPromo, setAutoPromo] = useState(null);
   const [prechatExchanges, setPrechatExchanges] = useState(0);
   const [demoUsed, setDemoUsed] = useState(() => {
     if (typeof window === 'undefined') return true;
@@ -2526,6 +2600,14 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
   useEffect(() => {
     if (!localStorage.getItem('juanita_hintSeen')) setShowTermHint(true);
   }, []);
+
+  // Al entrar al muro de pago, ofrece una sola vez el popup de 50% (LANZAMIENTO).
+  useEffect(() => {
+    if (stage === 'payment' && !sessionStorage.getItem('juanita_promo_seen')) {
+      setShowDiscountModal(true);
+      try { sessionStorage.setItem('juanita_promo_seen', '1'); } catch {}
+    }
+  }, [stage]);
 
   useEffect(() => {
     if (!userScrolledUp) {
@@ -2920,6 +3002,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
             sessionId={sessionId}
             prevSessionId={typeof window !== 'undefined' ? localStorage.getItem('juanita_session') : null}
             prevTopic={typeof window !== 'undefined' ? localStorage.getItem('juanita_topic') : null}
+            autoPromo={autoPromo}
             onBack={() => { setStage("input"); setMessages(prev => prev.slice(0, -1)); }}
           />
         </div>
@@ -3302,6 +3385,12 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
         <RatingModal
           sessionId={sessionId}
           onClose={() => { setShowRating(false); setRatingDone(true); }}
+        />
+      )}
+      {showDiscountModal && (
+        <LaunchDiscountModal
+          onApply={() => { setAutoPromo('LANZAMIENTO'); setShowDiscountModal(false); track('discount_modal_apply', { tema: pendingTopic }); }}
+          onClose={() => setShowDiscountModal(false)}
         />
       )}
       </div>{/* end main column */}
