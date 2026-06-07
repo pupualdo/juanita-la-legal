@@ -1,5 +1,5 @@
 'use client';
-import { TOPIC_META } from '@/lib/constants';
+import { TOPIC_META, TOPIC_LABELS } from '@/lib/constants';
 export default function TopicBadge({ topic }) {
   if (!topic) return null;
   const m = TOPIC_META[topic];
