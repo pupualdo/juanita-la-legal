@@ -21,9 +21,13 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, reason: 'missing_params' }, { status: 400 });
     }
 
-    // Generar sessionId en el servidor — no aceptar IDs del cliente
-    // Si el cliente manda uno, lo ignoramos por seguridad
-    const sessionId = randomUUID();
+    // Si el cliente manda un sessionId válido (UUID), lo usamos.
+    // Si no, generamos uno en el servidor.
+    let sessionId = clientSessionId;
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!sessionId || !uuidRe.test(String(sessionId))) {
+      sessionId = randomUUID();
+    }
 
     const clean = String(promoCode).toUpperCase().trim();
 
