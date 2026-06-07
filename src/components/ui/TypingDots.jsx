@@ -1,4 +1,5 @@
 'use client';
+import { useState, useEffect } from 'react';
 export default function TypingDots() {
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {

@@ -1,4 +1,5 @@
 'use client';
+import { useRef, useEffect } from 'react';
 import { TOPIC_LABELS, TOPIC_META } from '@/lib/constants';
 import dynamic from 'next/dynamic';
 import remarkGfm from 'remark-gfm';
