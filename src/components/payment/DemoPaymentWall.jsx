@@ -20,8 +20,11 @@ export default function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
 
   const BASE_PRICE = 9990;
   const DISCOUNT_PRICE = 4995;
-  const finalPrice = promoApplied?.finalPrice ?? DISCOUNT_PRICE;
-  const isFree = promoApplied?.isFree ?? false;
+  const appliedDiscount = promoApplied?.discount ?? 0;
+  const finalPrice = promoApplied
+    ? Math.round(DISCOUNT_PRICE * (1 - appliedDiscount / 100))
+    : DISCOUNT_PRICE;
+  const isFree = finalPrice === 0 || appliedDiscount >= 100;
   const handleApplyPromo = async (codeArg) => {
     const code = (typeof codeArg === 'string' ? codeArg : promoCode).trim();
     if (!code) return;
@@ -47,6 +50,11 @@ export default function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
   };
 
   const handlePay = async () => {
+    // Si es gratis, acceso directo sin seleccionar método
+    if (isFree) {
+      handleMethodSelect('free');
+      return;
+    }
     // Show payment method selection first
     setShowMethodScreen(true);
   };
