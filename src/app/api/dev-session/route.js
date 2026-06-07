@@ -2,7 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+let _supabase = null;
+const getSupabase = () => {
+  if (!_supabase) _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  return _supabase;
+};
 
 export async function POST(request) {
   // Solo disponible en desarrollo local — bloqueado en Vercel/producción
@@ -29,7 +33,7 @@ export async function POST(request) {
 
     const expiresAt = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
 
-    await supabase.from('sessions').upsert({
+    await getSupabase().from('sessions').upsert({
       session_id: sessionId,
       payment_id: 'dev-bypass',
       expires_at: expiresAt,

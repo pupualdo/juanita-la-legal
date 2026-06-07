@@ -6,7 +6,11 @@ import { log } from '@/lib/logger';
 export const maxDuration = 60;
 
 const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+let _supabase = null;
+const getSupabase = () => {
+  if (!_supabase) _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  return _supabase;
+};
 
 const SESSION_DURATION_MS = 3 * 60 * 60 * 1000; // 3 horas
 
@@ -55,7 +59,7 @@ export async function POST(request) {
     }
 
     // Verificar que no se haya procesado ya este pago
-    const { data: existing } = await supabase
+    const { data: existing } = await getSupabase()
       .from('sessions')
       .select('payment_id')
       .eq('session_id', sessionId)
@@ -68,7 +72,7 @@ export async function POST(request) {
 
     // Conceder acceso
     const expiresAt = new Date(Date.now() + SESSION_DURATION_MS).toISOString();
-    const { error } = await supabase.from('sessions').upsert({
+    const { error } = await getSupabase().from('sessions').upsert({
       session_id: sessionId,
       payment_id: String(paymentId),
       paid_at: new Date().toISOString(),

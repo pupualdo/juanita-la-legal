@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+let _supabase = null;
+const getSupabase = () => {
+  if (!_supabase) _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  return _supabase;
+};
 
 /*
   Supabase table (run once in SQL editor):
@@ -25,7 +29,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Vote inválido' }, { status: 400 });
     }
 
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('message_feedback')
       .insert({
         session_id: session_id || null,

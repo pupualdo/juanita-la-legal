@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+let _supabase = null;
+const getSupabase = () => {
+  if (!_supabase) _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  return _supabase;
+};
 
 export const maxDuration = 30;
 
@@ -111,7 +115,7 @@ Reglas:
 
     // ── Subir comprobante a Supabase Storage ──
     const fileName = `receipts/${sessionId}_${Date.now()}.${file.type.split('/')[1] || 'jpg'}`;
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await getSupabase().storage
       .from('receipts')
       .upload(fileName, file, { contentType: file.type, upsert: true });
 
@@ -124,7 +128,7 @@ Reglas:
 
     // ── Activar sesión ──
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 min
-    const { error: sessionError } = await supabase
+    const { error: sessionError } = await getSupabase()
       .from('sessions')
       .upsert({
         session_id: sessionId,

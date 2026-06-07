@@ -3,7 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { log } from '@/lib/logger';
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+let _supabase = null;
+const getSupabase = () => {
+  if (!_supabase) _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  return _supabase;
+};
 
 const COMMERCE_CODE = process.env.WEBPAY_COMMERCE_CODE || IntegrationCommerceCodes.WEBPAY_PLUS;
 const API_KEY = process.env.WEBPAY_API_KEY || IntegrationApiKeys.WEBPAY;
@@ -63,7 +67,7 @@ async function handleCommit(request) {
       // Activar sesión en Supabase (si existe)
       if (sessionId) {
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-        const { error: upsertError } = await supabase
+        const { error: upsertError } = await getSupabase()
           .from('sessions')
           .upsert({
             session_id: sessionId,

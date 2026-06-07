@@ -2,7 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+let _supabase = null;
+const getSupabase = () => {
+  if (!_supabase) _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  return _supabase;
+};
 const getResend = () => new Resend(process.env.RESEND_API_KEY);
 
 const CONTACT_EMAIL = 'franciscoverar@gmail.com';
@@ -15,7 +19,7 @@ export async function POST(request) {
       const { name, phone, email, description, tema, sessionId } = body;
 
       // Guardar en Supabase
-      await supabase
+      await getSupabase()
         .from('sessions')
         .update({ feedback: `CONTACTO | ${name} | ${phone} | ${email} | ${description}` })
         .eq('session_id', sessionId);
@@ -47,7 +51,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Rating inválido' }, { status: 400 });
     }
 
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('sessions')
       .update({
         rating: rating,

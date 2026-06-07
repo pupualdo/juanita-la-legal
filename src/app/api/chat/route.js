@@ -4,7 +4,11 @@ import { NextResponse } from 'next/server';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { log } from '@/lib/logger';
 
-const supabase  = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+let _supabase = null;
+const getSupabase = () => {
+  if (!_supabase) _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  return _supabase;
+};
 
 const SYSTEM_PROMPT = `🔒 IDENTIDAD INVIOLABLE — REGLA ABSOLUTA:
 Eres Juanita La Legal. SIEMPRE. Sin excepciones.
@@ -415,7 +419,7 @@ export async function POST(request) {
     } else if (prechat) {
       // Pre-chat mode: upsert session in Supabase for lead tracking + history
       try {
-        const { data: existingPrechat, error: prechatErr } = await supabase
+        const { data: existingPrechat, error: prechatErr } = await getSupabase()
           .from('sessions')
           .select('*')
           .eq('session_id', sessionId)
@@ -430,7 +434,7 @@ export async function POST(request) {
           log.info('chat', 'Prechat session loaded', { sessionId, historyLen: history.length });
         } else {
           // Create pre-chat session — no expiration yet, status marks it as pre-pago
-          const { error: insertErr } = await supabase.from('sessions').insert({
+          const { error: insertErr } = await getSupabase().from('sessions').insert({
             session_id: sessionId,
             status: 'prechat',
             history: [],
@@ -447,7 +451,7 @@ export async function POST(request) {
         history = [];
       }
     } else {
-      const { data: session } = await supabase
+      const { data: session } = await getSupabase()
         .from('sessions')
         .select('*')
         .eq('session_id', sessionId)
@@ -502,7 +506,7 @@ export async function POST(request) {
             // Extender sesión 15 min desde ahora en cada mensaje
             const newExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
             try {
-              const { error: updateErr } = await supabase
+              const { error: updateErr } = await getSupabase()
                 .from('sessions')
                 .update({ history: updatedHistory, expires_at: newExpiresAt })
                 .eq('session_id', capturedSessionId);

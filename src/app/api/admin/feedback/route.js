@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+let _supabase = null;
+const getSupabase = () => {
+  if (!_supabase) _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  return _supabase;
+};
 
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
 
@@ -16,17 +20,17 @@ export async function GET(request) {
     const now = new Date().toISOString();
 
     const [sessionsRes, feedbackRes, activeRes] = await Promise.all([
-      supabase
+      getSupabase()
         .from('sessions')
         .select('session_id, paid_at, expires_at, tema, rating, feedback')
         .order('paid_at', { ascending: false })
         .limit(200),
-      supabase
+      getSupabase()
         .from('message_feedback')
         .select('id, session_id, message_id, vote, comment, message_preview, created_at')
         .order('created_at', { ascending: false })
         .limit(500),
-      supabase
+      getSupabase()
         .from('sessions')
         .select('session_id, paid_at, expires_at, tema')
         .gt('expires_at', now)

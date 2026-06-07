@@ -3,7 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+let _supabase = null;
+const getSupabase = () => {
+  if (!_supabase) _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  return _supabase;
+};
 
 export async function GET(request) {
   try {
@@ -17,7 +21,7 @@ export async function GET(request) {
       if (!sessionId) {
         return NextResponse.json({ ok: false, reason: 'no_session' });
       }
-      const { data } = await supabase
+      const { data } = await getSupabase()
         .from('sessions')
         .select('expires_at')
         .eq('session_id', sessionId)
@@ -41,7 +45,7 @@ export async function GET(request) {
 
     const expiresAt = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
 
-    await supabase.from('sessions').upsert({
+    await getSupabase().from('sessions').upsert({
       session_id: sessionId,
       payment_id: paymentId,
       paid_at: new Date().toISOString(),
