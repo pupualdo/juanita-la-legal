@@ -1,5 +1,9 @@
 'use client';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+
+const STAR_COLOR = (n, hovered, selected) =>
+  (hovered >= n || selected >= n) ? '#F5A623' : '#D8CFC0';
+
 export default function RatingModal({ sessionId, onClose }) {
   const [selected, setSelected] = useState(0);
   const [hovered, setHovered] = useState(0);

@@ -1,4 +1,5 @@
 'use client';
+import { WHATSAPP_TRIGGERS } from '@/lib/constants';
 export default function WhatsAppCTA({ text }) {
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   if (!phone) return null;

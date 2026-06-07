@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { track } from '@vercel/analytics';
 import { TOPIC_LABELS, TOPIC_META, DISCLAIMER, SUGGESTIONS } from '@/lib/constants';
 import PaymentMethodScreen from './PaymentMethodScreen';
 export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, autoPromo, onBack }) {
