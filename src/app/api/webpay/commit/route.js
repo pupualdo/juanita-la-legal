@@ -65,25 +65,28 @@ async function handleCommit(request) {
       log.info('webpay-commit', 'Pago aprobado', { sessionId, buyOrder, amount, authCode });
 
       // Activar sesión en Supabase (si existe)
-      if (sessionId) {
-        const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-        const { error: upsertError } = await getSupabase()
-          .from('sessions')
-          .upsert({
-            session_id: sessionId,
-            status: 'active',
-            expires_at: expiresAt,
-            payment_method: 'webpay',
-            payment_amount: amount,
-            payment_auth_code: authCode,
-            payment_card: cardNumber,
-            created_at: new Date().toISOString(),
-            history: [],
-          }, { onConflict: 'session_id' });
+      if (sessionId && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+        try {
+          const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+          const { error: upsertError } = await getSupabase()
+            .from('sessions')
+            .upsert({
+              session_id: sessionId,
+              status: 'active',
+              expires_at: expiresAt,
+              payment_method: 'webpay',
+              payment_amount: amount,
+              payment_auth_code: authCode,
+              payment_card: cardNumber,
+              created_at: new Date().toISOString(),
+              history: [],
+            }, { onConflict: 'session_id' });
 
-        if (upsertError) {
-          log.error('webpay-commit', 'Error activando sesión en Supabase', { err: upsertError, sessionId });
-          // No bloqueamos — redirigimos igual con el sessionId
+          if (upsertError) {
+            log.error('webpay-commit', 'Error activando sesión en Supabase', { err: upsertError, sessionId });
+          }
+        } catch (supaErr) {
+          log.error('webpay-commit', 'Supabase no disponible, continuando sin guardar sesión', { err: supaErr?.message });
         }
       }
 

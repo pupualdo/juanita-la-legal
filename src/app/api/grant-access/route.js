@@ -66,16 +66,18 @@ export async function POST(request) {
     const durationMs = sessionMinutes ? sessionMinutes * 60 * 1000 : 3 * 60 * 60 * 1000;
     const expiresAt = new Date(Date.now() + durationMs).toISOString();
 
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
-    const { error } = await supabase.from('sessions').upsert({
-      session_id: sessionId,
-      payment_id: `promo_${clean}`,
-      expires_at: expiresAt,
-    });
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+      const { error } = await supabase.from('sessions').upsert({
+        session_id: sessionId,
+        payment_id: `promo_${clean}`,
+        expires_at: expiresAt,
+      });
 
-    if (error) {
-      console.error('Error grant-access supabase:', error);
-      return NextResponse.json({ ok: false, reason: 'db_error' }, { status: 500 });
+      if (error) {
+        console.error('Error grant-access supabase:', error);
+        // No bloqueamos — la sesión igual se crea en el frontend
+      }
     }
 
     return NextResponse.json({ ok: true, sessionId, expiresAt });
