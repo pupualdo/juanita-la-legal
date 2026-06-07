@@ -36,7 +36,7 @@ export default function App() {
 
   useEffect(() => {
     const b = document.querySelector('[data-action="start"]');
-    if (b) b.onclick = null; // cleanup any leftover DOM handler
+    if (b) b.onclick = () => navigateWithTerms('chat');
   }, [screen]);
 
   const handlePaid = () => navigateWithTerms('chat-paid');
