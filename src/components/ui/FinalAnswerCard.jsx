@@ -1,5 +1,6 @@
 'use client';
 import { TOPIC_LABELS, TOPIC_META, DISCLAIMER } from '@/lib/constants';
+import Section from '@/components/ui/Section';
 export default function FinalAnswerCard({ data, topic }) {
   const m = TOPIC_META[topic] || {};
   return (

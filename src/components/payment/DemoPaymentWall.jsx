@@ -46,15 +46,6 @@ export default function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
     setPromoLoading(false);
   };
 
-  // Auto-aplicar código de descuento desde el popup de lanzamiento
-  useEffect(() => {
-    if (autoPromo) {
-      setPromoCode(autoPromo);
-      handleApplyPromo(autoPromo);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoPromo]);
-
   const handlePay = async () => {
     // Show payment method selection first
     setShowMethodScreen(true);
