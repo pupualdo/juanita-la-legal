@@ -170,7 +170,44 @@ export default function HeroSection({ onStart }) {
         </div>
       </div>
 
-      {/* ABOUT — nueva sección debajo del hero */}
+      {/* ── CÓMO FUNCIONA — paso a paso (arriba, después del hero) ── */}
+      <div style={{ background: "white", padding: "60px 20px" }}>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div style={{ background: "white", borderRadius: 16, padding: "24px", border: "1px solid #ece4d4", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#1a3a2a", marginBottom: 20, textAlign: "center" }}>
+              ⚡ Cómo funciona en 3 pasos
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {[
+                { step: "1", title: "Escribes tu caso", desc: "Cuentas tu problema legal en tus propias palabras, sin lenguaje técnico.", emoji: "✍️" },
+                { step: "2", title: "Juanita te orienta", desc: "Te explicamos tus derechos, los pasos a seguir y qué NO hacer. Todo en buen chileno.", emoji: "🧭" },
+                { step: "3", title: "Decides con info real", desc: "Sales con un panorama claro. Si necesitas abogado, te decimos honestamente.", emoji: "✅" },
+              ].map((s, i) => (
+                <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: "50%",
+                    background: "#1a3a2a", color: "white",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 18, fontWeight: 700, flexShrink: 0,
+                  }}>
+                    {s.emoji}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#1a3a2a", marginBottom: 3 }}>
+                      {s.title}
+                    </div>
+                    <div style={{ fontSize: 13, color: "#5a4a3a", lineHeight: 1.5 }}>
+                      {s.desc}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ABOUT — qué es Juanita */}
       <div ref={aboutRef} style={{
         background: "linear-gradient(to bottom, #faf8f4 0%, #f0ece2 100%)",
         padding: "64px 20px",
@@ -337,40 +374,6 @@ export default function HeroSection({ onStart }) {
               Testimonios anónimos de usuarios reales
             </div>
           </div>
-
-          {/* Cómo funciona — paso a paso */}
-          <div style={{ background: "white", borderRadius: 16, padding: "24px", border: "1px solid #ece4d4", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#1a3a2a", marginBottom: 20, textAlign: "center" }}>
-              ⚡ Cómo funciona en 3 pasos
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {[
-                { step: "1", title: "Escribes tu caso", desc: "Cuentas tu problema legal en tus propias palabras, sin lenguaje técnico.", emoji: "✍️" },
-                { step: "2", title: "Juanita te orienta", desc: "Te explicamos tus derechos, los pasos a seguir y qué NO hacer. Todo en buen chileno.", emoji: "🧭" },
-                { step: "3", title: "Decides con info real", desc: "Sales con un panorama claro. Si necesitas abogado, te decimos honestamente.", emoji: "✅" },
-              ].map((s, i) => (
-                <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                  <div style={{
-                    width: 40, height: 40, borderRadius: "50%",
-                    background: "#1a3a2a", color: "white",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 18, fontWeight: 700, flexShrink: 0,
-                  }}>
-                    {s.emoji}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#1a3a2a", marginBottom: 3 }}>
-                      {s.title}
-                    </div>
-                    <div style={{ fontSize: 13, color: "#5a4a3a", lineHeight: 1.5 }}>
-                      {s.desc}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
 
       {openTopic && (
