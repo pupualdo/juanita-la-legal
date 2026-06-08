@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React from 'react';
 import { track } from '@vercel/analytics';
 import { TOPIC_LABELS, TOPIC_META, SUGGESTIONS } from '@/lib/constants';
 import TopicDetailModal from './TopicDetailModal';
@@ -14,7 +15,7 @@ export default function HeroSection({ onStart }) {
   const handleTopicStart = () => { setOpenTopic(null); onStart(); };
 
   return (
-    <>
+    <React.Fragment>
       {/* HERO — diseño original mantenido */}
       <div style={{
         minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
@@ -377,6 +378,7 @@ export default function HeroSection({ onStart }) {
             </div>
           </div>
       </div>
+      </div>
 
       {openTopic && (
         <TopicDetailModal
@@ -385,7 +387,7 @@ export default function HeroSection({ onStart }) {
           onStart={handleTopicStart}
         />
       )}
-    </>
+    </React.Fragment>
   );
 }
 
