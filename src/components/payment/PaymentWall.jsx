@@ -60,6 +60,11 @@ export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, 
   }, [autoPromo]);
 
   const handlePay = async () => {
+    // Si es gratis, acceso directo sin seleccionar método
+    if (isFree) {
+      handleMethodSelect('free');
+      return;
+    }
     // Show payment method selection first
     setShowMethodScreen(true);
   };
