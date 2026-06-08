@@ -54,18 +54,17 @@ export default function HeroSection({ onStart }) {
           </div>
 
           <h1 style={{
-            fontFamily: "var(--font-fraunces), serif", fontSize: 44, fontWeight: 600,
-            color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 8, lineHeight: 1.2,
-          }}>Juanita La Legal</h1>
+            fontFamily: "var(--font-fraunces), serif", fontSize: 40, fontWeight: 600,
+            color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 16, lineHeight: 1.25,
+          }}>
+            ¿Tienes un problema legal y no sabes qué hacer?
+          </h1>
 
-          <p style={{ fontSize: 20, color: "#8fbc8f", marginBottom: 8, fontWeight: 500 }}>
-            Te orientamos en buen chileno.
-          </p>
-          <p style={{ fontSize: 16, color: "rgba(245,240,232,0.85)", marginBottom: 18, lineHeight: 1.5 }}>
-            Primera orientación legal clara, rápida y pagable. $9.990 por consulta.
+          <p style={{ fontSize: 18, color: "rgba(245,240,232,0.90)", marginBottom: 22, lineHeight: 1.5 }}>
+            Te orientamos paso a paso en 10 minutos por <strong style={{ color: "#f0d068" }}>$9.990</strong>.
           </p>
 
-          {/* Banner de marcha blanca con código LANZAMIENTO */}
+          {/* Banner de lanzamiento */}
           <div style={{
             marginBottom: 28,
             background: "linear-gradient(135deg, rgba(200,160,64,0.20) 0%, rgba(200,160,64,0.10) 100%)",
@@ -76,26 +75,12 @@ export default function HeroSection({ onStart }) {
             textAlign: "left",
             boxShadow: "0 4px 16px rgba(200,160,64,0.18)",
           }}>
-            <span style={{ fontSize: 26, flexShrink: 0 }}>🎉</span>
+            <span style={{ fontSize: 26, flexShrink: 0 }}>🔥</span>
             <div style={{ flex: 1, lineHeight: 1.5 }}>
               <div style={{
-                fontSize: 12, fontWeight: 700, color: "#f0d068",
-                textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4,
+                fontSize: 15, color: "rgba(245,240,232,0.95)"
               }}>
-                Marcha blanca
-              </div>
-              <div style={{ fontSize: 15, color: "rgba(245,240,232,0.95)" }}>
-                Estamos lanzando — usa el código{" "}
-                <strong style={{
-                  background: "rgba(200,160,64,0.35)",
-                  color: "#fff5d9",
-                  padding: "3px 9px",
-                  borderRadius: 5,
-                  fontFamily: "monospace",
-                  letterSpacing: 0.8,
-                  fontSize: 14,
-                }}>LANZAMIENTO</strong>{" "}
-                y obtén <strong style={{ color: "#f0d068" }}>50% de descuento</strong> en tu consulta.
+                Precio de lanzamiento: <strong style={{ color: "#f0d068" }}>$4.995</strong> — Solo por tiempo limitado.
               </div>
             </div>
           </div>
@@ -109,8 +94,27 @@ export default function HeroSection({ onStart }) {
             onMouseEnter={e => e.target.style.transform = "scale(1.03)"}
             onMouseLeave={e => e.target.style.transform = "scale(1)"}
           >
-            Iniciar consulta
+            Cuéntame tu caso — $9.990
           </button>
+
+          {/* Testimonio corto justo debajo del CTA */}
+          <div style={{
+            marginTop: 20,
+            background: "rgba(255,255,255,0.10)",
+            borderRadius: 12,
+            padding: "14px 16px",
+            border: "1px solid rgba(255,255,255,0.15)",
+            maxWidth: 440,
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}>
+            <div style={{ fontSize: 13, color: "rgba(245,240,232,0.90)", fontStyle: "italic", lineHeight: 1.55 }}>
+              "No sabía si mi despido era legal. En 10 minutos tenía claro qué hacer."
+            </div>
+            <div style={{ fontSize: 11, color: "rgba(245,240,232,0.55)", marginTop: 6 }}>
+              — J.P., Santiago · Derecho Laboral
+            </div>
+          </div>
 
           {/* Label instructivo */}
           <div style={{
