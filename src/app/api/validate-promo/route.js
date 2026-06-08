@@ -4,9 +4,11 @@ import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 // Fallback hardcoded (por si Supabase no está disponible)
 const FALLBACK_CODES = {
-  AMIGOS2026:  { discount: 100 },
-  LANZAMIENTO: { discount: 50 },
-  JUANITA10:   { discount: 10 },
+  AMIGOS2026:   { discount: 100 },
+  MEJORAMIGO:   { discount: 100 },
+  MEJORAMIGO2026: { discount: 100 },
+  LANZAMIENTO:  { discount: 50 },
+  JUANITA10:    { discount: 10 },
 };
 
 export async function POST(request) {

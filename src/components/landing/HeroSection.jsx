@@ -11,6 +11,8 @@ export default function HeroSection({ onStart }) {
     aboutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const handleTopicStart = () => { setOpenTopic(null); onStart(); };
+
   return (
     <>
       {/* HERO — diseño original mantenido */}
@@ -380,7 +382,7 @@ export default function HeroSection({ onStart }) {
         <TopicDetailModal
           topicKey={openTopic}
           onClose={() => setOpenTopic(null)}
-          onStart={() => { setOpenTopic(null); onStart(); }}
+          onStart={handleTopicStart}
         />
       )}
     </>

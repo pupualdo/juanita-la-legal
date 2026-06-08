@@ -10,9 +10,11 @@ const BASE_PRICE = 9990; // CLP
 // Promo codes — same source of truth as validate-promo/route.js
 // Keep in sync or extract to a shared lib if this grows
 const PROMO_CODES = {
-  AMIGOS2026:  { discount: 100 },
-  LANZAMIENTO: { discount: 50  },
-  JUANITA10:   { discount: 10  },
+  AMIGOS2026:   { discount: 100 },
+  MEJORAMIGO:   { discount: 100 },
+  MEJORAMIGO2026: { discount: 100 },
+  LANZAMIENTO:  { discount: 50  },
+  JUANITA10:    { discount: 10  },
 };
 
 export async function POST(request) {

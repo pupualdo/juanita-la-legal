@@ -4,7 +4,7 @@ import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { randomUUID } from 'crypto';
 
 // Fallback hardcoded — códigos 100% gratis que existen aunque Supabase caiga
-const FALLBACK_FREE_CODES = ['AMIGOS2026', 'MEJORAMIGO2026'];
+const FALLBACK_FREE_CODES = ['AMIGOS2026', 'MEJORAMIGO', 'MEJORAMIGO2026'];
 
 export async function POST(request) {
   try {
