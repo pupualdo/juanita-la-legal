@@ -208,7 +208,7 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
           setSessionId(prechatSessionId);
           addMsg({ type: "system", text: `Tema: ${TOPIC_LABELS[data.tema]} ${TOPIC_META[data.tema]?.emoji}. Conversación de orientación gratuita (máx. 3 intercambios).` });
           streamChatResponse(
-            `[PRE-CHAT] El usuario consulta: "${trimmed}". Responde con empatía, haz 1-2 preguntas para entender mejor su caso, y demuestra que entiendes del tema legal. NO des orientación completa — solo clarifica y muestra que puedes ayudarle. Sé cálida pero concisa. Al final de tu respuesta, sugiérele sutilmente que con la consulta pagada ($4.995) puedes darle la orientación completa paso a paso.`,
+            `[PRE-CHAT] El usuario consulta: "${trimmed}". Tu objetivo es DARLE VALOR inmediato para que quiera pagar. Responde de forma concreta y útil — demuestra que sabes del tema legal, da UN dato práctico específico (un paso concreto que pueda hacer hoy, un artículo de ley aplicable, o un trámite preciso que le sirva). NO des la orientación completa ni el paso a paso detallado — eso es lo que obtiene con la consulta pagada. Luego haz 1 pregunta específica para profundizar su caso. Al final de tu respuesta, sugiere naturalmente que en la consulta completa ($4.995) le das el detalle completo, los pasos exactos y los riesgos.`,
             [],
             prechatSessionId,
             undefined,

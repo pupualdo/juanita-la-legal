@@ -14,23 +14,38 @@ export default function PreChatWall({ topic, messages, input, setInput, onSend, 
   }, [messages]);
 
   const remaining = maxExchanges - exchanges;
+  const progress = (exchanges / maxExchanges) * 100;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", maxWidth: 640, margin: "0 auto", padding: "10px 16px" }}>
-      {/* Header con info del límite */}
+      {/* Header con info del límite + barra de progreso */}
       <div style={{
-        background: "#f0f5e8", borderRadius: 10, padding: "8px 14px", marginBottom: 10,
-        border: "1px solid #b8d98a", fontSize: 12, color: "#3a5a20",
-        display: "flex", justifyContent: "space-between", alignItems: "center",
+        background: "#f0f5e8", borderRadius: 10, padding: "8px 14px 12px", marginBottom: 10,
+        border: "1px solid #b8d98a",
       }}>
-        <span>{m.emoji} <strong>{TOPIC_LABELS[topic]}</strong> — orientación gratuita</span>
-        <span style={{
-          background: remaining <= 1 ? "#fff2ee" : "#e8f0d8",
-          color: remaining <= 1 ? "#c44a12" : "#4a7a20",
-          padding: "2px 8px", borderRadius: 8, fontSize: 11, fontWeight: 600,
+        <div style={{ fontSize: 12, color: "#3a5a20", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <span>{m.emoji} <strong>{TOPIC_LABELS[topic]}</strong></span>
+          <span style={{
+            background: remaining <= 1 ? "#fff2ee" : "#e8f0d8",
+            color: remaining <= 1 ? "#c44a12" : "#4a7a20",
+            padding: "2px 8px", borderRadius: 8, fontSize: 11, fontWeight: 600,
+          }}>
+            {remaining} mensaje{remaining !== 1 ? "s" : ""} restante{remaining !== 1 ? "s" : ""}
+          </span>
+        </div>
+        {/* Barra de progreso */}
+        <div style={{
+          height: 4, background: "#d8e0c8", borderRadius: 2, overflow: "hidden",
         }}>
-          {remaining} mensaje{remaining !== 1 ? "s" : ""} restante{remaining !== 1 ? "s" : ""}
-        </span>
+          <div style={{
+            height: "100%", width: `${progress}%`,
+            background: remaining <= 1 ? "#c44a12" : "#4a7a20",
+            borderRadius: 2, transition: "width 0.3s ease",
+          }} />
+        </div>
+        <div style={{ fontSize: 10, color: "#6a7a50", marginTop: 3, textAlign: "center" }}>
+          Prueba gratuita — al terminar puedes comprar la consulta completa por $4.995
+        </div>
       </div>
 
       {/* Chat messages */}
@@ -44,8 +59,8 @@ export default function PreChatWall({ topic, messages, input, setInput, onSend, 
           }}>
             {m.type === "system" && (
               <div style={{ fontSize: 11, color: "#8a7a60", fontStyle: "italic", margin: "6px 0", textAlign: "center", width: "100%" }}>
-                {m.text}
-              </div>
+                  {m.text}
+                </div>
             )}
             {m.type === "user" && (
               <div style={{
@@ -85,7 +100,7 @@ export default function PreChatWall({ topic, messages, input, setInput, onSend, 
         <div ref={scrollRef} />
       </div>
 
-      {/* Input */}
+      {/* Input o CTA de pago con persuasión */}
       {exchanges < maxExchanges ? (
         <div style={{
           display: "flex", gap: 8, padding: "10px 0 14px",
@@ -119,15 +134,28 @@ export default function PreChatWall({ topic, messages, input, setInput, onSend, 
           </button>
         </div>
       ) : (
-        <div style={{ padding: "12px 0 14px", borderTop: "1px solid #ece4d4" }}>
+        <div style={{ padding: "16px 0 14px", borderTop: "2px solid #e0d8c8" }}>
+          {/* Mensaje persuasivo */}
+          <div style={{ textAlign: "center", marginBottom: 14 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#1a3a2a", marginBottom: 4 }}>
+              🎯 ¿Listo para la orientación completa?
+            </div>
+            <div style={{ fontSize: 12, color: "#6a5e50", lineHeight: 1.5 }}>
+              Obtén el paso a paso detallado, qué dice la ley exactamente para tu caso,
+              {" "}y los riesgos que debes evitar — todo en 10 minutos.
+            </div>
+          </div>
           <button onClick={onPay} style={{
-            width: "100%", background: "#009ee3", color: "white", border: "none",
-            borderRadius: 12, padding: "14px", fontSize: 15, fontWeight: 600, cursor: "pointer",
+            width: "100%", background: "linear-gradient(135deg, #1a3a2a 0%, #2a5a3a 100%)",
+            color: "white", border: "none",
+            borderRadius: 12, padding: "15px", fontSize: 16, fontWeight: 700, cursor: "pointer",
+            boxShadow: "0 4px 16px rgba(26,58,42,0.25)",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           }}>
-            💳 Pagar $4.995 con Mercado Pago
+            💬 Comprar consulta completa — $4.995
           </button>
           <div style={{ fontSize: 11, color: "#a09080", textAlign: "center", marginTop: 8 }}>
-            Consulta completa paso a paso · 10 minutos de orientación
+            WebPay / Mercado Pago · 10 minutos de orientación legal personalizada
           </div>
         </div>
       )}
