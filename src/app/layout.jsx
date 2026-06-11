@@ -5,6 +5,7 @@ import Script from 'next/script';
 import './globals.css';
 
 const META_PIXEL_ID = '4472827493005892';
+const CLARITY_ID = 'x5gifzhlh9';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -178,6 +179,20 @@ export default function RootLayout({ children }) {
             alt=""
           />
         </noscript>
+        {/* Microsoft Clarity */}
+        <Script
+          id="microsoft-clarity"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+              })(window, document, "clarity", "script", "${CLARITY_ID}");
+            `,
+          }}
+        />
       </body>
     </html>
   );
