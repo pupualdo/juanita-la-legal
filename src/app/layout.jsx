@@ -2,6 +2,7 @@ import { Fraunces, Instrument_Sans } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import Script from 'next/script';
+import Footer from './footer';
 import './globals.css';
 
 const META_PIXEL_ID = '4472827493005892';
@@ -193,6 +194,7 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
+        <Footer />
       </body>
     </html>
   );
