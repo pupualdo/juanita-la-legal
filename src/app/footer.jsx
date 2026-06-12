@@ -18,14 +18,20 @@ export default function Footer() {
           Al usarlo, aceptas que nosotros y Microsoft podamos recopilar y usar
           estos datos.
         </p>
-        <p>
+        <p style={{ display: 'flex', justifyContent: 'center', gap: 20, flexWrap: 'wrap' }}>
+          <a
+            href="/privacidad"
+            style={{ color: '#1a3a2a', textDecoration: 'underline' }}
+          >
+            Política de Privacidad
+          </a>
           <a
             href="https://privacy.microsoft.com/es-mx/privacystatement"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#1a3a2a', textDecoration: 'underline' }}
           >
-            Política de Privacidad de Microsoft
+            Privacidad de Microsoft
           </a>
         </p>
       </div>

@@ -60,11 +60,11 @@ export default function HeroSection({ onStart }) {
             fontFamily: "var(--font-fraunces), serif", fontSize: 40, fontWeight: 600,
             color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 16, lineHeight: 1.25,
           }}>
-            ¿Tienes un problema legal y no sabes qué hacer?
+            ¿Tienes un problema legal y no sabes por dónde partir?
           </h1>
 
           <p style={{ fontSize: 18, color: "rgba(245,240,232,0.90)", marginBottom: 22, lineHeight: 1.5 }}>
-            Te orientamos paso a paso en 10 minutos por <strong style={{ color: "#f0d068" }}>$9.990</strong>.
+            Obtén una orientación clara de tu caso y los pasos a seguir desde <strong style={{ color: "#f0d068" }}>$4.995</strong>.
           </p>
 
           {/* Banner de lanzamiento */}
@@ -97,7 +97,7 @@ export default function HeroSection({ onStart }) {
             onMouseEnter={e => e.target.style.transform = "scale(1.03)"}
             onMouseLeave={e => e.target.style.transform = "scale(1)"}
           >
-            Cuéntame tu caso — $9.990
+            Iniciar mi orientación
           </button>
 
           {/* Testimonio corto justo debajo del CTA */}
@@ -112,7 +112,7 @@ export default function HeroSection({ onStart }) {
             marginRight: "auto",
           }}>
             <div style={{ fontSize: 13, color: "rgba(245,240,232,0.90)", fontStyle: "italic", lineHeight: 1.55 }}>
-              "No sabía si mi despido era legal. En 10 minutos tenía claro qué hacer."
+              "No sabía si mi despido era legal. Al toque tenía claro qué hacer."
             </div>
             <div style={{ fontSize: 11, color: "rgba(245,240,232,0.55)", marginTop: 6 }}>
               — J.P., Santiago · Derecho Laboral
@@ -191,7 +191,7 @@ export default function HeroSection({ onStart }) {
               {[
                 { step: "1", title: "Escribes tu caso", desc: "Cuentas tu problema legal en tus propias palabras, sin lenguaje técnico.", emoji: "✍️" },
                 { step: "2", title: "Juanita te orienta", desc: "Te explicamos tus derechos, los pasos a seguir y qué NO hacer. Todo en buen chileno.", emoji: "🧭" },
-                { step: "3", title: "Decides con info real", desc: "Sales con un panorama claro. Si necesitas abogado, te decimos honestamente.", emoji: "✅" },
+                { step: "3", title: "Tienes un resultado claro", desc: "Sales con un panorama claro de tu caso. Si necesitas abogado, te decimos honestamente.", emoji: "✅" },
               ].map((s, i) => (
                 <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
                   <div style={{
@@ -333,7 +333,7 @@ export default function HeroSection({ onStart }) {
               {[
                 {
                   initials: "J.P., Santiago",
-                  text: "No sabía si mi despido era legal. Juanita me explicó mis derechos y los pasos a seguir. En 10 minutos tenía claro qué hacer.",
+                  text: "No sabía si mi despido era legal. Juanita me explicó mis derechos y los pasos a seguir. Al toque tenía claro qué hacer.",
                   area: "Derecho Laboral",
                 },
                 {
