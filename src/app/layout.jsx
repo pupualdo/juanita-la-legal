@@ -167,6 +167,7 @@ export default function RootLayout({ children }) {
               'https://connect.facebook.net/en_US/fbevents.js');
               fbq('init', '${META_PIXEL_ID}');
               fbq('track', 'PageView');
+              fbq('track', 'ViewContent');
             `,
           }}
         />

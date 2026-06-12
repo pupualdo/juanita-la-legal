@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { track } from '@vercel/analytics';
 import { TOPIC_LABELS, TOPIC_META, DISCLAIMER, SUGGESTIONS } from '@/lib/constants';
 import PaymentMethodScreen from './PaymentMethodScreen';
+import { trackEvent } from '@/lib/analytics';
 export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, autoPromo, onBack }) {
   const [loading, setLoading] = useState(false);
   const [promoCode, setPromoCode] = useState('');
@@ -18,6 +19,7 @@ export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, 
 
   useEffect(() => {
     track('payment_wall_shown', { tema: topic });
+    trackEvent('PaywallViewed', { tema: topic, sessionId });
   }, [topic]);
 
   const BASE_PRICE = isTopicChange ? 4000 : 9990;
@@ -70,6 +72,7 @@ export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, 
   };
 
   const handleMethodSelect = async (method) => {
+    trackEvent('AddPaymentInfo', { tema: topic, method, price: finalPrice });
     setLoading(true);
     setShowMethodScreen(false);
     track('payment_started', { tema: topic, price: finalPrice, method });

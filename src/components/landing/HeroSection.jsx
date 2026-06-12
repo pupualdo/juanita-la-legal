@@ -4,6 +4,8 @@ import React from 'react';
 import { track } from '@vercel/analytics';
 import { TOPIC_LABELS, TOPIC_META, SUGGESTIONS } from '@/lib/constants';
 import TopicDetailModal from './TopicDetailModal';
+import { trackEvent } from '@/lib/analytics';
+
 export default function HeroSection({ onStart }) {
   const [openTopic, setOpenTopic] = useState(null);
   const aboutRef = useRef(null);
@@ -12,7 +14,8 @@ export default function HeroSection({ onStart }) {
     aboutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handleTopicStart = () => { setOpenTopic(null); onStart(); };
+  const handleTopicStart = () => { setOpenTopic(null); trackEvent('StartConsultation', { source: 'topic_detail' }); onStart(); };
+  const handleStartClick = () => { trackEvent('StartConsultation', { source: 'hero_cta' }); onStart(); };
 
   return (
     <React.Fragment>
@@ -85,7 +88,7 @@ export default function HeroSection({ onStart }) {
             </div>
           </div>
 
-          <button data-action="start" onClick={onStart} style={{
+          <button data-action="start" onClick={handleStartClick} style={{
             background: "#c8a040", color: "white", border: "none",
             borderRadius: 16, padding: "16px 40px", fontSize: 18, fontWeight: 600,
             cursor: "pointer", boxShadow: "0 8px 24px rgba(200,160,64,0.35)",
@@ -270,7 +273,7 @@ export default function HeroSection({ onStart }) {
           </div>
 
           <div style={{ textAlign: "center" }}>
-            <button onClick={onStart} style={{
+            <button onClick={handleStartClick} style={{
               background: "#1a3a2a", color: "white", border: "none",
               borderRadius: 14, padding: "16px 36px", fontSize: 17, fontWeight: 600,
               cursor: "pointer", boxShadow: "0 4px 12px rgba(26,58,42,0.2)",

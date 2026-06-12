@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import remarkGfm from 'remark-gfm';
 import { track } from '@vercel/analytics';
 import { TOPIC_LABELS, TOPIC_META, TOPIC_DETAILS, DISCLAIMER, SUGGESTIONS, QUESTION_SETS, CONTACT_FORM_TRIGGERS, WHATSAPP_TRIGGERS, createId, normalizeText, buildFinalAnswer, TYC_SECTIONS } from '@/lib/constants';
+import { trackEvent } from '@/lib/analytics';
 import ConsultTimer from '@/components/ui/ConsultTimer';
 import TopicBadge from '@/components/ui/TopicBadge';
 import TypingDots from '@/components/ui/TypingDots';
@@ -138,6 +139,7 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
     addMsg({ type: "user", text: trimmed });
     if (newCount >= 3) {
       // Límite alcanzado — último mensaje de Juanita y mostrar pago
+      trackEvent('PreChatMessage3', { tema: lockedTopic });
       setStage("payment");
       addMsg({ type: "juanita", text: `Gracias por compartir tu caso conmigo 🙏\n\nCon lo que me has contado, ya tengo un muy buen panorama. Puedo orientarte paso a paso sobre tus derechos, lo que te conviene hacer y cómo prepararte.\n\n**Son $4.995 CLP por la consulta completa.** ¿Continuamos?` });
     } else {

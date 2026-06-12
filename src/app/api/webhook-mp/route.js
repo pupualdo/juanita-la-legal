@@ -48,7 +48,13 @@ export async function POST(request) {
     });
 
     if (mpData.status !== 'approved') {
-      // Pago pendiente o rechazado — MP enviará otro webhook cuando cambie
+      // Pago pendiente o rechazado
+      if (['rejected', 'cancelled', 'refunded'].includes(mpData.status)) {
+        try {
+          const { track } = await import('@vercel/analytics');
+          track('payment_failed', { sessionId: mpData.external_reference, status: mpData.status, paymentId });
+        } catch {}
+      }
       return NextResponse.json({ ok: true });
     }
 
@@ -85,6 +91,17 @@ export async function POST(request) {
     }
 
     log.info('webhook-mp', 'Acceso concedido', { sessionId, paymentId, expiresAt });
+
+    // Eventos de analytics para Purchase
+    try {
+      const { track } = await import('@vercel/analytics');
+      track('purchase', { sessionId, paymentId });
+    } catch {}
+    // Meta Pixel — se dispara desde el cliente en la redirect/success page
+    // El webhook no puede disparar fbq porque es server-side.
+    // En su lugar, la success page (/?paid=true) debe disparar Purchase.
+    // TODO: si se necesita server-side, usar la API de Conversions de Meta.
+
     return NextResponse.json({ ok: true });
 
   } catch (err) {

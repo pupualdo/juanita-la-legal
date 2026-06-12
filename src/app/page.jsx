@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import HeroSection from '@/components/landing/HeroSection';
 import ChatSection from '@/components/chat/ChatSection';
 import TermsScreen from '@/components/landing/TermsScreen';
+import { trackEvent } from '@/lib/analytics';
 
 // ─── PAID DETECTOR (requiere Suspense por useSearchParams) ───────────────────
 
@@ -12,7 +13,11 @@ function PaidDetector({ onPaid }) {
   useEffect(() => {
     if (searchParams.get('paid') === 'true') {
       const savedSession = localStorage.getItem('juanita_session');
-      if (savedSession) onPaid();
+      const savedTopic = localStorage.getItem('juanita_topic');
+      if (savedSession) {
+        trackEvent('Purchase', { sessionId: savedSession, tema: savedTopic || 'unknown' });
+        onPaid();
+      }
     }
   }, [searchParams]);
   return null;
