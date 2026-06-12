@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+diagnostico-juanita-la-legal.md
 
 # next.js
 /.next/
