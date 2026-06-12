@@ -74,9 +74,14 @@ test.describe('Payment flow', () => {
   test('shows pre-chat wall with purchase option', async ({ page }) => {
     await goToPreChatWall(page);
 
-    // Pre-chat should show the purchase CTA area
+    // The pre-chat wall shows the banner with remaining messages
     await expect(
-      page.locator('text=4.995').or(page.locator('text=Comprar consulta'))
+      page.locator('text=mensajes restantes')
+    ).toBeVisible({ timeout: 5_000 });
+
+    // The price $4.995 should be visible in the pre-chat banner
+    await expect(
+      page.locator('text=Prueba gratuita')
     ).toBeVisible({ timeout: 5_000 });
   });
 

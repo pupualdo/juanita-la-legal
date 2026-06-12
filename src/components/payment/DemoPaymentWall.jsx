@@ -194,7 +194,7 @@ export default function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
         boxShadow: "0 1px 3px rgba(0,0,0,0.05)", border: "1px solid #ece4d4",
       }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: "#1a3a2a", marginBottom: 12 }}>
-          En 10 minutos de consulta obtienes:
+          En esta consulta obtienes:
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
@@ -406,7 +406,7 @@ export default function DemoPaymentWall({ topic, resumen, sessionId, onBack }) {
       )}
 
       <div style={{ fontSize: 11, color: "#a09080", textAlign: "center" }}>
-        🔒 Pago seguro · WebPay / Mercado Pago Chile · Consulta de 10 minutos
+        🔒 Pago seguro · WebPay / Mercado Pago Chile · Consulta personalizada
       </div>
 
       <button onClick={onBack} style={{ background: "none", border: "none", color: "#8a7a68", fontSize: 13, cursor: "pointer" }}>

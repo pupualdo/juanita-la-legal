@@ -142,7 +142,7 @@ export default function PreChatWall({ topic, messages, input, setInput, onSend, 
             </div>
             <div style={{ fontSize: 12, color: "#6a5e50", lineHeight: 1.5 }}>
               Obtén el paso a paso detallado, qué dice la ley exactamente para tu caso,
-              {" "}y los riesgos que debes evitar — todo en 10 minutos.
+              {" "}y los riesgos que debes evitar — orientación clara al toque.
             </div>
           </div>
           <button onClick={onPay} style={{
@@ -155,7 +155,7 @@ export default function PreChatWall({ topic, messages, input, setInput, onSend, 
             💬 Comprar consulta completa — $4.995
           </button>
           <div style={{ fontSize: 11, color: "#a09080", textAlign: "center", marginTop: 8 }}>
-            WebPay / Mercado Pago · 10 minutos de orientación legal personalizada
+            WebPay / Mercado Pago · Orientación legal personalizada
           </div>
         </div>
       )}

@@ -25,7 +25,7 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
   const [stage, setStage] = useState(initialPaid ? "resuming" : "input");
   const [messages, setMessages] = useState([{
     id: createId(), type: "juanita",
-    text: "Hola, soy Juanita 👋 Cuéntame en buen chileno cuál es tu problema principal y te ayudo a ordenarlo.\n\n📌 **Cómo funciona:** cada sesión pagada cubre **un solo tema legal** durante **10 minutos**. Puedes preguntar todo lo que quieras sobre ese tema. Si después necesitas orientación en otro tema, es una nueva sesión.\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*",
+    text: "Hola, soy Juanita 👋 Cuéntame en buen chileno cuál es tu problema principal y te ayudo a ordenarlo.\n\n📌 **Cómo funciona:** cada sesión pagada es **por un solo tema legal**. Puedes preguntar todo lo que quieras sobre ese tema y recibir orientación clara. Si después necesitas orientación en otro tema, es una nueva sesión.\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*",
   }]);
   const [input, setInput] = useState("");
   const [lockedTopic, setLockedTopic] = useState(null);
@@ -110,7 +110,7 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
     const topicLabel = savedTema ? (TOPIC_LABELS[savedTema] || savedTema) : null;
     const topicEmoji = savedTema ? (TOPIC_META[savedTema]?.emoji || '⚖️') : '⚖️';
     const welcomeText = topicLabel
-      ? `¡Hola! Soy Juanita y ya está todo listo para tu sesión 🎉\n\n**Tema de esta sesión:** ${topicEmoji} ${topicLabel}\n\nDurante los próximos **10 minutos** puedes preguntarme todo lo que quieras sobre **${topicLabel}**. Cuéntame con confianza — te oriento paso a paso.\n\n> ℹ️ Si después necesitas orientación sobre otro tema legal, será una nueva sesión (${'\$'}9.990 CLP).\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*`
+      ? `¡Hola! Soy Juanita y ya está todo listo para tu sesión 🎉\n\n**Tema de esta sesión:** ${topicEmoji} ${topicLabel}\n\nPuedes preguntarme todo lo que quieras sobre **${topicLabel}**. Cuéntame con confianza — te oriento paso a paso.\n\n> ℹ️ Si después necesitas orientación sobre otro tema legal, será una nueva sesión (${'\$'}4.995 CLP).\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*`
       : `¡Pago confirmado! 🎉 Cuéntame tu problema legal y te oriento paso a paso.\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*`;
 
     if (savedQuery) {
@@ -455,7 +455,7 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
           <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#c8e6c0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>⚖️</div>
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, color: "#f5f0e8", fontFamily: "serif" }}>Juanita La Legal</div>
-            <div style={{ fontSize: 11, color: "#8fbc8f" }}>Orientación legal en buen chileno · $9.990</div>
+            <div style={{ fontSize: 11, color: "#8fbc8f" }}>Orientación legal en buen chileno · $4.995</div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -624,7 +624,7 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
                       cursor: "pointer", whiteSpace: "nowrap",
                     }}
                   >
-                    Renovar sesión ($9.990)
+                    Renovar sesión ($4.995)
                   </button>
                 </div>
               )}

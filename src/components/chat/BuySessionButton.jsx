@@ -36,7 +36,7 @@ export default function BuySessionButton({ sessionId }) {
         alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 6,
       }}
     >
-      {loading ? '⏳ Redirigiendo...' : '📄 Comprar sesión de documento ($9.990)'}
+      {loading ? '⏳ Redirigiendo...' : '📄 Comprar sesión de documento ($4.995)'}
     </button>
   );
 }

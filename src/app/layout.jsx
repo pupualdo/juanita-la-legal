@@ -31,7 +31,7 @@ export const metadata = {
   metadataBase: new URL(APP_URL),
   title: 'Juanita La Legal — Orientación legal en buen chileno',
   description:
-    'Consulta legal online en Chile desde $9.990 CLP. Orientación clara y directa en derecho laboral, familia, arriendo, herencia, deudas y más. Respuesta inmediata.',
+    'Orientación legal online en Chile desde $4.995 CLP — precio lanzamiento. Respuesta clara y directa en derecho laboral, familia, arriendo, herencia, deudas y más.',
   keywords: [
     'orientación legal Chile',
     'abogado online Chile',
@@ -50,7 +50,7 @@ export const metadata = {
   openGraph: {
     title: 'Juanita La Legal — Orientación legal en buen chileno',
     description:
-      'Consulta legal online en Chile desde $9.990 CLP. Orientación clara en derecho laboral, familia, arriendo, herencia y más.',
+      'Orientación legal online en Chile desde $4.995 CLP — precio lanzamiento. Respuesta clara en derecho laboral, familia, arriendo, herencia y más.',
     url: APP_URL,
     siteName: 'Juanita La Legal',
     locale: 'es_CL',
@@ -68,7 +68,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'Juanita La Legal — Orientación legal en buen chileno',
     description:
-      'Consulta legal online en Chile desde $9.990 CLP. Orientación clara y directa.',
+      'Orientación legal online en Chile desde $4.995 CLP — precio lanzamiento. Respuesta clara y directa.',
     images: ['/juanita-avatar.jpg'],
   },
   verification: {
@@ -92,7 +92,7 @@ const jsonLd = {
   '@type': 'LegalService',
   name: 'Juanita La Legal',
   description:
-    'Orientación legal online en Chile. Consultas de derecho laboral, familia, arriendo, herencia, deudas y más desde $9.990 CLP.',
+    'Orientación legal online en Chile. Consultas de derecho laboral, familia, arriendo, herencia, deudas y más desde $4.995 CLP — precio lanzamiento.',
   url: APP_URL,
   areaServed: {
     '@type': 'Country',
@@ -111,9 +111,9 @@ const jsonLd = {
   ],
   offers: {
     '@type': 'Offer',
-    price: '9990',
+    price: '4995',
     priceCurrency: 'CLP',
-    description: 'Sesión de orientación legal online de 10 minutos',
+    description: 'Sesión de orientación legal online. Orientación clara de tu caso, tus derechos y los pasos a seguir.',
     availability: 'https://schema.org/InStock',
   },
   hasOfferCatalog: {

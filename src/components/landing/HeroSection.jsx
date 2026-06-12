@@ -247,7 +247,7 @@ export default function HeroSection({ onStart }) {
               { icon: "⚖️", title: "Basado en derecho chileno vigente", text: "Información actualizada de leyes y procedimientos en Chile." },
               { icon: "⚡", title: "Sesión rápida y enfocada", text: "Respuestas al toque, sin esperas ni vueltas." },
               { icon: "🤝", title: "Honestos contigo", text: "Si tu caso necesita un abogado/a, te lo decimos claramente." },
-              { icon: "🔒", title: "Sin letra chica", text: "Pago único de $9.990. Sin suscripciones ni compromisos." },
+              { icon: "🔒", title: "Sin letra chica", text: "Pago único de $4.995 — precio de lanzamiento. Sin suscripciones ni compromisos." },
             ].map((item, i) => (
               <div key={i} style={{
                 background: "white", borderRadius: 14, padding: "16px 18px",

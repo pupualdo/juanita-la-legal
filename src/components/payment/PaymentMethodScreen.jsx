@@ -33,7 +33,7 @@ export default function PaymentMethodScreen({ topic, finalPrice, isFree, promoCo
           Elige cómo pagar
         </div>
         <div style={{ fontSize: 13, color: "#6a5e50" }}>
-          {isFree ? 'Acceso gratuito' : `$${finalPrice.toLocaleString('es-CL')} CLP`} · Consulta de 10 minutos
+          {isFree ? 'Acceso gratuito' : `$${finalPrice.toLocaleString('es-CL')} CLP`} · Consulta personalizada
         </div>
       </div>
 
