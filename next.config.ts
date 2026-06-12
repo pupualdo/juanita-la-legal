@@ -8,7 +8,8 @@ const GA_GTM     = 'https://www.googletagmanager.com';
 const GA_COLLECT = 'https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com';
 const FB_SCRIPT  = 'https://connect.facebook.net';
 const FB_COLLECT = 'https://www.facebook.com';
-const CLARITY    = 'https://www.clarity.ms https://clarity.ms';
+const CLARITY    = 'https://www.clarity.ms https://clarity.ms https://*.clarity.ms';
+const CLARITY_C  = 'https://c.bing.com https://c.clarity.ms';
 
 const csp = [
   `default-src 'self'`,
@@ -19,7 +20,7 @@ const csp = [
   // Fonts
   `font-src 'self' https://fonts.gstatic.com`,
   // Images: self + data URIs + MP assets + Unsplash (hero bg) + GA beacon + Meta Pixel noscript
-  `img-src 'self' data: blob: ${MP_DOMAIN} https://*.mercadolibre.com https://images.unsplash.com https://www.google-analytics.com ${FB_COLLECT}`,
+  `img-src 'self' data: blob: ${MP_DOMAIN} https://*.mercadolibre.com https://images.unsplash.com https://www.google-analytics.com ${FB_COLLECT} ${CLARITY_C}`,
   // XHR/fetch: self + MP APIs + Supabase + GA4 + Meta Pixel events + Clarity
   `connect-src 'self' ${MP_DOMAIN} ${MP_SDK} ${SUPABASE} https://api.anthropic.com ${GA_GTM} ${GA_COLLECT} ${FB_COLLECT} ${FB_SCRIPT} ${CLARITY}`,
   // Media (voice transcription blob URLs)
