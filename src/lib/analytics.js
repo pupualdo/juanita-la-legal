@@ -55,8 +55,9 @@ export function trackEvent(eventName, params = {}) {
 
   // Vercel Analytics
   try {
-    const { track } = require('@vercel/analytics');
-    track(eventName, params);
+    import('@vercel/analytics').then(({ track }) => {
+      track(eventName, params);
+    });
   } catch {
     // ignore — analytics no crítico
   }
