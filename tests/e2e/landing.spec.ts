@@ -23,7 +23,7 @@ test.describe('Landing page', () => {
 
   test('renders hero section with title and CTA', async ({ page }) => {
     await expect(page.locator('h1')).toContainText('problema legal');
-    await expect(page.getByRole('button', { name: /cuéntame/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Iniciar mi orientación/i })).toBeVisible();
   });
 
   test('shows legal area chips in hero', async ({ page }) => {
