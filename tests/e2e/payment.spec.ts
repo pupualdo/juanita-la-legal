@@ -12,10 +12,10 @@ async function acceptTerms(page: any) {
   });
 }
 
-// Helper: navigate straight to payment wall via mocked classify + initial chat
-async function goToPaymentWall(page: any) {
+// Helper: navigate to pre-chat wall via mocked classify + initial chat
+async function goToPreChatWall(page: any) {
   await acceptTerms(page);
-  await page.route('**/api/classify', async (route: any) => {
+  await page.route(/\/api\/classify/, async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -23,12 +23,11 @@ async function goToPaymentWall(page: any) {
     });
   });
 
-  await page.route('**/api/chat', async (route: any) => {
-    // Simulate streaming a message that triggers payment
+  await page.route(/(chat)/, async (route: any) => {
     await route.fulfill({
       status: 200,
       contentType: 'text/event-stream',
-      body: 'data: {"text":"Para continuar necesito"}\n\ndata: {"done":true}\n\n',
+      body: 'data: {"text":"Entiendo tu consulta laboral"}\n\ndata: {"done":true}\n\n',
     });
   });
 
@@ -41,44 +40,13 @@ async function goToPaymentWall(page: any) {
   await textarea.fill('Me despidieron y no me pagaron');
   await textarea.press('Enter');
 
+  // Wait for pre-chat banner to appear
   await expect(
-    page.locator('text=Pagar con Mercado Pago').or(page.locator('text=Acceder gratis'))
+    page.locator('text=mensajes restantes')
   ).toBeVisible({ timeout: 15_000 });
 }
 
 test.describe('Promo code validation', () => {
-  test('valid promo code shows discount', async ({ page }) => {
-    await page.route('**/api/validate-promo', async (route) => {
-      const req = await route.request().postDataJSON();
-      if (req?.code === 'LANZAMIENTO') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ valid: true, discount: 50, finalPrice: 4995 }),
-        });
-      } else {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ valid: false }),
-        });
-      }
-    });
-
-    await goToPaymentWall(page);
-
-    const promoInput = page.locator('input[placeholder*="código" i], input[placeholder*="descuento" i]').first();
-    if (await promoInput.isVisible()) {
-      await promoInput.fill('LANZAMIENTO');
-      // Trigger validation (blur or button click)
-      await promoInput.press('Enter');
-      // Should show some discount feedback
-      await expect(
-        page.locator('text=50%').or(page.locator('text=4.995')).or(page.locator('text=descuento'))
-      ).toBeVisible({ timeout: 5_000 });
-    }
-  });
-
   test('validate-promo API rejects unknown codes', async ({ page }) => {
     const res = await page.request.post('/api/validate-promo', {
       data: { code: 'INVALIDXXXX' },
@@ -102,21 +70,14 @@ test.describe('Promo code validation', () => {
   });
 });
 
-test.describe('Payment wall UI', () => {
-  test('shows price and payment button', async ({ page }) => {
-    await goToPaymentWall(page);
+test.describe('Payment flow', () => {
+  test('shows pre-chat wall with purchase option', async ({ page }) => {
+    await goToPreChatWall(page);
 
-    // Price should be visible
+    // Pre-chat should show the purchase CTA area
     await expect(
-      page.locator('text=9.990').or(page.locator('text=$9.990')).or(page.locator('text=9990')).first()
+      page.locator('text=4.995').or(page.locator('text=Comprar consulta'))
     ).toBeVisible({ timeout: 5_000 });
-
-    // Payment button should be present
-    await expect(
-      page.locator('button', { hasText: /pagar/i }).or(
-        page.locator('button', { hasText: /mercado pago/i })
-      )
-    ).toBeVisible();
   });
 
   test('create-payment returns a checkout URL', async ({ page }) => {
@@ -138,34 +99,18 @@ test.describe('Payment wall UI', () => {
     }
   });
 
-  test('100% promo code skips MercadoPago redirect', async ({ page }) => {
-    // Mock validate-promo and verify-payment for AMIGOS2026 (100% off)
-    await page.route('**/api/validate-promo', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ valid: true, discount: 100, finalPrice: 0 }),
-      });
-    });
+  test('pre-chat shows price and purchase option', async ({ page }) => {
+    await goToPreChatWall(page);
 
-    await page.route('**/api/verify-payment', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ ok: true, expiresAt: new Date(Date.now() + 3_600_000).toISOString() }),
-      });
-    });
+    // Pre-chat banner should show the discounted price
+    await expect(
+      page.locator('text=4.995').or(page.locator('text=4,995')).first()
+    ).toBeVisible({ timeout: 5_000 });
 
-    await goToPaymentWall(page);
-
-    const promoInput = page.locator('input[placeholder*="código" i], input[placeholder*="descuento" i]').first();
-    if (await promoInput.isVisible()) {
-      await promoInput.fill('AMIGOS2026');
-      await promoInput.press('Enter');
-
-      // After 100% discount the button should change to "Acceder gratis"
-      await expect(page.locator('button', { hasText: /gratis/i })).toBeVisible({ timeout: 5_000 });
-    }
+    // The banner mentions the purchase option
+    await expect(
+      page.locator('text=consulta completa').or(page.locator('text=Prueba gratuita'))
+    ).toBeVisible();
   });
 });
 

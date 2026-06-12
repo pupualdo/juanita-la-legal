@@ -22,8 +22,8 @@ test.describe('Landing page', () => {
   });
 
   test('renders hero section with title and CTA', async ({ page }) => {
-    await expect(page.locator('h1')).toContainText('Juanita La Legal');
-    await expect(page.getByRole('button', { name: /iniciar consulta/i })).toBeVisible();
+    await expect(page.locator('h1')).toContainText('problema legal');
+    await expect(page.getByRole('button', { name: /cuéntame/i })).toBeVisible();
   });
 
   test('shows legal area chips in hero', async ({ page }) => {
@@ -74,11 +74,11 @@ test.describe('Chat input and suggestion chips', () => {
 });
 
 test.describe('Topic classification flow (mocked)', () => {
-  test('classifies message and shows payment wall', async ({ page }) => {
+  test('classifies message and shows pre-chat wall', async ({ page }) => {
     await acceptTerms(page);
 
-    // Mock the classify API to return a known topic immediately
-    await page.route('**/api/classify', async (route) => {
+    // Mock the classify API
+    await page.route(/\/api\/classify/, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -86,21 +86,12 @@ test.describe('Topic classification flow (mocked)', () => {
       });
     });
 
-    // Mock the chat API (SSE stream)
-    await page.route('**/api/chat', async (route) => {
+    // Mock chat API (SSE stream) - needed for pre-chat responses
+    await page.route(/(chat)/, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'text/event-stream',
-        body: 'data: {"text":"Para resolver un despido injustificado"}\n\ndata: {"done":true}\n\n',
-      });
-    });
-
-    // Mock create-payment so we don't actually redirect
-    await page.route('**/api/create-payment', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ checkoutUrl: 'https://mercadopago.cl/checkout/mock' }),
+        body: 'data: {"text":"Entiendo tu consulta laboral"}\n\ndata: {"done":true}\n\n',
       });
     });
 
@@ -114,9 +105,7 @@ test.describe('Topic classification flow (mocked)', () => {
     await textarea.fill('Me despidieron sin aviso y no me pagaron el finiquito');
     await textarea.press('Enter');
 
-    // Wait for payment wall to appear (stage = "payment")
-    await expect(page.locator('text=Pagar con Mercado Pago').or(
-      page.locator('text=Acceder gratis')
-    )).toBeVisible({ timeout: 15_000 });
+    // Wait for pre-chat wall to appear (stage = "prechat")
+    await expect(page.locator('text=mensajes restantes')).toBeVisible({ timeout: 15_000 });
   });
 });
