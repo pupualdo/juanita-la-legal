@@ -8,19 +8,20 @@ const GA_GTM     = 'https://www.googletagmanager.com';
 const GA_COLLECT = 'https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com';
 const FB_SCRIPT  = 'https://connect.facebook.net';
 const FB_COLLECT = 'https://www.facebook.com';
+const CLARITY    = 'https://www.clarity.ms https://clarity.ms';
 
 const csp = [
   `default-src 'self'`,
-  // Scripts: self + MercadoPago SDK + Google Tag Manager (GA4) + Meta Pixel
-  `script-src 'self' 'unsafe-inline' ${MP_SDK} ${GA_GTM} ${FB_SCRIPT}`,
+  // Scripts: self + MercadoPago SDK + Google Tag Manager (GA4) + Meta Pixel + Clarity
+  `script-src 'self' 'unsafe-inline' ${MP_SDK} ${GA_GTM} ${FB_SCRIPT} ${CLARITY}`,
   // Styles: self + inline (Next.js injects inline styles; Google Fonts if ever added)
   `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
   // Fonts
   `font-src 'self' https://fonts.gstatic.com`,
   // Images: self + data URIs + MP assets + Unsplash (hero bg) + GA beacon + Meta Pixel noscript
   `img-src 'self' data: blob: ${MP_DOMAIN} https://*.mercadolibre.com https://images.unsplash.com https://www.google-analytics.com ${FB_COLLECT}`,
-  // XHR/fetch: self + MP APIs + Supabase + GA4 + Meta Pixel events
-  `connect-src 'self' ${MP_DOMAIN} ${MP_SDK} ${SUPABASE} https://api.anthropic.com ${GA_GTM} ${GA_COLLECT} ${FB_COLLECT} ${FB_SCRIPT}`,
+  // XHR/fetch: self + MP APIs + Supabase + GA4 + Meta Pixel events + Clarity
+  `connect-src 'self' ${MP_DOMAIN} ${MP_SDK} ${SUPABASE} https://api.anthropic.com ${GA_GTM} ${GA_COLLECT} ${FB_COLLECT} ${FB_SCRIPT} ${CLARITY}`,
   // Media (voice transcription blob URLs)
   `media-src 'self' blob:`,
   // Workers (audio processing)
