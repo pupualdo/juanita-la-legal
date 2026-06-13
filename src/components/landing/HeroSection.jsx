@@ -27,7 +27,7 @@ export default function HeroSection({ onStart }) {
         {/* Fondo biblioteca difuso */}
         <div style={{
           position: "absolute", inset: 0,
-          backgroundImage: "url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=60&fm=webp')",
+          backgroundImage: "url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=600&q=40&fm=webp')",
           backgroundSize: "cover", backgroundPosition: "center",
           filter: "blur(8px) brightness(0.35) saturate(1.1)",
           transform: "scale(1.12)",
