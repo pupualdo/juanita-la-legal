@@ -32,15 +32,25 @@ function getGtag() {
   return typeof window !== 'undefined' ? window.gtag : null;
 }
 
+function getVariantFromCookie() {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(/(?:^|;\s*)juanita_variant=([^;]*)/);
+  return match && ['A', 'B'].includes(match[1]) ? match[1] : null;
+}
+
 export function trackEvent(eventName, params = {}) {
+  // Inyectar variant A/B automáticamente en todo evento para segmentación
+  const variant = getVariantFromCookie();
+  const enrichedParams = variant ? { ...params, ab_variant: variant } : params;
+
   // Meta Pixel (eventos estándar usan track, custom usan trackCustom)
   const fbq = getFbq();
   if (fbq) {
     const STANDARD = ['ViewContent', 'AddPaymentInfo', 'Purchase'];
     if (STANDARD.includes(eventName)) {
-      fbq('track', eventName, params);
+      fbq('track', eventName, enrichedParams);
     } else {
-      fbq('trackCustom', eventName, params);
+      fbq('trackCustom', eventName, enrichedParams);
     }
   }
 
@@ -49,7 +59,7 @@ export function trackEvent(eventName, params = {}) {
   if (gtag) {
     const ga4Name = GA4_EVENT_MAP[eventName];
     if (ga4Name) {
-      gtag('event', ga4Name, params);
+      gtag('event', ga4Name, enrichedParams);
     }
   }
 
