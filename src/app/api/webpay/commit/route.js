@@ -90,9 +90,11 @@ async function handleCommit(request) {
         }
       }
 
-      // Redirigir al success page con el sessionId
-      // Para WebPay, la sesión ya está activada en Supabase → success page solo redirige a /?paid=true
-      return NextResponse.redirect(`${APP_URL}/success?session=${sessionId || ''}&method=webpay&status=webpay_approved`);
+      // Redirigir directo a /?paid=true — la sesión ya está activada en Supabase
+      // Saltamos /success porque verify-payment es solo para MercadoPago
+      const paidSession = sessionId || '';
+      const paidParams = paidSession ? `paid=true&session=${encodeURIComponent(paidSession)}&method=webpay` : 'paid=true&method=webpay';
+      return NextResponse.redirect(`${APP_URL}/?${paidParams}`);
     }
 
     // ── Pago rechazado ──
