@@ -103,7 +103,17 @@ async function handleCommit(request) {
     return NextResponse.redirect(`${APP_URL}/payment-error?reason=rejected&code=${response.response_code}`);
 
   } catch (error) {
-    await log.error('webpay-commit', 'Error confirmando transacción', { err: error });
-    return NextResponse.redirect(`${APP_URL}/payment-error?reason=system`);
+    const errorMsg = error?.message || String(error);
+    const errorName = error?.name || 'UnknownError';
+    await log.error('webpay-commit', 'Error confirmando transacción', { error: errorMsg, name: errorName, token: tokenWs });
+
+    // Token expirado es el error más común en sandbox
+    const reason = errorMsg?.includes('expired') || errorMsg?.includes('timeout') || errorMsg?.includes('not found')
+      ? 'token_expired'
+      : 'system';
+
+    return NextResponse.redirect(
+      `${APP_URL}/payment-error?reason=${reason}&msg=${encodeURIComponent(errorMsg.slice(0, 200))}`
+    );
   }
 }

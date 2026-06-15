@@ -1,15 +1,35 @@
 'use client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function PaymentErrorPage() {
+function ErrorContent() {
   const router = useRouter();
+  const params = useSearchParams();
+  const reason = params.get('reason') || 'system';
+  const msg = params.get('msg') || '';
+
+  const reasonLabels = {
+    timeout: 'La sesión de pago expiró',
+    abort: 'Pago cancelado',
+    rejected: 'El pago fue rechazado por el banco',
+    token_expired: 'El token de WebPay expiró (demasiado lento en sandbox)',
+    system: 'Hubo un problema con el pago',
+  };
+
+  const label = reasonLabels[reason] || reasonLabels.system;
+
   return (
     <div style={{ textAlign:'center', padding: 60, fontFamily: 'sans-serif' }}>
       <div style={{ fontSize: 40, marginBottom: 16 }}>❌</div>
-      <h2 style={{ color: '#c85a20', marginBottom: 8 }}>Hubo un problema con el pago</h2>
+      <h2 style={{ color: '#c85a20', marginBottom: 8 }}>{label}</h2>
       <p style={{ color: '#6a5e50', marginBottom: 24 }}>
         No se realizó ningún cargo. Puedes intentarlo de nuevo.
       </p>
+      {msg && (
+        <p style={{ color: '#8a7a68', fontSize: 11, marginBottom: 24, wordBreak: 'break-all', maxWidth: 400, margin: '0 auto 24px' }}>
+          {decodeURIComponent(msg)}
+        </p>
+      )}
       <button
         onClick={() => router.push('/')}
         style={{
@@ -21,5 +41,13 @@ export default function PaymentErrorPage() {
         Volver a intentar
       </button>
     </div>
+  );
+}
+
+export default function PaymentErrorPage() {
+  return (
+    <Suspense fallback={<div style={{ textAlign:'center', padding: 60 }}>Cargando...</div>}>
+      <ErrorContent />
+    </Suspense>
   );
 }
