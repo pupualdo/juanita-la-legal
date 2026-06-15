@@ -91,7 +91,8 @@ async function handleCommit(request) {
       }
 
       // Redirigir al success page con el sessionId
-      return NextResponse.redirect(`${APP_URL}/success?session=${sessionId || ''}&method=webpay`);
+      // Para WebPay, la sesión ya está activada en Supabase → success page solo redirige a /?paid=true
+      return NextResponse.redirect(`${APP_URL}/success?session=${sessionId || ''}&method=webpay&status=webpay_approved`);
     }
 
     // ── Pago rechazado ──

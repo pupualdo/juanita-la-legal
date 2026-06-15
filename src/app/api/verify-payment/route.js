@@ -16,6 +16,24 @@ export async function GET(request) {
     const sessionId = searchParams.get('session');
     const status    = searchParams.get('status');
 
+    // WebPay path: session was already activated in the commit handler
+    // Just verify the session exists in Supabase and redirect to paid flow
+    if (status === 'webpay_approved') {
+      if (!sessionId) {
+        return NextResponse.json({ ok: false, reason: 'no_session' });
+      }
+      const { data } = await getSupabase()
+        .from('sessions')
+        .select('expires_at')
+        .eq('session_id', sessionId)
+        .single();
+
+      if (data?.expires_at && new Date(data.expires_at) > new Date()) {
+        return NextResponse.json({ ok: true, sessionId, skipPaymentVerify: true });
+      }
+      return NextResponse.json({ ok: false, reason: 'session_not_active' });
+    }
+
     // Polling path: payment-pending page checks if the webhook already granted access
     if (status === 'check_session') {
       if (!sessionId) {
