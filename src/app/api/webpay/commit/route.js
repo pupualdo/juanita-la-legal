@@ -64,30 +64,35 @@ async function handleCommit(request) {
 
       log.info('webpay-commit', 'Pago aprobado', { sessionId, buyOrder, amount, authCode });
 
-      // Activar sesión en Supabase (si existe)
-      if (sessionId && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+      // Activar sesión en Supabase — usar el sessionId de Transbank o derivarlo de buy_order
+      const effectiveSessionId = sessionId || (buyOrder ? buyOrder.replace('JLL-', '') : null);
+
+      if (effectiveSessionId && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
         try {
           const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+          // Solo actualizar status + expires_at + payment info, NO sobrescribir history
           const { error: upsertError } = await getSupabase()
             .from('sessions')
             .upsert({
-              session_id: sessionId,
+              session_id: effectiveSessionId,
               status: 'active',
               expires_at: expiresAt,
               payment_method: 'webpay',
               payment_amount: amount,
               payment_id: String(authCode || buyOrder),
               payment_metadata: { auth_code: authCode, card: cardNumber },
-              created_at: new Date().toISOString(),
-              history: [],
             }, { onConflict: 'session_id' });
 
           if (upsertError) {
-            log.error('webpay-commit', 'Error activando sesión en Supabase', { err: upsertError, sessionId });
+            log.error('webpay-commit', 'Error activando sesión', { err: upsertError, sessionId: effectiveSessionId });
+          } else {
+            log.info('webpay-commit', 'Sesión activada', { sessionId: effectiveSessionId });
           }
         } catch (supaErr) {
-          log.error('webpay-commit', 'Supabase no disponible, continuando sin guardar sesión', { err: supaErr?.message });
+          log.error('webpay-commit', 'Supabase no disponible', { err: supaErr?.message });
         }
+      } else {
+        log.warn('webpay-commit', 'Sin sessionId o Supabase no configurado', { sessionId, buyOrder });
       }
 
       // Redirigir directo a /?paid=true — la sesión ya está activada en Supabase

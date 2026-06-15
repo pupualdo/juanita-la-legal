@@ -452,12 +452,13 @@ export async function POST(request) {
         history = [];
       }
     } else {
+      // Paid session: must have status='active' and non-expired (or recently created with NULL expires_at)
       const { data: session } = await getSupabase()
         .from('sessions')
         .select('*')
         .eq('session_id', sessionId)
-        .gt('expires_at', new Date().toISOString())
-        .single();
+        .or(`expires_at.gt.${new Date().toISOString()},and(status.eq.active,created_at.gt.${new Date(Date.now() - 10 * 60 * 1000).toISOString()})`)
+        .maybeSingle();
 
       if (!session) {
         return NextResponse.json({ error: 'Sesión inválida o expirada' }, { status: 401 });
