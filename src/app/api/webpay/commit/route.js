@@ -64,8 +64,22 @@ async function handleCommit(request) {
 
       log.info('webpay-commit', 'Pago aprobado', { sessionId, buyOrder, amount, authCode });
 
-      // Activar sesión en Supabase — usar el sessionId de Transbank o derivarlo de buy_order
-      const effectiveSessionId = sessionId || (buyOrder ? buyOrder.replace('JLL-', '') : null);
+      // Activar sesión en Supabase — usar el sessionId de Transbank
+      // Si es null/undefined, buscar por prefijo de buy_order (JLL-XXXXXXXX-...)
+      let effectiveSessionId = sessionId;
+
+      if (!effectiveSessionId && buyOrder) {
+        const prefix = buyOrder.replace('JLL-', '');
+        if (prefix && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+          // Buscar sesión que empiece con el prefijo del buy_order
+          const { data: found } = await getSupabase()
+            .from('sessions')
+            .select('session_id')
+            .ilike('session_id', `${prefix}%`)
+            .maybeSingle();
+          effectiveSessionId = found?.session_id || null;
+        }
+      }
 
       if (effectiveSessionId && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
         try {
