@@ -452,16 +452,21 @@ export async function POST(request) {
         history = [];
       }
     } else {
-      // Paid session: must have status='active' and non-expired (or recently created with NULL expires_at)
+      // Paid session: must exist in Supabase and not be explicitly expired
+      // (status='active' set by webhook/commit, or prechat session recently created)
       const { data: session } = await getSupabase()
         .from('sessions')
         .select('*')
         .eq('session_id', sessionId)
-        .or(`expires_at.gt.${new Date().toISOString()},and(status.eq.active,created_at.gt.${new Date(Date.now() - 10 * 60 * 1000).toISOString()})`)
         .maybeSingle();
 
       if (!session) {
         return NextResponse.json({ error: 'Sesión inválida o expirada' }, { status: 401 });
+      }
+
+      // Si tiene expires_at, verificar que no haya expirado
+      if (session.expires_at && new Date(session.expires_at) <= new Date()) {
+        return NextResponse.json({ error: 'Sesión expirada' }, { status: 401 });
       }
 
       history = Array.isArray(session.history) ? session.history : [];
