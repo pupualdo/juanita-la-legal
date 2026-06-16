@@ -206,13 +206,11 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
           setPrechatExchanges(0);
           setStage("prechat");
           // Llamar a /api/chat para la primera respuesta de Juanita
-          const prechatSessionId = crypto.randomUUID();
-          setSessionId(prechatSessionId);
           addMsg({ type: "system", text: `Tema: ${TOPIC_LABELS[data.tema]} ${TOPIC_META[data.tema]?.emoji}. Conversación de orientación gratuita (máx. 3 intercambios).` });
           streamChatResponse(
             `[PRE-CHAT] El usuario consulta: "${trimmed}". Tu objetivo es DARLE VALOR inmediato para que quiera pagar. Responde de forma concreta y útil — demuestra que sabes del tema legal, da UN dato práctico específico (un paso concreto que pueda hacer hoy, un artículo de ley aplicable, o un trámite preciso que le sirva). NO des la orientación completa ni el paso a paso detallado — eso es lo que obtiene con la consulta pagada. Luego haz 1 pregunta específica para profundizar su caso. Al final de tu respuesta, sugiere naturalmente que en la consulta completa ($4.995) le das el detalle completo, los pasos exactos y los riesgos.`,
             [],
-            prechatSessionId,
+            sessionId,
             undefined,
             true
           );
