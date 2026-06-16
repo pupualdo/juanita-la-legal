@@ -12,10 +12,21 @@ function PaidDetector({ onPaid }) {
   const searchParams = useSearchParams();
   useEffect(() => {
     if (searchParams.get('paid') === 'true') {
-      const savedSession = localStorage.getItem('juanita_session');
+      let savedSession = localStorage.getItem('juanita_session');
       const savedTopic = localStorage.getItem('juanita_topic');
+
+      // Fallback: si localStorage se perdió (cross-domain redirect), usar URL params
+      if (!savedSession) {
+        savedSession = searchParams.get('sid');
+        if (savedSession) {
+          localStorage.setItem('juanita_session', savedSession);
+          const urlTopic = searchParams.get('topic');
+          if (urlTopic) localStorage.setItem('juanita_topic', urlTopic);
+        }
+      }
+
       if (savedSession) {
-        trackEvent('Purchase', { sessionId: savedSession, tema: savedTopic || 'unknown' });
+        trackEvent('Purchase', { sessionId: savedSession, tema: savedTopic || searchParams.get('topic') || 'unknown' });
         onPaid();
       }
     }
