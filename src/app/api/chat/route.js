@@ -433,7 +433,6 @@ export async function POST(request) {
     if (process.env.DEV_SKIP_PAYMENT === 'true') {
       // Dev mode: skip session validation, use history from request
       history = devHistory || [];
-<<<<<<< HEAD
     } else if (prechat) {
       // Pre-chat mode: upsert session in Supabase for lead tracking + history
       try {
@@ -468,8 +467,6 @@ export async function POST(request) {
         log.error('chat', 'Unexpected error in prechat session handling', { err: prechatSessionErr, sessionId });
         history = [];
       }
-=======
->>>>>>> 7bf5555 (fix: prompt — datos factuales aplican al análisis legal, no a la empatía)
     } else {
       // Paid session: must exist in Supabase and not be explicitly expired
       // (status='active' set by webhook/commit, or prechat session recently created)
@@ -545,22 +542,6 @@ export async function POST(request) {
             }
           }
           if (!isDevMode && capturedSessionId) {
-<<<<<<< HEAD
-            const updatedHistory = [...capturedHistory, { role: 'assistant', content: fullReply }];
-            // Extender sesión 15 min desde ahora en cada mensaje
-            const newExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-            try {
-              const { error: updateErr } = await getSupabase()
-                .from('sessions')
-                .update({ history: updatedHistory, expires_at: newExpiresAt })
-                .eq('session_id', capturedSessionId);
-              if (updateErr) {
-                log.error('chat', 'Error updating session history', { err: updateErr, sessionId: capturedSessionId, historyLen: updatedHistory.length });
-              }
-            } catch (postStreamErr) {
-              log.error('chat', 'Unexpected error updating session history', { err: postStreamErr, sessionId: capturedSessionId });
-            }
-=======
             // Al persistir, reemplazamos los adjuntos base64 (imágenes/PDF) por una
             // nota de texto: el modelo ya los analizó en este turno, y guardarlos
             // inflaría el historial y se reenviarían en cada mensaje siguiente.
@@ -575,11 +556,19 @@ export async function POST(request) {
               return m;
             });
             const updatedHistory = [...leanHistory, { role: 'assistant', content: fullReply }];
-            await supabase
-              .from('sessions')
-              .update({ history: updatedHistory })
-              .eq('session_id', capturedSessionId);
->>>>>>> 7bf5555 (fix: prompt — datos factuales aplican al análisis legal, no a la empatía)
+            // Extender sesión 15 min desde ahora en cada mensaje
+            const newExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+            try {
+              const { error: updateErr } = await getSupabase()
+                .from('sessions')
+                .update({ history: updatedHistory, expires_at: newExpiresAt })
+                .eq('session_id', capturedSessionId);
+              if (updateErr) {
+                log.error('chat', 'Error updating session history', { err: updateErr, sessionId: capturedSessionId, historyLen: updatedHistory.length });
+              }
+            } catch (postStreamErr) {
+              log.error('chat', 'Unexpected error updating session history', { err: postStreamErr, sessionId: capturedSessionId });
+            }
           }
         } catch (err) {
           log.error('chat', 'Anthropic stream error', { err, sessionId });

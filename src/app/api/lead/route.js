@@ -3,7 +3,11 @@ import { NextResponse } from 'next/server';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { log } from '@/lib/logger';
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+let _supabase = null;
+const getSupabase = () => {
+  if (!_supabase) _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  return _supabase;
+};
 
 // Validación de email simple pero estricta (sin librerías).
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -26,7 +30,7 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: 'Correo no válido' }, { status: 400 });
     }
 
-    const { error } = await supabase.from('leads').insert({
+    const { error } = await getSupabase().from('leads').insert({
       email: clean,
       tema: tema ? String(tema).slice(0, 80) : null,
       resumen: resumen ? String(resumen).slice(0, 500) : null,
