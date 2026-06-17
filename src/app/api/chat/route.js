@@ -102,6 +102,22 @@ Cuando necesites información del usuario, haz **UNA SOLA PREGUNTA** por mensaje
 - "Casado/a con chilena/o" → tiene vínculo con ciudadano/a chileno/a
 Si no entendiste algo, reformula la pregunta de forma diferente. Nunca repitas la misma pregunta con las mismas palabras.
 
+**🚨 REGLA CRÍTICA — Datos factuales van al análisis legal, no a la empatía.**
+Cuando hiciste una pregunta concreta (¿cuándo compraste?, ¿cuánto pagaste?, ¿cuánto tiempo llevas?) y el usuario responde con un dato (plazo, monto, fecha, número), ese dato RESPONDE TU PREGUNTA ANTERIOR. Aplícalo INMEDIATAMENTE al análisis legal en curso. No lo reinterpretes como carga emocional ni lo uses como excusa para hacer otra pregunta genérica, y nunca olvides el contexto ya establecido en la conversación.
+
+❌ **EJEMPLO PROHIBIDO — nunca hagas esto:**
+Juanita había explicado la garantía legal de 6 meses y preguntó: "¿Cuánto tiempo hace que compraste el producto?"
+Usuario responde: "HACE 2 AÑOS"
+Juanita responde: "¡Uf, dos años es harto tiempo cargando con eso! ¿De qué se trata la situación?"
+→ INCORRECTO: (1) ignoró el dato legal, (2) olvidó el contexto ya establecido, (3) preguntó algo que ya sabía.
+
+✅ **EJEMPLO CORRECTO — así se hace:**
+Juanita había explicado la garantía legal de 6 meses y preguntó: "¿Cuánto tiempo hace que compraste el producto?"
+Usuario responde: "HACE 2 AÑOS"
+Juanita responde: "Con 2 años desde la compra, ya pasaste el plazo de la **garantía legal de 6 meses** (Ley 19.496, Art. 21). Eso cambia el camino: ya no puedes exigir reparación o cambio por esa vía. Pero tienes otras opciones: si el vendedor te dio una garantía contractual más larga en la boleta o contrato, esa aplica. Y si el defecto era un vicio oculto que no podías detectar al comprar, tienes acción civil. ¿Tienes algún papel del vendedor que mencione garantía extendida?"
+
+Orden correcto siempre: **dato recibido → implicación legal → siguiente paso → empatía en UNA frase si corresponde, no como sustituto del análisis.**
+
 **🚨 REGLA CRÍTICA — Haz las preguntas necesarias, luego ORIENTA.** Cuando el usuario ya haya respondido lo suficiente (aunque sea brevemente), PASA AL PASO 2 con la orientación completa. No sigas preguntando en loop. Usa lo que tienes y cubre los escenarios posibles dentro de la orientación. Si el usuario ya dio suficiente información en 1 ronda, pasa al PASO 2 tras esa primera respuesta.
 
 **🚨 REGLA CRÍTICA — Interpretar sin literalidad.** No pidas que el usuario reformule si la respuesta es comprensible. Las personas hablan en lenguaje cotidiano, no en lenguaje jurídico. "Me echan a la calle" = desalojo. "El dueño no quiere devolver la plata" = el arrendador retiene la garantía. "No tengo papeles" = situación migratoria irregular. Entiende el significado real, no el literal exacto.
@@ -406,9 +422,9 @@ export async function POST(request) {
       );
     }
 
-    const { sessionId, message, imageBase64, history: devHistory, prechat } = await request.json();
+    const { sessionId, message, imageBase64, imageMediaType, pdfBase64, history: devHistory, previewContext } = await request.json();
 
-    if (!message && !imageBase64) {
+    if (!message && !imageBase64 && !pdfBase64) {
       return NextResponse.json({ error: 'Mensaje vacío' }, { status: 400 });
     }
 
@@ -417,6 +433,7 @@ export async function POST(request) {
     if (process.env.DEV_SKIP_PAYMENT === 'true') {
       // Dev mode: skip session validation, use history from request
       history = devHistory || [];
+<<<<<<< HEAD
     } else if (prechat) {
       // Pre-chat mode: upsert session in Supabase for lead tracking + history
       try {
@@ -451,6 +468,8 @@ export async function POST(request) {
         log.error('chat', 'Unexpected error in prechat session handling', { err: prechatSessionErr, sessionId });
         history = [];
       }
+=======
+>>>>>>> 7bf5555 (fix: prompt — datos factuales aplican al análisis legal, no a la empatía)
     } else {
       // Paid session: must exist in Supabase and not be explicitly expired
       // (status='active' set by webhook/commit, or prechat session recently created)
@@ -472,15 +491,33 @@ export async function POST(request) {
       history = Array.isArray(session.history) ? session.history : [];
     }
 
+    // Continuidad con el preview: si la sesión aún no tiene historial, sembramos
+    // lo conversado antes de pagar para que Juanita recuerde el caso completo.
+    if ((!history || history.length === 0) && Array.isArray(previewContext) && previewContext.length) {
+      history = previewContext
+        .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+        .slice(-12);
+    }
+
     const validHistory = history.filter(
       m => m && typeof m.role === 'string' && (typeof m.content === 'string' || Array.isArray(m.content))
     );
-    const userContent = imageBase64
-      ? [
-          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imageBase64 } },
-          { type: 'text', text: message }
-        ]
-      : message;
+    let userContent;
+    if (imageBase64 || pdfBase64) {
+      const parts = [];
+      if (imageBase64) {
+        const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        const mt = allowed.includes(imageMediaType) ? imageMediaType : 'image/jpeg';
+        parts.push({ type: 'image', source: { type: 'base64', media_type: mt, data: imageBase64 } });
+      }
+      if (pdfBase64) {
+        parts.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } });
+      }
+      parts.push({ type: 'text', text: message || 'Te adjunto un documento. ¿Me ayudas a revisarlo y explicarme qué dice?' });
+      userContent = parts;
+    } else {
+      userContent = message;
+    }
     const newHistory = [...validHistory, { role: 'user', content: userContent }];
 
     const anthropic = new Anthropic({ apiKey: process.env.JUANITA_ANTHROPIC_KEY });
@@ -496,7 +533,6 @@ export async function POST(request) {
     let fullReply = '';
     const capturedSessionId = sessionId;
     const capturedHistory = newHistory;
-    const isPrechat = !!prechat;
     const isDevMode = process.env.DEV_SKIP_PAYMENT === 'true';
 
     const readable = new ReadableStream({
@@ -509,6 +545,7 @@ export async function POST(request) {
             }
           }
           if (!isDevMode && capturedSessionId) {
+<<<<<<< HEAD
             const updatedHistory = [...capturedHistory, { role: 'assistant', content: fullReply }];
             // Extender sesión 15 min desde ahora en cada mensaje
             const newExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
@@ -523,6 +560,26 @@ export async function POST(request) {
             } catch (postStreamErr) {
               log.error('chat', 'Unexpected error updating session history', { err: postStreamErr, sessionId: capturedSessionId });
             }
+=======
+            // Al persistir, reemplazamos los adjuntos base64 (imágenes/PDF) por una
+            // nota de texto: el modelo ya los analizó en este turno, y guardarlos
+            // inflaría el historial y se reenviarían en cada mensaje siguiente.
+            const leanHistory = capturedHistory.map(m => {
+              if (Array.isArray(m.content)) {
+                const textPart = m.content.find(p => p.type === 'text');
+                const hadImage = m.content.some(p => p.type === 'image');
+                const hadDoc = m.content.some(p => p.type === 'document');
+                const tag = hadImage ? ' [adjuntó una imagen]' : hadDoc ? ' [adjuntó un documento PDF]' : '';
+                return { role: m.role, content: (textPart?.text || '') + tag };
+              }
+              return m;
+            });
+            const updatedHistory = [...leanHistory, { role: 'assistant', content: fullReply }];
+            await supabase
+              .from('sessions')
+              .update({ history: updatedHistory })
+              .eq('session_id', capturedSessionId);
+>>>>>>> 7bf5555 (fix: prompt — datos factuales aplican al análisis legal, no a la empatía)
           }
         } catch (err) {
           log.error('chat', 'Anthropic stream error', { err, sessionId });
