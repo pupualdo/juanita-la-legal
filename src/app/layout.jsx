@@ -147,18 +147,18 @@ export default function RootLayout({ children }) {
         />
         {children}
         <Analytics />
-        {/* Google Analytics — lazyOnload para no bloquear main thread */}
+        {/* Google Analytics — afterInteractive: carga antes de que el usuario interactúe */}
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <Script
             id="google-analytics"
-            strategy="lazyOnload"
+            strategy="afterInteractive"
             src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
           />
         )}
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <Script
             id="google-analytics-init"
-            strategy="lazyOnload"
+            strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: `
                 window.dataLayer = window.dataLayer || [];
@@ -175,7 +175,7 @@ export default function RootLayout({ children }) {
         {/* Meta Pixel */}
         <Script
           id="meta-pixel"
-          strategy="lazyOnload"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               !function(f,b,e,v,n,t,s)
