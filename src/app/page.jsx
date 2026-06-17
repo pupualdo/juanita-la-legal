@@ -3073,6 +3073,9 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Disparar ViewContent al cargar la landing (evento explícito para GA4)
+    trackEvent('ViewContent', { page: 'landing' });
+
     const b = document.querySelector('[data-action="start"]');
     if (b) b.onclick = () => navigateWithTerms('chat');
   }, [screen]);

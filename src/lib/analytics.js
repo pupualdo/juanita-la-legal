@@ -72,6 +72,13 @@ function getVariantFromCookie() {
 }
 
 export function trackEvent(eventName, params = {}) {
+  // ── DEBUG temporal — ver en consola del navegador ──
+  const ts = new Date().toISOString().slice(11, 23);
+  console.log(`[analytics ${ts}] trackEvent("${eventName}")`, params,
+    '| gtag:', typeof window !== 'undefined' && typeof window.gtag,
+    '| fbq:', typeof window !== 'undefined' && typeof window.fbq,
+    '| queue:', _gtagQueue.length);
+
   // Inyectar variant A/B automáticamente en todo evento para segmentación
   const variant = getVariantFromCookie();
   const enrichedParams = variant ? { ...params, ab_variant: variant } : params;
@@ -93,9 +100,11 @@ export function trackEvent(eventName, params = {}) {
   if (ga4Name) {
     if (gtag) {
       gtag('event', ga4Name, enrichedParams);
+      console.log(`[analytics ${ts}] ✅ GA4 enviado: gtag('event', '${ga4Name}')`, enrichedParams);
     } else {
-      // gtag aún no cargó (lazyOnload) — encolar para replay
-      _gtagQueue.push({ eventName: ga4Name, params: enrichedParams });
+      // gtag aún no cargó — encolar para replay
+      _gtagQueue.push({ eventName: ga4Name, params: enrichedParams, ts });
+      console.log(`[analytics ${ts}] ⏳ Encolado (gtag no disponible): '${ga4Name}' → queue=${_gtagQueue.length}`);
     }
   }
 
