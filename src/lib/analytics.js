@@ -24,12 +24,45 @@ const GA4_EVENT_MAP = {
   PaymentFailed:     'payment_failed',
 };
 
+// Cola para eventos disparados antes de que gtag esté disponible (lazyOnload)
+let _gtagQueue = [];
+let _gtagReady = false;
+
 function getFbq() {
   return typeof window !== 'undefined' ? window.fbq : null;
 }
 
 function getGtag() {
-  return typeof window !== 'undefined' ? window.gtag : null;
+  if (typeof window === 'undefined') return null;
+  if (window.gtag) {
+    _gtagReady = true;
+    return window.gtag;
+  }
+  return null;
+}
+
+function flushGtagQueue() {
+  if (_gtagQueue.length === 0) return;
+  const gtag = getGtag();
+  if (!gtag) return;
+  const queue = _gtagQueue;
+  _gtagQueue = [];
+  for (const { eventName, params } of queue) {
+    gtag('event', eventName, params);
+  }
+}
+
+// Revisar periódicamente si gtag ya cargó y vaciar la cola
+if (typeof window !== 'undefined') {
+  const interval = setInterval(() => {
+    if (getGtag()) {
+      _gtagReady = true;
+      flushGtagQueue();
+      clearInterval(interval);
+    }
+  }, 500);
+  // Safety: dejar de intentar después de 15s
+  setTimeout(() => clearInterval(interval), 15000);
 }
 
 function getVariantFromCookie() {
@@ -54,12 +87,15 @@ export function trackEvent(eventName, params = {}) {
     }
   }
 
-  // GA4
+  // GA4 — con cola de replay para lazyOnload
   const gtag = getGtag();
-  if (gtag) {
-    const ga4Name = GA4_EVENT_MAP[eventName];
-    if (ga4Name) {
+  const ga4Name = GA4_EVENT_MAP[eventName];
+  if (ga4Name) {
+    if (gtag) {
       gtag('event', ga4Name, enrichedParams);
+    } else {
+      // gtag aún no cargó (lazyOnload) — encolar para replay
+      _gtagQueue.push({ eventName: ga4Name, params: enrichedParams });
     }
   }
 
