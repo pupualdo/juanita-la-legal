@@ -64,7 +64,7 @@ export default function HeroSection({ onStart }) {
           </h1>
 
           <p style={{ fontSize: 18, color: "rgba(245,240,232,0.90)", marginBottom: 22, lineHeight: 1.5 }}>
-            Obtén una orientación clara de tu caso y los pasos a seguir desde <strong style={{ color: "#f0d068" }}>$4.995</strong>.
+            Cuéntale tu caso a Juanita. En minutos sabrás si tienes caso, qué documentos necesitas y cuál es tu próximo paso. Derecho chileno, explicado en chileno.
           </p>
 
           {/* Banner de lanzamiento */}
@@ -97,7 +97,7 @@ export default function HeroSection({ onStart }) {
             onMouseEnter={e => e.target.style.transform = "scale(1.03)"}
             onMouseLeave={e => e.target.style.transform = "scale(1)"}
           >
-            Iniciar mi orientación
+            Cuéntame tu caso
           </button>
 
           {/* Testimonio corto justo debajo del CTA */}
