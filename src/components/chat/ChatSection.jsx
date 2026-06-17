@@ -542,6 +542,9 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
               {/* Sugerencias solo al inicio */}
               {stage === "input" && messages.length === 1 && (
                 <div>
+                  <p style={{ fontSize: 14, color: "#5a4e40", lineHeight: 1.6, marginBottom: 14 }}>
+                    Primero te hago algunas preguntas gratis para entender bien tu situación. Si puedo ayudarte, te lo digo. Si tu caso necesita un abogado humano, también te lo digo.
+                  </p>
                   <div style={{ fontSize: 12, color: "#8a7a68", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
                     Consultas frecuentes
                   </div>
