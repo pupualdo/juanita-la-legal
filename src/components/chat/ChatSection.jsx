@@ -542,9 +542,27 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
               {/* Sugerencias solo al inicio */}
               {stage === "input" && messages.length === 1 && (
                 <div>
-                  <p style={{ fontSize: 14, color: "#5a4e40", lineHeight: 1.6, marginBottom: 14 }}>
-                    Primero te hago algunas preguntas gratis para entender bien tu situación. Si puedo ayudarte, te lo digo. Si tu caso necesita un abogado humano, también te lo digo.
-                  </p>
+                  {/* Popup explicativo del pre-chat */}
+                  <div style={{
+                    background: "linear-gradient(135deg, #1a3a2a 0%, #2a5a3a 100%)",
+                    borderRadius: 16, padding: "20px 18px", marginBottom: 20,
+                    boxShadow: "0 8px 32px rgba(26,58,42,0.30)",
+                    position: "relative",
+                  }}>
+                    <div style={{
+                      position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
+                      background: "#f0d068", color: "#1a3a2a", borderRadius: 20,
+                      padding: "4px 14px", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
+                    }}>
+                      💬 Antes de empezar
+                    </div>
+                    <p style={{
+                      fontSize: 15, color: "#f5f0e8", lineHeight: 1.65, margin: "8px 0 0 0",
+                      textAlign: "center", fontWeight: 500,
+                    }}>
+                      Primero te hago algunas preguntas gratis para entender bien tu situación. Si puedo ayudarte, te lo digo. Si tu caso necesita un abogado humano, también te lo digo.
+                    </p>
+                  </div>
                   <div style={{ fontSize: 12, color: "#8a7a68", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
                     Consultas frecuentes
                   </div>
