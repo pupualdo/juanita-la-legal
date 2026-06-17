@@ -21,8 +21,8 @@ const csp = [
   `font-src 'self' https://fonts.gstatic.com`,
   // Images: self + data URIs + MP assets + Unsplash (hero bg) + GA beacon + Meta Pixel noscript
   `img-src 'self' data: blob: ${MP_DOMAIN} https://*.mercadolibre.com https://images.unsplash.com https://www.google-analytics.com ${FB_COLLECT} ${CLARITY_C}`,
-  // XHR/fetch: self + MP APIs + Supabase + GA4 + Meta Pixel events + Clarity
-  `connect-src 'self' ${MP_DOMAIN} ${MP_SDK} ${SUPABASE} https://api.anthropic.com ${GA_GTM} ${GA_COLLECT} ${FB_COLLECT} ${FB_SCRIPT} ${CLARITY}`,
+  // XHR/fetch: self + MP APIs + Supabase + GA4 + Meta Pixel events + Clarity + Meta CAPI endpoints
+  `connect-src 'self' ${MP_DOMAIN} ${MP_SDK} ${SUPABASE} https://api.anthropic.com ${GA_GTM} ${GA_COLLECT} ${FB_COLLECT} ${FB_SCRIPT} ${CLARITY} https://*.run.app https://*.on.aws`,
   // Media (voice transcription blob URLs)
   `media-src 'self' blob:`,
   // Workers (audio processing)
