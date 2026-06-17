@@ -277,7 +277,7 @@ export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, 
               background: "#f0f8f0", borderRadius: 10, padding: "10px 12px",
               border: "1px solid #c8e6c9", fontSize: 12, color: "#3a5a20", lineHeight: 1.5,
             }}>
-              ✅ Sin compromiso · Sin renovaciones automáticas · Pago único · Garantía de devolución
+              Juanita no reemplaza a un abogado — te ayuda a llegar preparado. Si tu caso requiere representación legal, te lo diremos claramente y no perderás tu dinero.
             </div>
             <button onClick={handlePay} style={{
               width: "100%", background: isFree ? "#4a7a20" : "#009ee3", color: "white", border: "none",
