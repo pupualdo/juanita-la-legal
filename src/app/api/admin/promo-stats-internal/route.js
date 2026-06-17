@@ -10,7 +10,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('promo_codes')
-    .select('code, discount, max_uses, used_count, session_minutes, created_at')
+    .select('code, discount, max_uses, used_count, session_minutes, created_at, expires_at')
     .order('discount', { ascending: false })
     .order('code', { ascending: true });
 

@@ -10,13 +10,8 @@ function fmt(iso) {
   });
 }
 
-function maxUsesLabel(n) {
-  if (!n || n >= 9999) return '∞';
-  return String(n);
-}
-
 function PromosDashboard() {
-  const [promos, setPromos] = useState(null);
+  const [codes, setCodes] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [lastLoad, setLastLoad] = useState(null);
@@ -29,10 +24,11 @@ function PromosDashboard() {
     try {
       const res = await fetch('/api/admin/promo-stats-internal');
       if (!res.ok) { setError('Error al cargar datos'); return; }
-      const json = await res.json();
-      setPromos(prev => {
-        if (prev) setPrevCodes(new Set(prev.map(p => p.code)));
-        return json.promos;
+      const data = await res.json();
+      const list = data.promos ?? data.codes ?? [];
+      setCodes(prev => {
+        if (prev) setPrevCodes(new Set(prev.map(c => c.code)));
+        return list;
       });
       setLastLoad(new Date());
     } catch {
@@ -42,96 +38,141 @@ function PromosDashboard() {
     }
   }, []);
 
-  // Auto-refresh cada 60 s
   useEffect(() => {
     load(true);
     timerRef.current = setInterval(() => load(false), 60_000);
     return () => clearInterval(timerRef.current);
   }, [load]);
 
-  const s = {
-    wrap:  { fontFamily: 'system-ui, sans-serif', maxWidth: 860, margin: '0 auto', padding: '24px 16px', color: '#1a1a1a' },
-    hdr:   { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-    h1:    { fontSize: 22, fontWeight: 700, margin: 0 },
-    sub:   { fontSize: 12, color: '#999', marginTop: 4 },
-    card:  { background: '#fff', border: '1px solid #e5e5e5', borderRadius: 12, padding: '16px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
-    btn:   { padding: '7px 14px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: 8, fontSize: 13, cursor: 'pointer' },
-    err:   { background: '#fdecea', color: '#c0392b', padding: '10px 14px', borderRadius: 8, marginBottom: 16, fontSize: 13 },
-    th:    { fontSize: 11, fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: 0.5, padding: '6px 8px', textAlign: 'left' },
-    td:    { fontSize: 13, padding: '10px 8px', verticalAlign: 'middle' },
-    free:  { display: 'inline-block', padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700, background: '#e6f7ec', color: '#1e7e34' },
-    part:  { display: 'inline-block', padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700, background: '#fff3e0', color: '#e67e22' },
-    new:   { fontSize: 10, marginLeft: 4 },
+  const now = new Date();
+  const isExpired = c => c.expires_at && new Date(c.expires_at) < now;
+  const isExhausted = c => c.max_uses && c.max_uses < 9999 && (c.max_uses - (c.used_count ?? 0)) <= 0;
+  const isInactive = c => isExpired(c) || isExhausted(c);
+
+  // Stats
+  const total       = codes?.length ?? 0;
+  const activos     = codes?.filter(c => !isInactive(c)).length ?? 0;
+  const agotados    = codes?.filter(c => isExhausted(c) && !isExpired(c)).length ?? 0;
+  const expirados   = codes?.filter(c => isExpired(c)).length ?? 0;
+  const usosTotales = codes?.reduce((s, c) => s + (c.used_count ?? 0), 0) ?? 0;
+
+  const S = {
+    page:    { background: '#0f0f0f', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', color: '#e5e5e5' },
+    wrap:    { maxWidth: 900, margin: '0 auto', padding: '32px 16px' },
+    hdr:     { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 },
+    h1:      { fontSize: 22, fontWeight: 700, margin: 0, color: '#f5f5f5' },
+    sub:     { fontSize: 12, color: '#666', marginTop: 4 },
+    btn:     { padding: '7px 14px', background: '#1a1a1a', border: '1px solid #333', borderRadius: 8, fontSize: 13, cursor: 'pointer', color: '#ccc' },
+    cards:   { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 },
+    card:    { background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: '16px 20px' },
+    cLabel:  { fontSize: 11, color: '#666', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 },
+    cValue:  { fontSize: 28, fontWeight: 700, color: '#f5f5f5' },
+    table:   { background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, overflow: 'hidden' },
+    th:      { fontSize: 11, fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: 0.5, padding: '10px 12px', textAlign: 'left', borderBottom: '1px solid #2a2a2a' },
+    td:      { fontSize: 13, padding: '12px 12px', verticalAlign: 'middle', color: '#ccc' },
+    code:    { fontFamily: 'monospace', fontWeight: 700, fontSize: 14, color: '#7dd3fc' },
+    free:    { display: 'inline-block', padding: '2px 9px', borderRadius: 99, fontSize: 11, fontWeight: 700, background: '#14532d', color: '#86efac' },
+    part:    { display: 'inline-block', padding: '2px 9px', borderRadius: 99, fontSize: 11, fontWeight: 700, background: '#1e3a5f', color: '#93c5fd' },
+    err:     { background: '#3b0a0a', color: '#f87171', padding: '10px 14px', borderRadius: 8, marginBottom: 16, fontSize: 13 },
+    new:     { fontSize: 10, marginLeft: 5 },
+    foot:    { fontSize: 11, color: '#444', marginTop: 14 },
   };
 
   return (
-    <div style={s.wrap}>
-      <div style={s.hdr}>
-        <div>
-          <h1 style={s.h1}>Códigos de descuento</h1>
-          {lastLoad && <div style={s.sub}>Actualizado: {lastLoad.toLocaleTimeString('es-CL')} · auto-refresh cada 1 min</div>}
+    <div style={S.page}>
+      <div style={S.wrap}>
+        <div style={S.hdr}>
+          <div>
+            <h1 style={S.h1}>Códigos de descuento</h1>
+            {lastLoad && <div style={S.sub}>Actualizado: {lastLoad.toLocaleTimeString('es-CL')} · auto-refresh cada 1 min</div>}
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <a href="/admin/feedback" style={{ fontSize: 13, color: '#666', textDecoration: 'none' }}>← Admin</a>
+            <button style={S.btn} onClick={() => load(true)} disabled={loading}>
+              {loading ? 'Cargando…' : '↻ Recargar'}
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <a href="/admin/feedback" style={{ fontSize: 13, color: '#666', textDecoration: 'none' }}>← Feedback</a>
-          <button style={s.btn} onClick={() => load(true)} disabled={loading}>
-            {loading ? 'Cargando…' : '↻ Recargar'}
-          </button>
+
+        {error && <div style={S.err}>{error}</div>}
+
+        {/* Summary cards */}
+        <div style={S.cards}>
+          {[
+            { label: 'Total', value: total },
+            { label: 'Activos', value: activos },
+            { label: 'Agotados', value: agotados },
+            { label: 'Expirados', value: expirados },
+            { label: 'Usos totales', value: usosTotales },
+          ].map(({ label, value }) => (
+            <div key={label} style={S.card}>
+              <div style={S.cLabel}>{label}</div>
+              <div style={S.cValue}>{codes === null ? '…' : value}</div>
+            </div>
+          ))}
         </div>
-      </div>
 
-      {error && <div style={s.err}>{error}</div>}
+        {/* Table */}
+        <div style={S.table}>
+          {codes === null ? (
+            <div style={{ color: '#666', padding: 24, textAlign: 'center' }}>Cargando…</div>
+          ) : codes.length === 0 ? (
+            <div style={{ color: '#666', padding: 24 }}>No hay códigos en la base de datos.</div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={S.th}>Código</th>
+                  <th style={S.th}>Descuento</th>
+                  <th style={{ ...S.th, textAlign: 'right' }}>Quedan</th>
+                  <th style={{ ...S.th, textAlign: 'right' }}>Usados / Máx</th>
+                  <th style={S.th}>Sesión</th>
+                  <th style={S.th}>Vence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {codes.map(c => {
+                  const isNew = !prevCodes.has(c.code) && prevCodes.size > 0;
+                  const unlimited = !c.max_uses || c.max_uses >= 9999;
+                  const remaining = unlimited ? '∞' : Math.max(0, c.max_uses - (c.used_count ?? 0));
+                  const exhausted = !unlimited && remaining === 0;
+                  const expired = isExpired(c);
+                  const inactive = exhausted || expired;
+                  return (
+                    <tr key={c.code} style={{ borderBottom: '1px solid #222', opacity: inactive ? 0.4 : 1 }}>
+                      <td style={S.td}>
+                        <span style={S.code}>{c.code}</span>
+                        {isNew && <span style={S.new}>🆕</span>}
+                        {exhausted && <span style={{ fontSize: 10, color: '#f87171', marginLeft: 6 }}>agotado</span>}
+                        {expired && <span style={{ fontSize: 10, color: '#fb923c', marginLeft: 6 }}>expirado</span>}
+                      </td>
+                      <td style={S.td}>
+                        <span style={c.discount === 100 ? S.free : S.part}>
+                          {c.discount === 100 ? 'Gratis' : `${c.discount}%`}
+                        </span>
+                      </td>
+                      <td style={{ ...S.td, textAlign: 'right', fontWeight: 600, color: exhausted ? '#f87171' : '#e5e5e5' }}>
+                        {remaining}
+                      </td>
+                      <td style={{ ...S.td, textAlign: 'right', color: '#666' }}>
+                        {c.used_count ?? 0} / {unlimited ? '∞' : c.max_uses}
+                      </td>
+                      <td style={S.td}>{c.session_minutes ? `${c.session_minutes} min` : '—'}</td>
+                      <td style={{ ...S.td, color: expired ? '#fb923c' : '#666', fontSize: 11 }}>
+                        {c.expires_at ? fmt(c.expires_at) : '∞'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
 
-      <div style={s.card}>
-        {promos === null ? (
-          <div style={{ color: '#999', padding: 20, textAlign: 'center' }}>Cargando…</div>
-        ) : promos.length === 0 ? (
-          <div style={{ color: '#999', padding: 20 }}>No hay códigos en la base de datos.</div>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #eee' }}>
-                <th style={s.th}>Código</th>
-                <th style={s.th}>Descuento</th>
-                <th style={{ ...s.th, textAlign: 'right' }}>Usos</th>
-                <th style={{ ...s.th, textAlign: 'right' }}>Máximo</th>
-                <th style={{ ...s.th, textAlign: 'right' }}>Restantes</th>
-                <th style={s.th}>Sesión</th>
-                <th style={s.th}>Creado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {promos.map(p => {
-                const isNew = !prevCodes.has(p.code) && prevCodes.size > 0;
-                const remaining = (p.max_uses >= 9999 || !p.max_uses) ? '∞' : Math.max(0, p.max_uses - (p.used_count ?? 0));
-                const exhausted = typeof remaining === 'number' && remaining === 0;
-                return (
-                  <tr key={p.code} style={{ borderBottom: '1px solid #f5f5f5', opacity: exhausted ? 0.45 : 1 }}>
-                    <td style={s.td}>
-                      <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 14 }}>{p.code}</span>
-                      {isNew && <span style={s.new}>🆕</span>}
-                      {exhausted && <span style={{ fontSize: 10, color: '#c0392b', marginLeft: 6 }}>agotado</span>}
-                    </td>
-                    <td style={s.td}>
-                      <span style={p.discount === 100 ? s.free : s.part}>
-                        {p.discount === 100 ? 'Gratis' : `${p.discount}%`}
-                      </span>
-                    </td>
-                    <td style={{ ...s.td, textAlign: 'right' }}>{p.used_count ?? 0}</td>
-                    <td style={{ ...s.td, textAlign: 'right' }}>{maxUsesLabel(p.max_uses)}</td>
-                    <td style={{ ...s.td, textAlign: 'right', fontWeight: 600, color: exhausted ? '#c0392b' : '#1a1a1a' }}>{typeof remaining === 'number' ? remaining : '∞'}</td>
-                    <td style={s.td}>{p.session_minutes ? `${p.session_minutes} min` : '—'}</td>
-                    <td style={{ ...s.td, color: '#999', fontSize: 11 }}>{fmt(p.created_at)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      <div style={{ fontSize: 11, color: '#bbb', marginTop: 12 }}>
-        Para agregar, modificar o eliminar códigos usar el SQL Editor de Supabase.
-        Códigos con discount=100 saltan Mercado Pago y activan la sesión directo.
+        <div style={S.foot}>
+          Para agregar, modificar o eliminar códigos usar el SQL Editor de Supabase.
+          Códigos con discount=100 saltan Mercado Pago y activan la sesión directo.
+        </div>
       </div>
     </div>
   );
@@ -139,7 +180,7 @@ function PromosDashboard() {
 
 export default function PromosPage() {
   return (
-    <Suspense fallback={<div style={{ padding: 24, fontFamily: 'system-ui' }}>Cargando…</div>}>
+    <Suspense fallback={<div style={{ padding: 24, fontFamily: 'system-ui', background: '#0f0f0f', minHeight: '100vh', color: '#666' }}>Cargando…</div>}>
       <PromosDashboard />
     </Suspense>
   );

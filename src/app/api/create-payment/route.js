@@ -1,4 +1,5 @@
 import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { log } from '@/lib/logger';
@@ -7,15 +8,33 @@ const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
 
 const BASE_PRICE = 9990; // CLP
 
-// Promo codes — same source of truth as validate-promo/route.js
-// Keep in sync or extract to a shared lib if this grows
-const PROMO_CODES = {
-  AMIGOS2026:   { discount: 100 },
-  MEJORAMIGO:   { discount: 100 },
+// Fallback hardcoded (si Supabase no está disponible)
+const FALLBACK_CODES = {
   MEJORAMIGO2026: { discount: 100 },
-  LANZAMIENTO:  { discount: 50  },
-  JUANITA10:    { discount: 10  },
+  LANZAMIENTO:    { discount: 50  },
+  VUELVE70:       { discount: 70  },
+  JUANITA10:      { discount: 10  },
 };
+
+async function getPromoDiscount(code) {
+  if (!code) return null;
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    try {
+      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+      const { data } = await supabase
+        .from('promo_codes')
+        .select('discount, max_uses, used_count, expires_at')
+        .eq('code', code)
+        .single();
+      if (data) {
+        if (data.expires_at && new Date(data.expires_at) < new Date()) return null;
+        if (data.max_uses > 0 && data.max_uses < 9999 && data.used_count >= data.max_uses) return null;
+        return data.discount;
+      }
+    } catch { /* fallback */ }
+  }
+  return FALLBACK_CODES[code]?.discount ?? null;
+}
 
 export async function POST(request) {
   try {
@@ -29,16 +48,13 @@ export async function POST(request) {
       );
     }
 
-    const { tema, resumen, sessionId, promoCode, method } = await request.json();
-
-    // Payment method: 'webpay' or 'mercadopago' (default for backward compat)
-    const paymentMethod = method === 'webpay' ? 'webpay' : 'mercadopago';
+    const { tema, resumen, sessionId, promoCode } = await request.json();
 
     // Server-side promo validation — never trust the client-reported price
     const normalizedCode = promoCode ? String(promoCode).toUpperCase().trim() : null;
-    const promo = normalizedCode ? PROMO_CODES[normalizedCode] : null;
-    const unitPrice = promo
-      ? Math.max(1, Math.round(BASE_PRICE * (1 - promo.discount / 100))) // min 1 CLP so MP accepts it
+    const discount = normalizedCode ? await getPromoDiscount(normalizedCode) : null;
+    const unitPrice = discount != null
+      ? Math.max(1, Math.round(BASE_PRICE * (1 - discount / 100))) // min 1 CLP so MP accepts it
       : BASE_PRICE;
 
     log.info('create-payment', 'Creating preference', { sessionId, promoCode: normalizedCode, unitPrice });
@@ -46,7 +62,7 @@ export async function POST(request) {
     const preference = new Preference(mp);
     const result = await preference.create({ body: {
       items: [{
-        title: `Consulta Legal Juanita La Legal — ${tema}${paymentMethod === 'webpay' ? ' (WebPay)' : ''}`,
+        title: `Consulta Legal Juanita La Legal — ${tema}`,
         description: resumen,
         unit_price: unitPrice,
         quantity: 1,
@@ -54,7 +70,7 @@ export async function POST(request) {
       }],
       back_urls: {
         success: `${process.env.NEXT_PUBLIC_APP_URL}/success?session=${sessionId}`,
-        failure: `${process.env.NEXT_PUBLIC_APP_URL}/payment-error?reason=rejected`,
+        failure: `${process.env.NEXT_PUBLIC_APP_URL}/payment-error`,
         pending: `${process.env.NEXT_PUBLIC_APP_URL}/payment-pending?session=${sessionId}`,
       },
       auto_return: 'approved',

@@ -5,6 +5,7 @@
 alter table sessions        enable row level security;
 alter table message_feedback enable row level security;
 alter table error_logs      enable row level security;
+alter table leads           enable row level security;
 
 -- Explicitly drop any accidental open policies (run if prompted by Supabase advisor)
 -- drop policy if exists "anon read" on sessions;

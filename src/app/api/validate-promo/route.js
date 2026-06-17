@@ -1,35 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 // Fallback hardcoded (por si Supabase no está disponible)
 const FALLBACK_CODES = {
-  AMIGOS2026:   { discount: 100 },
-  MEJORAMIGO:   { discount: 100 },
-  MEJORAMIGO2026: { discount: 100 },
-  BETA3_A7K2:   { discount: 100 },
-  LANZAMIENTO:  { discount: 50 },
-  JUANITA10:    { discount: 10 },
+  AMIGOS2026:  { discount: 100 },
+  LANZAMIENTO: { discount: 50 },
+  VUELVE70:    { discount: 70 },
+  JUANITA10:   { discount: 10 },
 };
 
 export async function POST(request) {
-  // Rate limiting: 10 req/min por IP, 5 req/min para el mismo código (anti brute-force)
-  const ip = getClientIp(request);
-  const { allowed, retryAfter } = rateLimit(ip, 'validate-promo', { limit: 10, windowMs: 60_000 });
-  if (!allowed) {
-    return NextResponse.json({ valid: false, reason: 'too_many_requests', retryAfter }, { status: 429 });
-  }
-
   const { code } = await request.json();
   const clean = String(code).toUpperCase().trim();
-
-  // Rate limit por código específico (anti brute-force de códigos)
-  if (clean) {
-    const codeCheck = rateLimit(`code:${clean}`, 'validate-promo-code', { limit: 5, windowMs: 60_000 });
-    if (!codeCheck.allowed) {
-      return NextResponse.json({ valid: false, reason: 'too_many_attempts', retryAfter: codeCheck.retryAfter }, { status: 429 });
-    }
-  }
 
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
     try {
@@ -37,11 +19,16 @@ export async function POST(request) {
 
       const { data } = await supabase
         .from('promo_codes')
-        .select('discount, max_uses, used_count, session_minutes')
+        .select('discount, max_uses, used_count, session_minutes, expires_at')
         .eq('code', clean)
         .single();
 
       if (data) {
+        // Código vencido
+        if (data.expires_at && new Date(data.expires_at) < new Date()) {
+          return NextResponse.json({ valid: false, reason: 'expirado' });
+        }
+
         // Código agotado (max_uses 0 = sin límite, 9999 = ilimitado en UI)
         if (data.max_uses > 0 && data.max_uses < 9999 && data.used_count >= data.max_uses) {
           return NextResponse.json({ valid: false, reason: 'agotado' });

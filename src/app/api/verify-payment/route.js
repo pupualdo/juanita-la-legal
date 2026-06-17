@@ -70,6 +70,11 @@ export async function GET(request) {
       expires_at: expiresAt,
     });
 
+    // Marca como convertido el lead asociado a esta sesión (best-effort).
+    if (sessionId) {
+      supabase.from('leads').update({ converted: true }).eq('session_id', sessionId).then(() => {});
+    }
+
     return NextResponse.json({ ok: true, sessionId, expiresAt });
   } catch (error) {
     console.error('Error verify-payment:', error);

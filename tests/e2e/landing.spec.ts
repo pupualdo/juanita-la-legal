@@ -11,7 +11,6 @@ import { test, expect } from '@playwright/test';
 async function acceptTerms(page: any) {
   await page.addInitScript(() => {
     localStorage.setItem('juanita_terms_accepted', '1');
-    localStorage.setItem('juanita_demo_ts', String(Date.now()));
   });
 }
 
@@ -22,14 +21,14 @@ test.describe('Landing page', () => {
   });
 
   test('renders hero section with title and CTA', async ({ page }) => {
-    await expect(page.locator('h1')).toContainText('problema legal');
-    await expect(page.getByRole('button', { name: /Iniciar mi orientación/i })).toBeVisible();
+    await expect(page.locator('h1')).toContainText('Juanita La Legal');
+    await expect(page.getByRole('button', { name: /iniciar consulta/i })).toBeVisible();
   });
 
   test('shows legal area chips in hero', async ({ page }) => {
-    await expect(page.getByRole('button', { name: /Derecho Laboral/ })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Derecho de Familia/ })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Arriendo y Vivienda/ })).toBeVisible();
+    await expect(page.getByText('Derecho Laboral')).toBeVisible();
+    await expect(page.getByText('Derecho de Familia')).toBeVisible();
+    await expect(page.getByText('Arriendo y Vivienda')).toBeVisible();
   });
 
   test('navigates to chat screen on CTA click', async ({ page }) => {
@@ -73,12 +72,11 @@ test.describe('Chat input and suggestion chips', () => {
   });
 });
 
-test.describe('Topic classification flow (mocked)', () => {
-  test('classifies message and shows pre-chat wall', async ({ page }) => {
-    await acceptTerms(page);
-
-    // Mock the classify API
-    await page.route(/\/api\/classify/, async (route) => {
+test.describe('Preview → email-gate → teaser → paywall flow (mocked)', () => {
+  // Sets up all the API mocks the free-preview flow needs.
+  async function mockApis(page: any) {
+    // Classify runs silently in the background after the first message.
+    await page.route('**/api/classify', async (route: any) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -86,26 +84,94 @@ test.describe('Topic classification flow (mocked)', () => {
       });
     });
 
-    // Mock chat API (SSE stream) - needed for pre-chat responses
-    await page.route(/(chat)/, async (route) => {
+    // Free preview chat: returns a teaser once the user has had 3 turns.
+    await page.route('**/api/preview-chat', async (route: any) => {
+      const body = JSON.parse(route.request().postData() || '{}');
+      const priorUsers = (body.history || []).filter((m: any) => m.role === 'user').length;
+      const isTeaser = priorUsers + 1 >= 3;
+      const text = isTeaser
+        ? 'Por lo que me cuentas, veo que tienes varias opciones concretas.'
+        : '¿Hace cuánto fue esto?';
       await route.fulfill({
         status: 200,
         contentType: 'text/event-stream',
-        body: 'data: {"text":"Entiendo tu consulta laboral"}\n\ndata: {"done":true}\n\n',
+        body: `data: {"text":${JSON.stringify(text)}}\n\ndata: {"teaser":${isTeaser}}\n\ndata: [DONE]\n\n`,
       });
     });
 
+    // Lead capture (email-gate).
+    await page.route('**/api/lead', async (route: any) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) });
+    });
+
+    // Promo validation (50% LANZAMIENTO autollenado).
+    await page.route('**/api/validate-promo', async (route: any) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ valid: true, discount: 50, label: '50% descuento' }),
+      });
+    });
+  }
+
+  async function sendPreviewTurn(page: any, text: string) {
+    const textarea = page.locator('textarea');
+    await expect(textarea).toBeEnabled({ timeout: 15_000 });
+    await textarea.fill(text);
+    await textarea.press('Enter');
+  }
+
+  test('runs the full free-preview flow to the payment wall', async ({ page }) => {
+    await acceptTerms(page);
+    await mockApis(page);
+
     await page.goto('/');
     await page.click('[data-action="start"]');
+    await expect(page.locator('textarea')).toBeVisible({ timeout: 5_000 });
 
-    const textarea = page.locator('textarea');
-    await expect(textarea).toBeVisible({ timeout: 5_000 });
+    // Turn 1 + 2: indagación gratuita.
+    await sendPreviewTurn(page, 'Me despidieron sin aviso y no me pagaron el finiquito');
+    await expect(page.locator('text=¿Hace cuánto fue esto?').first()).toBeVisible({ timeout: 15_000 });
+    await sendPreviewTurn(page, 'Hace tres días');
 
-    // Type a labor-related query
-    await textarea.fill('Me despidieron sin aviso y no me pagaron el finiquito');
-    await textarea.press('Enter');
+    // Turn 3: dispara el email-gate antes del teaser.
+    await sendPreviewTurn(page, 'Llevaba dos años con contrato indefinido');
+    await expect(page.locator('text=Ya casi tengo claro tu caso')).toBeVisible({ timeout: 15_000 });
 
-    // Wait for pre-chat wall to appear (stage = "prechat")
-    await expect(page.locator('text=mensajes restantes')).toBeVisible({ timeout: 15_000 });
+    // Captura de correo → revela el teaser.
+    await page.locator('input[type="email"]').fill('cliente@ejemplo.cl');
+    await page.getByRole('button', { name: /ver mis opciones/i }).click();
+    await expect(page.locator('text=varias opciones concretas')).toBeVisible({ timeout: 15_000 });
+
+    // CTA del teaser → muro de pago.
+    await page.getByRole('button', { name: /desbloquear mi consulta completa/i }).click();
+
+    // Aparece el popup de descuento de lanzamiento.
+    await expect(page.locator('text=Oferta de lanzamiento')).toBeVisible({ timeout: 5_000 });
+    await page.getByRole('button', { name: /aplicar 50% y pagar ahora/i }).click();
+
+    // El muro de pago queda visible con el precio con descuento aplicado.
+    await expect(page.locator('text=Pagar con Mercado Pago').or(
+      page.locator('text=Acceder gratis')
+    )).toBeVisible({ timeout: 15_000 });
+  });
+
+  test('email-gate rejects an invalid email', async ({ page }) => {
+    await acceptTerms(page);
+    await mockApis(page);
+
+    await page.goto('/');
+    await page.click('[data-action="start"]');
+    await expect(page.locator('textarea')).toBeVisible({ timeout: 5_000 });
+
+    await sendPreviewTurn(page, 'Me despidieron sin aviso');
+    await expect(page.locator('text=¿Hace cuánto fue esto?').first()).toBeVisible({ timeout: 15_000 });
+    await sendPreviewTurn(page, 'Hace poco');
+    await sendPreviewTurn(page, 'Contrato indefinido');
+
+    await expect(page.locator('text=Ya casi tengo claro tu caso')).toBeVisible({ timeout: 15_000 });
+    await page.locator('input[type="email"]').fill('no-es-un-correo');
+    await page.getByRole('button', { name: /ver mis opciones/i }).click();
+    await expect(page.locator('text=correo válido')).toBeVisible({ timeout: 5_000 });
   });
 });
