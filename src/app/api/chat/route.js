@@ -211,13 +211,13 @@ Ejemplo de indagación correcta en herencia:
 - **Plazo impuesto herencia**: 2 años desde fallecimiento para pagar sin recargo. Después hay intereses.
 - **Repudiación de herencia**: Se puede repudiar si las deudas superan los activos. Plazo: generalmente hasta que se tramita la posesión efectiva.
 
-### 🌍 MIGRACIÓN (Ley 21.325, DEM)
+### 🌍 MIGRACIÓN (Ley 21.325, SERMIG)
 - **Tipos de visa**: Visa de responsabilidad democrática (venezolanos, cubanos), visa de reunificación familiar, visa temporaria de trabajo (requiere contrato de trabajo previo), visa de estudiante, visa de residencia definitiva (luego de 2 años con temporaria).
-- **Regularización**: Si estás en situación irregular, revisa si hay proceso de regularización vigente. La DEM (Departamento de Extranjería y Migración) es la entidad competente.
+- **Regularización**: Si estás en situación irregular, revisa si hay proceso de regularización vigente. El SERMIG (Servicio Nacional de Migraciones) es la entidad competente.
 - **Trabajo sin visa**: Se puede celebrar contrato de trabajo con cédula de identidad de extranjero o pasaporte. El empleador puede contratar extranjeros, pero con límites (máximo 15% de dotación).
 - **Plazos y renovaciones**: La visa temporaria se renueva antes de vencer. No renovarla a tiempo puede generar multas o situación irregular.
 - **Derechos sin importar el estatus migratorio**: Acceso a salud de urgencia, educación para los hijos, y protección laboral básica.
-- **DEM**: dem.gob.cl, call center 600 626 4222.
+- **SERMIG**: serviciomigraciones.cl, call center 600 626 4222.
 
 ### 🌿 TERRENOS (Código Civil, DL 2.695, CBRS)
 - **Inscripción en el Conservador de Bienes Raíces (CBR)**: Es la forma de acreditar dominio de un inmueble. Sin inscripción, no hay dominio legal aunque tengas posesión. Cada inmueble tiene un rol SII único.
@@ -260,7 +260,7 @@ Menciona solo el recurso que corresponde al área y a la situación específica 
 - **Clínica jurídica universitaria**: si necesitas un abogado y no puedes pagar uno, consulta en la clínica jurídica de alguna universidad cercana — orientación y representación legal gratuita (todas las áreas)
 - **Inspección del Trabajo**: inspecciones.dirtrab.cl — denuncias laborales gratuitas (laboral)
 - **Mediación Familiar**: Centros de mediación gratuitos del Ministerio de Justicia (familia)
-- **DEM**: dem.gob.cl / 600 626 4222 — trámites migratorios (migración)
+- **SERMIG**: serviciomigraciones.cl / 600 626 4222 — trámites migratorios (migración)
 - **Conservador de Bienes Raíces**: cbrs.cl — consulta de inscripciones (terrenos, herencia)
 - **Registro Civil**: registrocivil.cl — posesión efectiva intestada (herencia)
 - **Ministerio de Bienes Nacionales**: bienesnacionales.gob.cl — regularización de terrenos (terrenos)
@@ -305,7 +305,7 @@ SIEMPRE prioriza la acción inmediata antes de explicar derechos.
 
 ### 🌍 MIGRANTE CON VISA VENCIDA
 Si el usuario es migrante con visa vencida o irregular:
-"Para regularizar: ve a la oficina de Extranjería o PDI y consulta por visa de permanencia temporal por arraigo (si llevas más de 2 años en Chile). Lleva pasaporte, certificado de residencia y prueba de que vives/trabajas acá. Si te están presionando, pide asesoría en la Defensoría del Migrante (teléfono 600 626 6666). No uses la visa vieja para trámites."
+"Para regularizar: ve a la oficina del Servicio Nacional de Migraciones (SERMIG) o PDI y consulta por visa de permanencia temporal por arraigo (si llevas más de 2 años en Chile). Lleva pasaporte, certificado de residencia y prueba de que vives/trabajas acá. Si te están presionando, pide asesoría en la Defensoría del Migrante (teléfono 600 626 6666). No uses la visa vieja para trámites."
 Adapta según el país de origen y tiempo en Chile.
 
 ### 🔀 CASOS MIXTOS (2+ temas detectados)
