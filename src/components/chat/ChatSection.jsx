@@ -55,6 +55,7 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
   const [showDiscountModal, setShowDiscountModal] = useState(false);
   const [autoPromo, setAutoPromo] = useState(null);
   const [prechatExchanges, setPrechatExchanges] = useState(0);
+  const [showProcessModal, setShowProcessModal] = useState(!initialPaid);
   const [demoUsed, setDemoUsed] = useState(() => {
     if (typeof window === 'undefined') return true;
     const ts = sessionStorage.getItem('juanita_demo_ts');
@@ -444,7 +445,8 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
   const inputDisabled = timerExpired || isStreaming || stage === "closed" || stage === "classifying" || stage === "payment" || stage === "demo-ended" || stage === "topic-confirm" || stage === "resuming";
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "row", background: "#faf8f4" }}>
+    <>
+      <div style={{ height: "100vh", display: "flex", flexDirection: "row", background: "#faf8f4" }}>
       {/* Main column */}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* Header */}
@@ -542,27 +544,6 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
               {/* Sugerencias solo al inicio */}
               {stage === "input" && messages.length === 1 && (
                 <div>
-                  {/* Popup explicativo del pre-chat */}
-                  <div style={{
-                    background: "linear-gradient(135deg, #1a3a2a 0%, #2a5a3a 100%)",
-                    borderRadius: 16, padding: "20px 18px", marginBottom: 20,
-                    boxShadow: "0 8px 32px rgba(26,58,42,0.30)",
-                    position: "relative",
-                  }}>
-                    <div style={{
-                      position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
-                      background: "#f0d068", color: "#1a3a2a", borderRadius: 20,
-                      padding: "4px 14px", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
-                    }}>
-                      💬 Antes de empezar
-                    </div>
-                    <p style={{
-                      fontSize: 15, color: "#f5f0e8", lineHeight: 1.65, margin: "8px 0 0 0",
-                      textAlign: "center", fontWeight: 500,
-                    }}>
-                      Primero te hago algunas preguntas gratis para entender bien tu situación. Si puedo ayudarte, te lo digo. Si tu caso necesita un abogado humano, también te lo digo.
-                    </p>
-                  </div>
                   <div style={{ fontSize: 12, color: "#8a7a68", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
                     Consultas frecuentes
                   </div>
@@ -963,5 +944,49 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
         </>
       )}
     </div>
-  );
-}
+
+      {/* ── MODAL: Proceso de Juanita (al iniciar consulta) ── */}
+      {showProcessModal && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(0,0,0,0.60)", display: "flex",
+          alignItems: "center", justifyContent: "center",
+          padding: "20px",
+          animation: "fadeIn 0.25s ease",
+        }}>
+          <div style={{
+            background: "white", borderRadius: 20, padding: "32px 24px 24px",
+            maxWidth: 420, width: "100%", textAlign: "center",
+            boxShadow: "0 16px 48px rgba(0,0,0,0.30)",
+            animation: "fadeUp 0.3s ease",
+          }}>
+            <div style={{ fontSize: 44, marginBottom: 12 }}>⚖️</div>
+            <h2 style={{
+              fontFamily: "var(--font-fraunces), serif", fontSize: 22, fontWeight: 700,
+              color: "#1a3a2a", marginBottom: 16, lineHeight: 1.3,
+            }}>
+              Así funciona Juanita
+            </h2>
+            <div style={{ fontSize: 15, color: "#3a3028", lineHeight: 1.65, marginBottom: 6 }}>
+              Primero te hago <strong>algunas preguntas gratis</strong> para entender bien tu situación.
+            </div>
+            <div style={{ fontSize: 15, color: "#3a3028", lineHeight: 1.65, marginBottom: 6 }}>
+              Si <strong>puedo ayudarte</strong>, te lo digo y continuamos con la consulta completa ($4.995).
+            </div>
+            <div style={{ fontSize: 15, color: "#3a3028", lineHeight: 1.65, marginBottom: 20 }}>
+              Si tu caso <strong>necesita un abogado humano</strong>, también te lo digo — y no pierdes tu dinero.
+            </div>
+            <button onClick={() => setShowProcessModal(false)} style={{
+              width: "100%", background: "linear-gradient(135deg, #1a3a2a 0%, #2a5a3a 100%)",
+              color: "white", border: "none", borderRadius: 14, padding: "15px",
+              fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+              boxShadow: "0 4px 16px rgba(26,58,42,0.25)",
+            }}>
+              Entendido, empecemos
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+    );
+  }
