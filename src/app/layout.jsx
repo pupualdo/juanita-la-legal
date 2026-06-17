@@ -166,6 +166,7 @@ export default function RootLayout({ children }) {
                 gtag('js', new Date());
                 gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
                   page_path: window.location.pathname,
+                  debug_mode: true,
                 });
               `,
             }}
