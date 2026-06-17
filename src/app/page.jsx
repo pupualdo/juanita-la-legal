@@ -683,7 +683,7 @@ function BuySessionButton({ sessionId }) {
         alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 6,
       }}
     >
-      {loading ? '⏳ Redirigiendo...' : '📄 Comprar sesión de documento ($9.990)'}
+      {loading ? '⏳ Redirigiendo...' : '📄 Comprar sesión de documento ($4.995)'}
     </button>
   );
 }
@@ -1302,18 +1302,17 @@ function HeroSection({ onStart }) {
           </div>
 
           <h1 style={{
-            fontFamily: "var(--font-fraunces), serif", fontSize: 44, fontWeight: 600,
-            color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 8, lineHeight: 1.2,
-          }}>Juanita La Legal</h1>
+            fontFamily: "var(--font-fraunces), serif", fontSize: 40, fontWeight: 600,
+            color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 16, lineHeight: 1.25,
+          }}>
+            No sabes qué hacer. Nosotros sí.
+          </h1>
 
-          <p style={{ fontSize: 20, color: "#8fbc8f", marginBottom: 8, fontWeight: 500 }}>
-            Te orientamos en buen chileno.
-          </p>
-          <p style={{ fontSize: 16, color: "rgba(245,240,232,0.7)", marginBottom: 18, lineHeight: 1.5 }}>
-            Primera orientación legal clara, rápida y pagable. $9.990 por consulta.
+          <p style={{ fontSize: 18, color: "rgba(245,240,232,0.90)", marginBottom: 22, lineHeight: 1.5 }}>
+            Cuéntale tu caso a Juanita. En minutos sabrás si tienes caso, qué documentos necesitas y cuál es tu próximo paso. Derecho chileno, explicado en chileno.
           </p>
 
-          {/* Banner de marcha blanca con código LANZAMIENTO */}
+          {/* Banner de lanzamiento */}
           <div style={{
             marginBottom: 28,
             background: "linear-gradient(135deg, rgba(200,160,64,0.20) 0%, rgba(200,160,64,0.10) 100%)",
@@ -1324,31 +1323,17 @@ function HeroSection({ onStart }) {
             textAlign: "left",
             boxShadow: "0 4px 16px rgba(200,160,64,0.18)",
           }}>
-            <span style={{ fontSize: 26, flexShrink: 0 }}>🎉</span>
+            <span style={{ fontSize: 26, flexShrink: 0 }}>🔥</span>
             <div style={{ flex: 1, lineHeight: 1.5 }}>
               <div style={{
-                fontSize: 12, fontWeight: 700, color: "#f0d068",
-                textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4,
+                fontSize: 15, color: "rgba(245,240,232,0.95)"
               }}>
-                Marcha blanca
-              </div>
-              <div style={{ fontSize: 15, color: "rgba(245,240,232,0.95)" }}>
-                Estamos lanzando — usa el código{" "}
-                <strong style={{
-                  background: "rgba(200,160,64,0.35)",
-                  color: "#fff5d9",
-                  padding: "3px 9px",
-                  borderRadius: 5,
-                  fontFamily: "monospace",
-                  letterSpacing: 0.8,
-                  fontSize: 14,
-                }}>LANZAMIENTO</strong>{" "}
-                y obtén <strong style={{ color: "#f0d068" }}>50% de descuento</strong> en tu consulta.
+                Precio de lanzamiento: <strong style={{ color: "#f0d068" }}>$4.995</strong> — Solo por tiempo limitado.
               </div>
             </div>
           </div>
 
-          <button data-action="start" onClick={onStart} style={{
+          <button data-action="start" onClick={() => { trackEvent('StartConsultation', { source: 'hero_cta' }); onStart(); }} style={{
             background: "#c8a040", color: "white", border: "none",
             borderRadius: 16, padding: "16px 40px", fontSize: 18, fontWeight: 600,
             cursor: "pointer", boxShadow: "0 8px 24px rgba(200,160,64,0.35)",
@@ -1357,7 +1342,7 @@ function HeroSection({ onStart }) {
             onMouseEnter={e => e.target.style.transform = "scale(1.03)"}
             onMouseLeave={e => e.target.style.transform = "scale(1)"}
           >
-            Iniciar consulta
+            Cuéntame tu caso
           </button>
 
           {/* Label instructivo */}
@@ -1451,7 +1436,7 @@ function HeroSection({ onStart }) {
               { icon: "⚖️", title: "Basado en derecho chileno vigente", text: "Información actualizada de leyes y procedimientos en Chile." },
               { icon: "⚡", title: "Sesión rápida y enfocada", text: "Respuestas al toque, sin esperas ni vueltas." },
               { icon: "🤝", title: "Honestos contigo", text: "Si tu caso necesita un abogado/a, te lo decimos claramente." },
-              { icon: "🔒", title: "Sin letra chica", text: "Pago único de $9.990. Sin suscripciones ni compromisos." },
+              { icon: "🔒", title: "Sin letra chica", text: "Pago único de $4.995. Sin suscripciones ni compromisos." },
             ].map((item, i) => (
               <div key={i} style={{
                 background: "white", borderRadius: 14, padding: "16px 18px",
@@ -1570,9 +1555,10 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, auto
 
   useEffect(() => {
     track('payment_wall_shown', { tema: topic });
+    trackEvent('PaywallViewed', { tema: topic, sessionId });
   }, [topic]);
 
-  const BASE_PRICE = isTopicChange ? 4000 : 9990;
+  const BASE_PRICE = isTopicChange ? 4000 : 4995;
   const finalPrice = promoApplied
     ? Math.round(BASE_PRICE * (1 - promoApplied.discount / 100))
     : BASE_PRICE;
@@ -1615,6 +1601,7 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, auto
   const handlePay = async () => {
     setLoading(true);
     track('payment_started', { tema: topic, price: finalPrice });
+    trackEvent('AddPaymentInfo', { tema: topic, method: 'webpay', price: finalPrice });
     try {
       if (isFree) {
         const grantRes = await fetch('/api/grant-access', {
@@ -1680,7 +1667,7 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, auto
           <span style={{ fontSize: 20 }}>🔄</span>
           <div>
             <div style={{ fontWeight: 700 }}>Descuento por cambio de tema</div>
-            <div style={{ fontSize: 12, color: "#8a6a20", marginTop: 1 }}>Como ya tienes una sesión previa, esta consulta vale <strong>$4.000</strong> en vez de $9.990.</div>
+            <div style={{ fontSize: 12, color: "#8a6a20", marginTop: 1 }}>Como ya tienes una sesión previa, esta consulta vale <strong>$4.000</strong> en vez de $4.995.</div>
           </div>
         </div>
       )}
@@ -1884,7 +1871,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
     const topicLabel = savedTema ? (TOPIC_LABELS[savedTema] || savedTema) : null;
     const topicEmoji = savedTema ? (TOPIC_META[savedTema]?.emoji || '⚖️') : '⚖️';
     const welcomeText = topicLabel
-      ? `¡Hola! Soy Juanita y ya está todo listo para tu sesión 🎉\n\n**Tema de esta sesión:** ${topicEmoji} ${topicLabel}\n\nDurante los próximos **10 minutos** puedes preguntarme todo lo que quieras sobre **${topicLabel}**. Cuéntame con confianza — te oriento paso a paso.\n\n> ℹ️ Si después necesitas orientación sobre otro tema legal, será una nueva sesión (${'\$'}9.990 CLP).\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*`
+      ? `¡Hola! Soy Juanita y ya está todo listo para tu sesión 🎉\n\n**Tema de esta sesión:** ${topicEmoji} ${topicLabel}\n\nDurante los próximos **10 minutos** puedes preguntarme todo lo que quieras sobre **${topicLabel}**. Cuéntame con confianza — te oriento paso a paso.\n\n> ℹ️ Si después necesitas orientación sobre otro tema legal, será una nueva sesión ($4.995 CLP).\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*`
       : `¡Pago confirmado! 🎉 Cuéntame tu problema legal y te oriento paso a paso.\n\n*Esta orientación es de carácter general e informativo. No reemplaza a un abogado/a ni crea relación abogado-cliente.*`;
 
     // Contexto del preview (lo conversado antes de pagar) para dar continuidad.
@@ -2312,7 +2299,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
           <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#c8e6c0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>⚖️</div>
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, color: "#f5f0e8", fontFamily: "serif" }}>Juanita La Legal</div>
-            <div style={{ fontSize: 11, color: "#8fbc8f" }}>Orientación legal en buen chileno · $9.990</div>
+            <div style={{ fontSize: 11, color: "#8fbc8f" }}>Orientación legal en buen chileno · $4.995</div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -2454,7 +2441,7 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
                       cursor: "pointer", whiteSpace: "nowrap",
                     }}
                   >
-                    Renovar sesión ($9.990)
+                    Renovar sesión ($4.995)
                   </button>
                 </div>
               )}
@@ -2868,7 +2855,7 @@ const TYC_SECTIONS = [
   },
   {
     heading: "4. Precio y Condiciones",
-    body: "El valor es de $9.990 (pesos chilenos) por sesión, pagaderos a través de los medios habilitados. El pago es previo al acceso. Una vez utilizado el servicio, no procede devolución salvo falla técnica imputable al operador. Incluye una sesión sobre un único tema legal. Consultas sobre temas adicionales requieren nuevo pago.",
+    body: "El valor es de $4.995 (pesos chilenos) por sesión, pagaderos a través de los medios habilitados. El pago es previo al acceso. Una vez utilizado el servicio, no procede devolución salvo falla técnica imputable al operador. Incluye una sesión sobre un único tema legal. Consultas sobre temas adicionales requieren nuevo pago.",
   },
   {
     heading: "5. Tratamiento de Datos Personales",
@@ -3050,8 +3037,28 @@ function PaidDetector({ onPaid }) {
   const searchParams = useSearchParams();
   useEffect(() => {
     if (searchParams.get('paid') === 'true') {
-      const savedSession = localStorage.getItem('juanita_session');
-      if (savedSession) onPaid();
+      // Priorizar siempre el sid de la URL (viene de un pago recién completado)
+      const urlSid = searchParams.get('sid');
+      let savedSession = urlSid || localStorage.getItem('juanita_session');
+      const savedTopic = localStorage.getItem('juanita_topic');
+
+      // Si la URL trae sid, pisar localStorage sin preguntar
+      if (urlSid) {
+        localStorage.setItem('juanita_session', urlSid);
+        const urlTopic = searchParams.get('topic');
+        if (urlTopic) localStorage.setItem('juanita_topic', urlTopic);
+      }
+
+      if (savedSession) {
+        const amount = parseInt(searchParams.get('amount') || '0', 10) || 4995;
+        trackEvent('Purchase', {
+          sessionId: savedSession,
+          tema: savedTopic || searchParams.get('topic') || 'unknown',
+          value: amount,
+          currency: 'CLP',
+        });
+        onPaid();
+      }
     }
   }, [searchParams]);
   return null;
