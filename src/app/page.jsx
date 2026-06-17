@@ -25,7 +25,13 @@ function PaidDetector({ onPaid }) {
       }
 
       if (savedSession) {
-        trackEvent('Purchase', { sessionId: savedSession, tema: savedTopic || searchParams.get('topic') || 'unknown' });
+        const amount = parseInt(searchParams.get('amount') || '0', 10) || 4995;
+        trackEvent('Purchase', {
+          sessionId: savedSession,
+          tema: savedTopic || searchParams.get('topic') || 'unknown',
+          value: amount,
+          currency: 'CLP',
+        });
         onPaid();
       }
     }

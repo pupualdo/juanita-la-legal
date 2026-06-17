@@ -1,12 +1,20 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
+import { trackEvent } from '@/lib/analytics';
 
 function ErrorContent() {
   const router = useRouter();
   const params = useSearchParams();
   const reason = params.get('reason') || 'system';
   const msg = params.get('msg') || '';
+
+  // Disparar PaymentFailed en analytics cuando el pago es rechazado
+  useEffect(() => {
+    if (reason === 'rejected') {
+      trackEvent('PaymentFailed', { reason, code: params.get('code') || '' });
+    }
+  }, [reason]);
 
   const reasonLabels = {
     timeout: 'La sesión de pago expiró',

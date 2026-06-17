@@ -111,11 +111,12 @@ async function handleCommit(request) {
 
       // Redirigir directo a /?paid=true — la sesión ya está activada en Supabase
       // Saltamos /success porque verify-payment es solo para MercadoPago
-      // Incluir sid + topic como fallback por si localStorage se pierde en el redirect
+      // Incluir sid + topic + amount como fallback por si localStorage se pierde en el redirect
       const paidSid = effectiveSessionId || sessionId || '';
+      const paidAmount = amount || 4995;
       const paidParams = paidSid
-        ? `paid=true&sid=${encodeURIComponent(paidSid)}&method=webpay`
-        : 'paid=true&method=webpay';
+        ? `paid=true&sid=${encodeURIComponent(paidSid)}&method=webpay&amount=${paidAmount}`
+        : `paid=true&method=webpay&amount=${paidAmount}`;
       return NextResponse.redirect(`${APP_URL}/?${paidParams}`);
     }
 
