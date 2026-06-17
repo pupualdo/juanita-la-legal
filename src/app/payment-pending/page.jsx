@@ -26,7 +26,7 @@ function PendingContent() {
         const res = await fetch(`/api/verify-payment?session=${sessionId}&status=check_session`);
         const data = await res.json();
         if (data.ok) {
-          router.push(`/?session=${sessionId}&paid=1`);
+          router.push(`/?session=${sessionId}&paid=true`);
         }
       } catch {
         // ignorar errores de red en polling

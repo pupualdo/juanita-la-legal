@@ -54,7 +54,7 @@ export async function POST(request) {
       }],
       back_urls: {
         success: `${process.env.NEXT_PUBLIC_APP_URL}/success?session=${sessionId}`,
-        failure: `${process.env.NEXT_PUBLIC_APP_URL}/payment-error`,
+        failure: `${process.env.NEXT_PUBLIC_APP_URL}/payment-error?reason=rejected`,
         pending: `${process.env.NEXT_PUBLIC_APP_URL}/payment-pending?session=${sessionId}`,
       },
       auto_return: 'approved',

@@ -9,11 +9,9 @@ function ErrorContent() {
   const reason = params.get('reason') || 'system';
   const msg = params.get('msg') || '';
 
-  // Disparar PaymentFailed en analytics cuando el pago es rechazado
+  // Disparar PaymentFailed en analytics cuando el pago no se completa
   useEffect(() => {
-    if (reason === 'rejected') {
-      trackEvent('PaymentFailed', { reason, code: params.get('code') || '' });
-    }
+    trackEvent('PaymentFailed', { reason, code: params.get('code') || '' });
   }, [reason]);
 
   const reasonLabels = {
