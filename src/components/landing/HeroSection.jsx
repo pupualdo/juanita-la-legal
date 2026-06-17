@@ -60,7 +60,7 @@ export default function HeroSection({ onStart }) {
             fontFamily: "var(--font-fraunces), serif", fontSize: 40, fontWeight: 600,
             color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 16, lineHeight: 1.25,
           }}>
-            ¿Tienes un problema legal y no sabes por dónde partir?
+            No sabes qué hacer. Nosotros sí.
           </h1>
 
           <p style={{ fontSize: 18, color: "rgba(245,240,232,0.90)", marginBottom: 22, lineHeight: 1.5 }}>
