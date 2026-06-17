@@ -24,7 +24,7 @@ const GA4_EVENT_MAP = {
   PaymentFailed:     'payment_failed',
 };
 
-// Cola para eventos disparados antes de que gtag esté disponible (lazyOnload)
+// Cola para eventos disparados antes de que gtag esté disponible (afterInteractive aún puede tener race condition)
 let _gtagQueue = [];
 let _gtagReady = false;
 
