@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false, loading: () => null });
 import { track } from '@vercel/analytics';
+import { trackEvent } from '@/lib/analytics';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
