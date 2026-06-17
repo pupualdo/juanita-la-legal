@@ -7,6 +7,7 @@ const FALLBACK_CODES = {
   AMIGOS2026:   { discount: 100 },
   MEJORAMIGO:   { discount: 100 },
   MEJORAMIGO2026: { discount: 100 },
+  BETA3_A7K2:   { discount: 100 },
   LANZAMIENTO:  { discount: 50 },
   JUANITA10:    { discount: 10 },
 };
