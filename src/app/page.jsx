@@ -860,7 +860,7 @@ function MessageActions({ text }) {
   const [copied, setCopied] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const APP_URL = 'https://juanitalalegal.cl';
-  const footer = `\n\n— — —\n💬 Esta orientación te la comparte *Juanita La Legal* 👩‍⚖️\n¿Tienes tu propia duda legal? Consulta tu caso en ${APP_URL}`;
+  const footer = `\n\n\n━━━━━━━━━━━━━━━━━━\n💬 Esta orientación te la comparte *Juanita La Legal* 👩‍⚖️\n\n¿Tienes tu propia duda legal?\n👉 Consulta tu caso en ${APP_URL}`;
   const shareText = text + footer;
 
   const handleCopy = async () => {
@@ -1601,7 +1601,7 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, auto
   const handlePay = async () => {
     setLoading(true);
     track('payment_started', { tema: topic, price: finalPrice });
-    trackEvent('AddPaymentInfo', { tema: topic, method: 'webpay', price: finalPrice });
+    trackEvent('AddPaymentInfo', { tema: topic, method: 'mercadopago', price: finalPrice });
     try {
       if (isFree) {
         const grantRes = await fetch('/api/grant-access', {
@@ -1617,8 +1617,6 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, auto
         }
         localStorage.setItem('juanita_session', sessionId);
         localStorage.setItem('juanita_topic', topic);
-        // Clear terms acceptance so the user explicitly re-accepts before
-        // entering the paid session via a promo/friend code.
         localStorage.removeItem('juanita_terms_accepted');
         window.location.href = '/?paid=true';
         return;
@@ -1634,6 +1632,32 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, auto
       } else {
         setLoading(false);
         alert('Error al crear el pago. Intenta de nuevo.');
+      }
+    } catch {
+      setLoading(false);
+      alert('Error de conexión. Intenta de nuevo.');
+    }
+  };
+
+  const handleWebpay = async () => {
+    setLoading(true);
+    track('payment_started', { tema: topic, price: finalPrice });
+    trackEvent('AddPaymentInfo', { tema: topic, method: 'webpay', price: finalPrice });
+    try {
+      const res = await fetch('/api/webpay/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tema: topic, resumen, sessionId, amount: finalPrice, promoCode: promoCode.trim().toUpperCase() }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.token) {
+        // WebPay redirect con token
+        window.location.href = `https://webpay3gint.transbank.cl/webpayserver/initTransaction?token_ws=${data.token}`;
+      } else {
+        setLoading(false);
+        alert('Error al crear el pago con WebPay. Intenta de nuevo.');
       }
     } catch {
       setLoading(false);
@@ -1738,21 +1762,32 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, auto
         ))}
 
         {!loading ? (
-          <button onClick={handlePay} style={{
-            width: "100%", background: isFree ? "#4a7a20" : "#009ee3", color: "white", border: "none",
-            borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 600, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          }}>
-            {isFree ? "🎉 Acceder gratis" : "💳 Pagar con Mercado Pago"}
-          </button>
+          <>
+            <button onClick={handlePay} style={{
+              width: "100%", background: isFree ? "#4a7a20" : "#009ee3", color: "white", border: "none",
+              borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 600, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            }}>
+              {isFree ? "🎉 Acceder gratis" : "💳 Pagar con Mercado Pago"}
+            </button>
+            {!isFree && (
+              <button onClick={handleWebpay} style={{
+                width: "100%", background: "#1a3a5c", color: "white", border: "none",
+                borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 600, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8,
+              }}>
+                🏦 Pagar con WebPay
+              </button>
+            )}
+          </>
         ) : (
           <div style={{ textAlign: "center", color: "#009ee3", fontSize: 13, padding: "13px" }}>
-            ⏳ {isFree ? "Activando acceso..." : "Redirigiendo a Mercado Pago..."}
+            ⏳ {isFree ? "Activando acceso..." : "Redirigiendo al pago..."}
           </div>
         )}
 
         <div style={{ fontSize: 11, color: "#a09080", textAlign: "center", marginTop: 8 }}>
-          🔒 Pago seguro · Mercado Pago Chile · No guardamos datos de tarjeta
+          🔒 Pago seguro · Mercado Pago y WebPay · No guardamos datos de tarjeta
         </div>
       </div>
 
