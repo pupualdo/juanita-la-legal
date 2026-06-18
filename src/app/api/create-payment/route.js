@@ -6,7 +6,7 @@ import { log } from '@/lib/logger';
 
 const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
 
-const BASE_PRICE = 9990; // CLP
+const BASE_PRICE = 4995; // CLP — precio real de la consulta
 
 // Fallback hardcoded (si Supabase no está disponible)
 const FALLBACK_CODES = {
@@ -48,14 +48,17 @@ export async function POST(request) {
       );
     }
 
-    const { tema, resumen, sessionId, promoCode } = await request.json();
+    const { tema, resumen, sessionId, promoCode, isReturnUser } = await request.json();
+
+    // Returning users (topic change) get $4.000 base price
+    const effectiveBasePrice = isReturnUser ? 4000 : BASE_PRICE;
 
     // Server-side promo validation — never trust the client-reported price
     const normalizedCode = promoCode ? String(promoCode).toUpperCase().trim() : null;
     const discount = normalizedCode ? await getPromoDiscount(normalizedCode) : null;
     const unitPrice = discount != null
-      ? Math.max(1, Math.round(BASE_PRICE * (1 - discount / 100))) // min 1 CLP so MP accepts it
-      : BASE_PRICE;
+      ? Math.max(1, Math.round(effectiveBasePrice * (1 - discount / 100))) // min 1 CLP so MP accepts it
+      : effectiveBasePrice;
 
     log.info('create-payment', 'Creating preference', { sessionId, promoCode: normalizedCode, unitPrice });
 
@@ -70,7 +73,7 @@ export async function POST(request) {
       }],
       back_urls: {
         success: `${process.env.NEXT_PUBLIC_APP_URL}/success?session=${sessionId}`,
-        failure: `${process.env.NEXT_PUBLIC_APP_URL}/payment-error`,
+        failure: `${process.env.NEXT_PUBLIC_APP_URL}/payment-error?reason=rejected`,
         pending: `${process.env.NEXT_PUBLIC_APP_URL}/payment-pending?session=${sessionId}`,
       },
       auto_return: 'approved',

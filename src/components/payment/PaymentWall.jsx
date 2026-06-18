@@ -1,8 +1,7 @@
 'use client';
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { track } from '@vercel/analytics';
 import { TOPIC_LABELS, TOPIC_META, DISCLAIMER, SUGGESTIONS } from '@/lib/constants';
-import PaymentMethodScreen from './PaymentMethodScreen';
 import { trackEvent } from '@/lib/analytics';
 export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, autoPromo, onBack }) {
   const [loading, setLoading] = useState(false);
@@ -10,7 +9,6 @@ export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, 
   const [promoApplied, setPromoApplied] = useState(null); // { discount, label } | null
   const [promoError, setPromoError] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
-  const [showMethodScreen, setShowMethodScreen] = useState(false);
   const m = TOPIC_META[topic] || {};
 
   // Returning user changing topic gets $4.000 discount.
@@ -67,14 +65,13 @@ export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, 
       handleMethodSelect('free');
       return;
     }
-    // Show payment method selection first
-    setShowMethodScreen(true);
+    // Ir directo a Mercado Pago
+    handleMethodSelect('mercadopago');
   };
 
   const handleMethodSelect = async (method) => {
     trackEvent('AddPaymentInfo', { tema: topic, method, price: finalPrice });
     setLoading(true);
-    setShowMethodScreen(false);
     track('payment_started', { tema: topic, price: finalPrice, method });
     try {
       if (isFree) {
@@ -133,19 +130,6 @@ export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, 
       alert('Error de conexión. Intenta de nuevo.');
     }
   };
-
-  if (showMethodScreen) {
-    return (
-      <PaymentMethodScreen
-        topic={topic}
-        finalPrice={finalPrice}
-        isFree={isFree}
-        promoCode={promoCode}
-        onSelect={handleMethodSelect}
-        onBack={() => setShowMethodScreen(false)}
-      />
-    );
-  }
 
   return (
     <div style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: 18, maxWidth: 520, margin: "0 auto" }}>
@@ -219,11 +203,11 @@ export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, 
             boxShadow: "0 4px 16px rgba(26,58,42,0.25)",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           }}>
-            {isFree ? "🎉 Acceder gratis" : "Recibir mi orientación completa"}
+            {isFree ? "🎉 Acceder gratis" : "Pagar con Mercado Pago"}
           </button>
         ) : (
           <div style={{ textAlign: "center", color: "#4a7a20", fontSize: 14, padding: "13px", fontWeight: 600 }}>
-            ⏳ {isFree ? "Activando acceso..." : "Redirigiendo al pago..."}
+            ⏳ {isFree ? "Activando acceso..." : "Redirigiendo a Mercado Pago..."}
           </div>
         )}
 
@@ -259,9 +243,9 @@ export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, 
           <div style={{ fontSize: 12, color: "#c0392b", marginTop: -8 }}>{promoError}</div>
         )}
 
-        {/* Métodos de pago */}
+        {/* Pago seguro */}
         <div style={{ fontSize: 12, color: "#8a7a68", textAlign: "center", lineHeight: 1.6 }}>
-          💳 WebPay · Mercado Pago · Transferencia
+          🔒 Pago seguro · Mercado Pago Chile · No guardamos datos de tarjeta
         </div>
       </div>
 
@@ -287,32 +271,7 @@ export default function PaymentWall({ topic, resumen, sessionId, prevSessionId, 
         </div>
       </div>
 
-      {/* ── 5. BANCO (Transferencia) ── */}
-      {!isFree && (
-        <div style={{
-          background: "#faf8f4", borderRadius: 14, padding: "16px",
-          border: "1px solid #ece4d4",
-        }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#1a3a2a", marginBottom: 8 }}>
-            🏦 Transferencia bancaria
-          </div>
-          <div style={{ fontSize: 12, color: "#6a5e50", lineHeight: 1.6, marginBottom: 10 }}>
-            Transfiere a la cuenta y escríbenos a <strong>contacto@juanitalalegal.cl</strong> con tu comprobante.
-          </div>
-          <div style={{
-            background: "white", borderRadius: 10, padding: "12px 14px",
-            border: "1px dashed #d8cfc0", fontSize: 12, color: "#3a3028", lineHeight: 2,
-          }}>
-            <div><strong>Banco:</strong> Banco de Chile</div>
-            <div><strong>Titular:</strong> Asesorías del Meridiano Limitada</div>
-            <div><strong>RUT:</strong> 77.604.764-3</div>
-            <div><strong>Cuenta:</strong> Cuenta Corriente N° 3190709310</div>
-            <div><strong>Monto:</strong> ${finalPrice.toLocaleString('es-CL')} CLP</div>
-          </div>
-        </div>
-      )}
-
-      {/* ── 6. VOLVER ── */}
+      {/* ── 5. VOLVER ── */}
       <button onClick={onBack} style={{ background: "none", border: "none", color: "#8a7a68", fontSize: 13, cursor: "pointer", alignSelf: "center", fontFamily: "inherit" }}>
         ← Volver
       </button>

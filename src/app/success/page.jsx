@@ -1,49 +1,61 @@
 'use client';
-import { Suspense, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-function SuccessInner() {
-  const router = useRouter();
-  const params = useSearchParams();
+function SuccessContent() {
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const verify = async () => {
-      const paymentId = params.get('payment_id');
-      const sessionId = params.get('session');
-      const status    = params.get('status');
+    const sessionId = searchParams.get('session');
+    if (!sessionId) {
+      window.location.href = '/';
+      return;
+    }
 
-      const res  = await fetch(
-        `/api/verify-payment?payment_id=${paymentId}&session=${sessionId}&status=${status}`
-      );
-      const data = await res.json();
-
-      if (data.ok) {
-        localStorage.setItem('juanita_session', data.sessionId);
-        router.push('/?paid=true');
-      } else {
-        router.push('/payment-error');
-      }
-    };
-    verify();
-  }, [params, router]);
+    // Activar sesión en Supabase y redirigir al chat
+    fetch('/api/activate-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok) {
+          localStorage.setItem('juanita_session', data.sessionId || sessionId);
+          window.location.href = '/?paid=true&sid=' + (data.sessionId || sessionId);
+        } else {
+          localStorage.setItem('juanita_session', sessionId);
+          window.location.href = '/?paid=true&sid=' + sessionId;
+        }
+      })
+      .catch(() => {
+        localStorage.setItem('juanita_session', sessionId);
+        window.location.href = '/?paid=true&sid=' + sessionId;
+      });
+  }, [searchParams]);
 
   return (
-    <div style={{ textAlign:'center', padding: 60, fontFamily: 'sans-serif' }}>
-      <div style={{ fontSize: 40, marginBottom: 16 }}>⏳</div>
-      <p style={{ fontSize: 16, color: '#6a5e50' }}>Verificando tu pago...</p>
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      minHeight: '100vh', background: '#faf8f4', fontFamily: 'system-ui, sans-serif',
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: '#1a3a2a', marginBottom: 8 }}>
+          ¡Pago confirmado!
+        </div>
+        <div style={{ fontSize: 14, color: '#6a5e50' }}>
+          Activando tu consulta...
+        </div>
+      </div>
     </div>
   );
 }
 
 export default function SuccessPage() {
   return (
-    <Suspense fallback={
-      <div style={{ textAlign:'center', padding: 60, fontFamily: 'sans-serif' }}>
-        <div style={{ fontSize: 40, marginBottom: 16 }}>⏳</div>
-        <p style={{ fontSize: 16, color: '#6a5e50' }}>Cargando...</p>
-      </div>
-    }>
-      <SuccessInner />
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#faf8f4' }} />}>
+      <SuccessContent />
     </Suspense>
   );
 }
