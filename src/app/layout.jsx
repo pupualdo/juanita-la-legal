@@ -56,9 +56,9 @@ export const metadata = {
     type: 'website',
     images: [
       {
-        url: '/juanita-avatar.jpg',
+        url: '/og-image.jpg',
         width: 1200,
-        height: 1200,
+        height: 630,
         alt: 'Juanita La Legal — Orientación legal en buen chileno',
       },
     ],
@@ -68,7 +68,7 @@ export const metadata = {
     title: 'Juanita La Legal — Orientación legal en buen chileno',
     description:
       'Orientación legal online en Chile desde $4.995 CLP — precio lanzamiento. Respuesta clara y directa.',
-    images: ['/juanita-avatar.jpg'],
+    images: ['/og-image.jpg'],
   },
   verification: {
     google: '7Z3FqbFegxzn3F3sSkseZquYCG1TcOgAeWSLahVJJZM',
