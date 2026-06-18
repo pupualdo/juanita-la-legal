@@ -978,7 +978,7 @@ function MessageBubble({ msg, topic, sessionId, stage, onTermClick, activeTerm }
         {showContactForm && <ContactForm topic={topic} sessionId={sessionId} />}
         {hasSessionOffer && <BuySessionButton sessionId={sessionId} />}
         {isJuanita && msg.text !== '...' && <WhatsAppCTA text={msg.text} />}
-        {isJuanita && msg.text !== '...' && stage === 'chat' && <MessageActions text={msg.text} />}
+        {isJuanita && msg.text !== '...' && <MessageActions text={msg.text} />}
         {isJuanita && msg.text !== '...' && sessionId && (
           <MessageFeedback
             msgId={msg.id}
