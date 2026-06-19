@@ -56,17 +56,19 @@ async function handleCommit(request) {
 
     // ── Pago aprobado ──
     if (response.response_code === 0) {
-      const sessionId = response.session_id;
+      const tbkSessionId = response.session_id; // Transbank puede modificarlo
       const buyOrder = response.buy_order;
       const amount = response.amount;
       const authCode = response.authorization_code;
       const cardNumber = response.card_detail?.card_number || '';
 
-      log.info('webpay-commit', 'Pago aprobado', { sessionId, buyOrder, amount, authCode });
+      log.info('webpay-commit', 'Pago aprobado', { tbkSessionId, buyOrder, amount, authCode });
 
-      // Activar sesión en Supabase — usar el sessionId de Transbank
-      // Si es null/undefined, buscar por prefijo de buy_order (JLL-XXXXXXXX-...)
-      let effectiveSessionId = sessionId;
+      // ── effectiveSessionId: el sid del returnUrl es LA fuente de verdad ──
+      // Transbank modifica el session_id internamente, así que NO podemos confiar en
+      // response.session_id. El sid que pasamos en el returnUrl es el UUID original.
+      const urlSid = params['sid'];
+      let effectiveSessionId = urlSid || tbkSessionId;
 
       if (!effectiveSessionId && buyOrder) {
         const prefix = buyOrder.replace('JLL-', '');
@@ -106,13 +108,13 @@ async function handleCommit(request) {
           log.error('webpay-commit', 'Supabase no disponible', { err: supaErr?.message });
         }
       } else {
-        log.warn('webpay-commit', 'Sin sessionId o Supabase no configurado', { sessionId, buyOrder });
+        log.warn('webpay-commit', 'Sin sessionId o Supabase no configurado', { tbkSessionId, buyOrder });
       }
 
       // Redirigir directo a /?paid=true — la sesión ya está activada en Supabase
       // Saltamos /success porque verify-payment es solo para MercadoPago
       // Incluir sid + topic + amount como fallback por si localStorage se pierde en el redirect
-      const paidSid = effectiveSessionId || sessionId || '';
+      const paidSid = effectiveSessionId || urlSid || tbkSessionId || '';
       const paidAmount = amount || 4995;
       const paidParams = paidSid
         ? `paid=true&sid=${encodeURIComponent(paidSid)}&method=webpay&amount=${paidAmount}`
@@ -123,7 +125,7 @@ async function handleCommit(request) {
     // ── Pago rechazado ──
     log.warn('webpay-commit', 'Pago rechazado', {
       responseCode: response.response_code,
-      sessionId: response.session_id,
+      sessionId: tbkSessionId,
     });
 
     return NextResponse.redirect(`${APP_URL}/payment-error?reason=rejected&code=${response.response_code}`);

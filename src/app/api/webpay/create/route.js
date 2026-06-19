@@ -37,7 +37,7 @@ export async function POST(request) {
     // Monto en CLP (entero)
     const amountClp = Math.round(Number(amount));
 
-    const returnUrl = `${APP_URL}/api/webpay/commit`;
+    const returnUrl = `${APP_URL}/api/webpay/commit?sid=${encodeURIComponent(sessionId)}`;
 
     log.info('webpay-create', 'Creating WebPay transaction', { sessionId, buyOrder, amount: amountClp });
 
