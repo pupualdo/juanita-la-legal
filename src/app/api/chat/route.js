@@ -538,8 +538,17 @@ export async function POST(request) {
             }
           }
         } catch (err) {
-          log.error('chat', 'Anthropic stream error', { err, sessionId });
-          controller.enqueue(encoder.encode('data: ' + JSON.stringify({ error: err?.message || 'Error en el chat' }) + '\n\n'));
+          const errDetail = {
+            message: err?.message || String(err),
+            name: err?.name,
+            status: err?.status,
+            type: err?.type,
+            code: err?.code,
+            stack: (err?.stack || '').split('\n').slice(0, 3).join('\n'),
+          };
+          log.error('chat', 'Anthropic stream error', { err: errDetail, sessionId });
+          const clientMsg = err?.message || err?.error?.message || `Error en el chat (${err?.name || err?.status || 'desconocido'})`;
+          controller.enqueue(encoder.encode('data: ' + JSON.stringify({ error: clientMsg }) + '\n\n'));
         } finally {
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
