@@ -1650,14 +1650,12 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, auto
         body: JSON.stringify({ tema: topic, resumen, sessionId, amount: finalPrice, promoCode: promoCode.trim().toUpperCase() }),
       });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else if (data.token) {
-        // WebPay redirect con token
-        window.location.href = `https://webpay3gint.transbank.cl/webpayserver/initTransaction?token_ws=${data.token}`;
+      if (data.url && data.token) {
+        // La SDK devuelve url SIN token_ws — hay que concatenarlo
+        window.location.href = data.url + '?token_ws=' + data.token;
       } else {
         setLoading(false);
-        alert('Error al crear el pago con WebPay. Intenta de nuevo.');
+        alert(data.error || 'Error al crear el pago con WebPay. Intenta de nuevo.');
       }
     } catch {
       setLoading(false);
