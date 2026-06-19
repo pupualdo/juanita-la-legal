@@ -434,40 +434,6 @@ export async function POST(request) {
     if (process.env.DEV_SKIP_PAYMENT === 'true') {
       // Dev mode: skip session validation, use history from request
       history = devHistory || [];
-    } else if (prechat) {
-      // Pre-chat mode: upsert session in Supabase for lead tracking + history
-      try {
-        const { data: existingPrechat, error: prechatErr } = await getSupabase()
-          .from('sessions')
-          .select('*')
-          .eq('session_id', sessionId)
-          .single();
-
-        if (prechatErr && prechatErr.code !== 'PGRST116') { // PGRST116 = not found, expected
-          log.error('chat', 'Error loading prechat session', { err: prechatErr, sessionId });
-        }
-
-        if (existingPrechat) {
-          history = Array.isArray(existingPrechat.history) ? existingPrechat.history : [];
-          log.info('chat', 'Prechat session loaded', { sessionId, historyLen: history.length });
-        } else {
-          // Create pre-chat session — no expiration yet, status marks it as pre-pago
-          const { error: insertErr } = await getSupabase().from('sessions').insert({
-            session_id: sessionId,
-            status: 'prechat',
-            history: [],
-            created_at: new Date().toISOString(),
-          });
-          if (insertErr) {
-            log.error('chat', 'Error creating prechat session', { err: insertErr, sessionId });
-          }
-          history = [];
-          log.info('chat', 'Prechat session created', { sessionId });
-        }
-      } catch (prechatSessionErr) {
-        log.error('chat', 'Unexpected error in prechat session handling', { err: prechatSessionErr, sessionId });
-        history = [];
-      }
     } else {
       // Paid session: must exist in Supabase and not be explicitly expired
       // (status='active' set by webhook/commit, or prechat session recently created)
