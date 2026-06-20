@@ -96,7 +96,8 @@ async function handleCommit(request) {
               payment_method: 'webpay',
               payment_amount: amount,
               payment_id: String(authCode || buyOrder),
-              payment_metadata: { auth_code: authCode, card: cardNumber },
+              payment_auth_code: authCode || null,
+              payment_card: cardNumber || null,
             }, { onConflict: 'session_id' });
 
           if (upsertError) {
