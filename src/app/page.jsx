@@ -1861,13 +1861,13 @@ function ChatSection({ onRestart, initialPaid, initialSessionId }) {
     if (!localStorage.getItem('juanita_hintSeen')) setShowTermHint(true);
   }, []);
 
-  // Al entrar al muro de pago, ofrece una sola vez el popup de 50% (LANZAMIENTO).
-  useEffect(() => {
-    if (stage === 'payment' && !sessionStorage.getItem('juanita_promo_seen')) {
-      setShowDiscountModal(true);
-      try { sessionStorage.setItem('juanita_promo_seen', '1'); } catch {}
-    }
-  }, [stage]);
+  // Popup de lanzamiento 50% — DESACTIVADO (ya no aplica, 2026-06-19)
+  // useEffect(() => {
+  //   if (stage === 'payment' && !sessionStorage.getItem('juanita_promo_seen')) {
+  //     setShowDiscountModal(true);
+  //     try { sessionStorage.setItem('juanita_promo_seen', '1'); } catch {}
+  //   }
+  // }, [stage]);
 
   useEffect(() => {
     if (!userScrolledUp) {
