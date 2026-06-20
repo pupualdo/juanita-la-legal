@@ -437,11 +437,16 @@ export async function POST(request) {
     } else {
       // Paid session: must exist in Supabase and not be explicitly expired
       // (status='active' set by webhook/commit, or prechat session recently created)
-      const { data: session } = await getSupabase()
+      const { data: session, error: sessionErr } = await getSupabase()
         .from('sessions')
         .select('*')
         .eq('session_id', sessionId)
         .maybeSingle();
+
+      if (sessionErr) {
+        log.error('chat', 'Supabase query error', { err: sessionErr, sessionId });
+        return NextResponse.json({ error: `Error de base de datos (${sessionErr.code || 'query'})` }, { status: 500 });
+      }
 
       if (!session) {
         return NextResponse.json({ error: 'Sesión inválida o expirada' }, { status: 401 });
@@ -559,8 +564,8 @@ export async function POST(request) {
           const clientMsg = err?.message || err?.error?.message || `Error en el chat (${err?.name || err?.status || 'desconocido'})`;
           controller.enqueue(encoder.encode('data: ' + JSON.stringify({ error: clientMsg }) + '\n\n'));
         } finally {
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-          controller.close();
+          try { controller.enqueue(encoder.encode('data: [DONE]\n\n')); } catch {}
+          try { controller.close(); } catch {}
         }
       }
     });
