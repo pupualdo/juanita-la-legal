@@ -484,14 +484,23 @@ export async function POST(request) {
     }
     const newHistory = [...validHistory, { role: 'user', content: userContent }];
 
-    const anthropic = new Anthropic({ apiKey: process.env.JUANITA_ANTHROPIC_KEY });
-    const stream = anthropic.messages.stream({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
-      messages: newHistory,
-      tools: [{ type: "web_search_20250305", name: "web_search" }],
-    });
+    let stream;
+    try {
+      const anthropic = new Anthropic({ apiKey: process.env.JUANITA_ANTHROPIC_KEY });
+      stream = anthropic.messages.stream({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4096,
+        system: SYSTEM_PROMPT,
+        messages: newHistory,
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+      });
+    } catch (initErr) {
+      log.error('chat', 'Anthropic stream init error', {
+        err: { message: initErr?.message, name: initErr?.name, status: initErr?.status, type: initErr?.type, stack: (initErr?.stack || '').split('\n').slice(0, 3).join('\n') },
+        sessionId, historyLen: newHistory.length,
+      });
+      return NextResponse.json({ error: initErr?.message || initErr?.error?.message || `Error al conectar con Anthropic (${initErr?.name || initErr?.status || 'init'})` }, { status: 500 });
+    }
 
     const encoder = new TextEncoder();
     let fullReply = '';
@@ -564,7 +573,9 @@ export async function POST(request) {
       },
     });
   } catch (error) {
-    await log.error('chat', 'Unhandled error in POST /api/chat', { err: error });
-    return NextResponse.json({ error: 'Error en el chat' }, { status: 500 });
+    const errDetail = { message: error?.message, name: error?.name, status: error?.status, type: error?.type, stack: (error?.stack || '').split('\n').slice(0, 4).join('\n') };
+    await log.error('chat', 'Unhandled error in POST /api/chat', { err: errDetail });
+    const clientMsg = error?.message || error?.error?.message || `Error en el chat (${error?.name || error?.status || 'desconocido'})`;
+    return NextResponse.json({ error: clientMsg }, { status: 500 });
   }
 }
