@@ -56,10 +56,16 @@ export default function HeroSection({ onStart }) {
             />
           </div>
 
-          <h1 style={{
+          <h1
+            onClick={handleStartClick}
+            style={{
             fontFamily: "var(--font-fraunces), serif", fontSize: 40, fontWeight: 600,
             color: "#f5f0e8", letterSpacing: "-0.02em", marginBottom: 16, lineHeight: 1.25,
-          }}>
+            cursor: "pointer", transition: "color 0.2s",
+          }}
+            onMouseEnter={e => e.target.style.color = "#f0d068"}
+            onMouseLeave={e => e.target.style.color = "#f5f0e8"}
+          >
             No sabes qué hacer. Nosotros sí.
           </h1>
 
@@ -67,8 +73,10 @@ export default function HeroSection({ onStart }) {
             Cuéntale tu caso a Juanita. En minutos sabrás si tienes caso, qué documentos necesitas y cuál es tu próximo paso. Derecho chileno, explicado en chileno.
           </p>
 
-          {/* Banner de lanzamiento */}
-          <div style={{
+          {/* Banner de lanzamiento — ahora clickeable */}
+          <div
+            onClick={handleStartClick}
+            style={{
             marginBottom: 28,
             background: "linear-gradient(135deg, rgba(200,160,64,0.20) 0%, rgba(200,160,64,0.10) 100%)",
             border: "1px solid rgba(200,160,64,0.50)",
@@ -77,7 +85,11 @@ export default function HeroSection({ onStart }) {
             display: "flex", alignItems: "center", gap: 12,
             textAlign: "left",
             boxShadow: "0 4px 16px rgba(200,160,64,0.18)",
-          }}>
+            cursor: "pointer", transition: "transform 0.15s, box-shadow 0.15s",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.02)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(200,160,64,0.30)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(200,160,64,0.18)"; }}
+          >
             <span style={{ fontSize: 26, flexShrink: 0 }}>🔥</span>
             <div style={{ flex: 1, lineHeight: 1.5 }}>
               <div style={{
@@ -193,7 +205,11 @@ export default function HeroSection({ onStart }) {
                 { step: "2", title: "Juanita te orienta", desc: "Te explicamos tus derechos, los pasos a seguir y qué NO hacer. Todo en buen chileno.", emoji: "🧭" },
                 { step: "3", title: "Tienes un resultado claro", desc: "Sales con un panorama claro de tu caso. Si necesitas abogado, te decimos honestamente.", emoji: "✅" },
               ].map((s, i) => (
-                <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", cursor: "pointer", borderRadius: 8, padding: "4px", transition: "background 0.15s" }}
+                  onClick={handleStartClick}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(26,58,42,0.04)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                >
                   <div style={{
                     width: 40, height: 40, borderRadius: "50%",
                     background: "#1a3a2a", color: "white",
@@ -305,7 +321,13 @@ export default function HeroSection({ onStart }) {
               { number: "10", label: "Áreas legales" },
               { number: "$4.995", label: "50% descuento lanzamiento" },
             ].map((stat, i) => (
-              <div key={i} style={{ textAlign: "center", background: "#faf8f4", borderRadius: 14, padding: "16px 10px", border: "1px solid #ece4d4" }}>
+              <div
+                key={i}
+                onClick={handleStartClick}
+                style={{ textAlign: "center", background: "#faf8f4", borderRadius: 14, padding: "16px 10px", border: "1px solid #ece4d4", cursor: "pointer", transition: "background 0.15s, transform 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#f0ece2"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#faf8f4"; e.currentTarget.style.transform = "translateY(0)"; }}
+              >
                 <div style={{ fontSize: 22, fontWeight: 700, color: "#1a3a2a", fontFamily: "var(--font-fraunces), serif" }}>
                   {stat.number}
                 </div>
@@ -315,7 +337,12 @@ export default function HeroSection({ onStart }) {
           </div>
 
           {/* Value comparison */}
-          <div style={{ background: "#f0f5e8", borderRadius: 14, padding: "18px", border: "1px solid #b8d98a", marginBottom: 20 }}>
+          <div
+            onClick={handleStartClick}
+            style={{ background: "#f0f5e8", borderRadius: 14, padding: "18px", border: "1px solid #b8d98a", marginBottom: 20, cursor: "pointer", transition: "background 0.15s" }}
+            onMouseEnter={e => e.currentTarget.style.background = "#e5f0d5"}
+            onMouseLeave={e => e.currentTarget.style.background = "#f0f5e8"}
+          >
             <div style={{ fontSize: 14, fontWeight: 700, color: "#3a5a20", marginBottom: 6 }}>
               💡 ¿Por qué tiene sentido?
             </div>
