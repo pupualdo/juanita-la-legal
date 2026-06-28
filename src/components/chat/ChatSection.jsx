@@ -55,6 +55,7 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
   const [showDiscountModal, setShowDiscountModal] = useState(false);
   const [autoPromo, setAutoPromo] = useState(null);
   const [prechatExchanges, setPrechatExchanges] = useState(0);
+  const [prechatHistory, setPrechatHistory] = useState([]);  // contexto entre intercambios
   const [showProcessModal, setShowProcessModal] = useState(!initialPaid);
   const [demoUsed, setDemoUsed] = useState(() => {
     if (typeof window === 'undefined') return true;
@@ -144,15 +145,63 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
       setStage("payment");
       addMsg({ type: "juanita", text: `Gracias por compartir tu caso conmigo 🙏\n\nCon lo que me has contado, ya tengo un muy buen panorama. Puedo orientarte paso a paso sobre tus derechos, lo que te conviene hacer y cómo prepararte.\n\n**Son $4.995 CLP por la consulta completa.** ¿Continuamos?` });
     } else {
-      // Continuar el pre-chat
-      streamChatResponse(
-        `[PRE-CHAT — intercambio ${newCount}/3] El usuario responde: "${trimmed}". Responde con empatía. Haz preguntas para clarificar lo que no haya quedado claro. NO des orientación legal completa. Sugiere sutilmente que la consulta pagada ($4.995) le dará la orientación detallada paso a paso.`,
-        [],
-        sessionId,
-        undefined,
-        true
-      );
+      // Continuar el pre-chat con historial real
+      const newHistory = [...prechatHistory, { role: 'user', content: trimmed }];
+      setPrechatHistory(newHistory);
+      const fullReply = await streamPrechatResponse(trimmed, newHistory, 'teaser');
+      if (fullReply) {
+        setPrechatHistory([...newHistory, { role: 'assistant', content: fullReply }]);
+      }
     }
+  };
+
+  // ── Streaming helper para el pre-chat (usa /api/preview-chat) ──────────────
+  const streamPrechatResponse = async (message, history, mode) => {
+    setIsStreaming(true);
+    const msgId = createId();
+    setMessages(prev => [...prev, { id: msgId, type: 'juanita', text: '...' }]);
+    let fullText = '';
+
+    try {
+      const res = await fetch('/api/preview-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, history, mode }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Error ${res.status}`);
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6);
+          if (data === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.error) throw new Error(parsed.error);
+            if (parsed.text) {
+              fullText += parsed.text;
+              setMessages(prev => prev.map(m => m.id === msgId ? { ...m, text: fullText } : m));
+            }
+          } catch (parseErr) {
+            if (parseErr.message !== 'Unexpected token') throw parseErr;
+          }
+        }
+      }
+    } catch (err) {
+      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, text: 'Hubo un error. Intenta de nuevo.' } : m));
+    }
+    setIsStreaming(false);
+    return fullText;
   };
 
   // ── Clasificar con backend real ────────────────────────────────────────────
@@ -205,16 +254,16 @@ export default function ChatSection({ onRestart, initialPaid, initialSessionId }
           setPendingTopic(data.tema);
           setClassifyResumen(data.resumen || `Consulta sobre ${TOPIC_LABELS[data.tema]}`);
           setPrechatExchanges(0);
+          setPrechatHistory([]);
           setStage("prechat");
-          // Llamar a /api/chat para la primera respuesta de Juanita
+          // Primera respuesta del pre-chat via /api/preview-chat (sin sesión Supabase)
           addMsg({ type: "system", text: `Tema: ${TOPIC_LABELS[data.tema]} ${TOPIC_META[data.tema]?.emoji}. Conversación de orientación gratuita (máx. 3 intercambios).` });
-          streamChatResponse(
-            `[PRE-CHAT] El usuario consulta: "${trimmed}". Tu objetivo es DARLE VALOR inmediato para que quiera pagar. Responde de forma concreta y útil — demuestra que sabes del tema legal, da UN dato práctico específico (un paso concreto que pueda hacer hoy, un artículo de ley aplicable, o un trámite preciso que le sirva). NO des la orientación completa ni el paso a paso detallado — eso es lo que obtiene con la consulta pagada. Luego haz 1 pregunta específica para profundizar su caso. Al final de tu respuesta, sugiere naturalmente que en la consulta completa ($4.995) le das el detalle completo, los pasos exactos y los riesgos.`,
-            [],
-            sessionId,
-            undefined,
-            true
-          );
+          const initHistory = [{ role: 'user', content: trimmed }];
+          setPrechatHistory(initHistory);
+          const fullReply = await streamPrechatResponse(trimmed, initHistory, 'indagacion');
+          if (fullReply) {
+            setPrechatHistory([...initHistory, { role: 'assistant', content: fullReply }]);
+          }
         } else {
           setStage("payment");
         }

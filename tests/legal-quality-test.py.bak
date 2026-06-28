@@ -11,7 +11,6 @@ Ejecutar: python3 tests/legal-quality-test.py
 import subprocess
 import json
 import sys
-import re
 import time
 
 BASE = "https://juanitalalegal.cl"
@@ -82,10 +81,7 @@ QUERIES = [
 RULES = [
     {
         "id": "NO_TUICION",
-        "check": lambda text: (
-            "tuición" in text.lower()
-            and "cuidado personal" not in text.lower()
-        ),
+        "pattern": "tuición",
         "severity": "fail",
         "msg": "Dijo 'tuición' en vez de 'cuidado personal'"
     },
@@ -98,22 +94,21 @@ RULES = [
     },
     {
         "id": "NO_BRACKETS",
-        "check": lambda text: bool(
-            re.search(r'\[.+?\]', text) and "[DONE]" not in text
-        ),
+        "pattern": r"[\[].*?[\]]",  # cualquier texto entre corchetes
+        "exceptions": ["[DONE]"],
         "severity": "fail",
         "msg": "Texto entre corchetes tipo [link falso]"
     },
     {
         "id": "NO_ANTHROPIC",
-        "patterns": ["claude", "anthropic", "modelo de lenguaje", "inteligencia artificial"],
+        "patterns": ["Claude", "Anthropic", "modelo de lenguaje", "inteligencia artificial"],
         "severity": "fail",
         "msg": "Reveló que es una IA"
     },
     {
         "id": "NO_DEM",
-        "trigger_query": "migracion_ser mig",
-        "check": lambda text: bool(re.search(r'\bdem\b', text.lower())),
+        "pattern": "DEM",
+        "context_check": "departamento de extranjería",
         "severity": "fail",
         "msg": "Dijo 'DEM' en vez de 'SERMIG'"
     },
