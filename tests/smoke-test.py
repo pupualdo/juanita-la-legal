@@ -401,19 +401,7 @@ def run_edge_cases():
         "Body: {}".format(body[:100])
     ))
 
-    h, _ = curl_headers("{}/status/204".format(HTTPBIN))
-    test("204 No Content → sin body", lambda: (
-        "204" in h.get("_status", ""),
-        "Status: {}".format(h.get('_status', 'N/A'))
-    ))
-
-    h, err = curl_headers("{}/response-headers?X-Custom=Juanita&X-Version=2.0".format(HTTPBIN))
-    test("Headers personalizados OK", lambda: (
-        h.get("x-custom") == "Juanita" and h.get("x-version") == "2.0",
-        "x-custom={}, x-version={}".format(h.get('x-custom'), h.get('x-version'))
-    ))
-
-
+# ═══════════════════════════════════════════════════════════════
 # ═══════════════════════════════════════════════════════════════
 #  SECCIÓN 9: SSE STREAMING
 # ═══════════════════════════════════════════════════════════════
@@ -462,7 +450,7 @@ def main():
     print("=" * 64)
 
     h, err = curl_headers(HTTPBIN, timeout=5)
-    httpbin_down = bool(err)
+    httpbin_down = bool(err) or ("503" in h.get("_status", ""))
 
     run_public_endpoints()
 
@@ -471,9 +459,20 @@ def main():
         run_status_codes()
         run_redirects()
         run_delays()
+        # Estos tests de edge cases dependen de httpbin
+        h, _ = curl_headers("{}/status/204".format(HTTPBIN))
+        test("204 No Content → sin body", lambda: (
+            "204" in h.get("_status", ""),
+            "Status: {}".format(h.get('_status', 'N/A'))
+        ))
+        h, err = curl_headers("{}/response-headers?X-Custom=Juanita&X-Version=2.0".format(HTTPBIN))
+        test("Headers personalizados OK", lambda: (
+            h.get("x-custom") == "Juanita" and h.get("x-version") == "2.0",
+            "x-custom={}, x-version={}".format(h.get('x-custom'), h.get('x-version'))
+        ))
     else:
-        SKIP += 30
-        print("\n  {}⚠ httpbin.org no disponible — secciones 2-5 saltadas{}".format(YELLOW, RESET))
+        SKIP += 32
+        print("\n  {}⚠ httpbin.org no disponible — secciones 2-5 y edge cases httpbin saltados{}".format(YELLOW, RESET))
 
     run_security_headers()
     run_edge_cases()
