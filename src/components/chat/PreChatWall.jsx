@@ -155,7 +155,7 @@ export default function PreChatWall({ topic, messages, input, setInput, onSend, 
             💬 Comprar consulta completa — $4.995
           </button>
           <div style={{ fontSize: 11, color: "#a09080", textAlign: "center", marginTop: 8 }}>
-            WebPay / Mercado Pago · Orientación legal personalizada
+            Mercado Pago · Orientación legal personalizada
           </div>
         </div>
       )}

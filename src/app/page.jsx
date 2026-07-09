@@ -1769,13 +1769,24 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, auto
               {isFree ? "🎉 Acceder gratis" : "💳 Pagar con Mercado Pago"}
             </button>
             {!isFree && (
-              <button onClick={handleWebpay} style={{
-                width: "100%", background: "#1a3a5c", color: "white", border: "none",
-                borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 600, cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8,
-              }}>
-                🏦 Pagar con WebPay
-              </button>
+              <div style={{ position: "relative", marginTop: 8 }}>
+                {/* Badge "Prontamente habilitada" */}
+                <div style={{
+                  background: "linear-gradient(135deg, #f59e0b, #d97706)", color: "white",
+                  fontSize: 11, fontWeight: 700, padding: "3px 0", borderRadius: "8px 8px 0 0",
+                  textAlign: "center", letterSpacing: 0.5,
+                }}>
+                  ⏳ Prontamente habilitada
+                </div>
+                <button disabled style={{
+                  width: "100%", background: "#2a3a50", color: "#8899aa", border: "none",
+                  borderRadius: "0 0 12px 12px", padding: "13px", fontSize: 15, fontWeight: 600,
+                  cursor: "not-allowed", opacity: 0.65,
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                }}>
+                  🏦 Pagar con WebPay
+                </button>
+              </div>
             )}
           </>
         ) : (
@@ -1785,7 +1796,7 @@ function PaymentWall({ topic, resumen, sessionId, prevSessionId, prevTopic, auto
         )}
 
         <div style={{ fontSize: 11, color: "#a09080", textAlign: "center", marginTop: 8 }}>
-          🔒 Pago seguro · Mercado Pago y WebPay · No guardamos datos de tarjeta
+          🔒 Pago seguro · Mercado Pago · No guardamos datos de tarjeta
         </div>
       </div>
 
