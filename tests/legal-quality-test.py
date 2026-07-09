@@ -190,12 +190,15 @@ def check_response(text, query_id):
             patterns.append(rule["pattern"])
 
         for pat in patterns:
-            if pat in text.lower():
+            # Word-boundary match para evitar falsos positivos por substring
+            if re.search(r'\b' + re.escape(pat) + r'\b', text.lower()):
                 # Verificar excepciones
                 if "exceptions" in rule:
                     if any(exc in text for exc in rule["exceptions"]):
                         continue
-                violations.append(f"{rule['severity'].upper()}: {rule['msg']}")
+                # Incluir la palabra detectada en el mensaje
+                detail = rule.get("detail_msg", rule["msg"])
+                violations.append(f"{rule['severity'].upper()}: {detail} (palabra: '{pat}')")
                 break
 
         # Custom check function

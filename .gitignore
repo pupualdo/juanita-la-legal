@@ -50,3 +50,4 @@ supabase/.temp/
 next-env.d.ts
 
 .vercel
+__pycache__/
