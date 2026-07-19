@@ -141,7 +141,8 @@ RULES = [
         "id": "NO_ESPANOLISMOS",
         "patterns": ["vale", " tío ", "guay", "molar", "flipar", "hostia"],
         "severity": "fail",
-        "msg": "Españolismo detectado"
+        "msg": "Españolismo detectado",
+        "exceptions": ["vale la pena", "vale decir", "¿vale", "no vale", "sí vale", "te vale", "les vale"]
     },
 ]
 
