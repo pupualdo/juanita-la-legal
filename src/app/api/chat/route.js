@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { log } from '@/lib/logger';
+import { getLegalContext } from '@/lib/leychile';
 
 let _supabase = null;
 const getSupabase = () => {
@@ -491,13 +492,20 @@ export async function POST(request) {
     }
     const newHistory = [...validHistory, { role: 'user', content: userContent }];
 
+    // ── LeyChile: texto legal vigente como contexto ──
+    let systemWithContext = SYSTEM_PROMPT;
+    try {
+      const context = await getLegalContext(message);
+      if (context) systemWithContext = SYSTEM_PROMPT + '\n\n' + context;
+    } catch { /* si LeyChile no responde, no pasa nada */ }
+
     let stream;
     try {
       const anthropic = new Anthropic({ apiKey: process.env.JUANITA_ANTHROPIC_KEY });
       stream = anthropic.messages.stream({
         model: 'claude-sonnet-4-6',
         max_tokens: 4096,
-        system: SYSTEM_PROMPT,
+        system: systemWithContext,
         messages: newHistory,
         tools: [{ type: "web_search_20250305", name: "web_search" }],
       });
