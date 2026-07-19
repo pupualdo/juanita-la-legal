@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { log } from '@/lib/logger';
+import { sanitizeVoseo } from '@/lib/sanitize';
 
 // Tope duro de mensajes del usuario en la conversación gratuita (anti-abuso).
 const MAX_PREVIEW_TURNS = 2;
@@ -147,7 +148,7 @@ export async function POST(request) {
         try {
           for await (const event of stream) {
             if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-              controller.enqueue(encoder.encode('data: ' + JSON.stringify({ text: event.delta.text }) + '\n\n'));
+              controller.enqueue(encoder.encode('data: ' + JSON.stringify({ text: sanitizeVoseo(event.delta.text) }) + '\n\n'));
             }
           }
           controller.enqueue(encoder.encode('data: ' + JSON.stringify({ teaser: isTeaser }) + '\n\n'));

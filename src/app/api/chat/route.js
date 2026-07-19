@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { log } from '@/lib/logger';
 import { getLegalContext } from '@/lib/leychile';
+import { sanitizeVoseo } from '@/lib/sanitize';
 
 let _supabase = null;
 const getSupabase = () => {
@@ -528,8 +529,9 @@ export async function POST(request) {
         try {
           for await (const event of stream) {
             if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-              fullReply += event.delta.text;
-              controller.enqueue(encoder.encode('data: ' + JSON.stringify({ text: event.delta.text }) + '\n\n'));
+              const cleanText = sanitizeVoseo(event.delta.text);
+              fullReply += cleanText;
+              controller.enqueue(encoder.encode('data: ' + JSON.stringify({ text: cleanText }) + '\n\n'));
             }
           }
           if (!isDevMode && capturedSessionId) {
