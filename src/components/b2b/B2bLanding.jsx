@@ -4,16 +4,15 @@ import { useState } from 'react';
 import { CATALOGO, B2B_COPY } from '@/config/catalogo';
 import { trackEvent } from '@/lib/analytics';
 import Diagnostico from '@/components/b2b/Diagnostico';
+import PedidoForm from '@/components/b2b/PedidoForm';
 
 const formatCLP = (n) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
 
-function EntregaCard({ item }) {
-  const [pedido, setPedido] = useState(false);
-
+function EntregaCard({ item, onPedir }) {
   const handleCta = () => {
     trackEvent('StartConsultation', { entregable: item.id, precio: item.precio });
-    setPedido(true);
+    onPedir(item);
   };
 
   return (
@@ -44,33 +43,29 @@ function EntregaCard({ item }) {
           ⏱️ Entrega en {item.plazo}
         </div>
       </div>
-      {pedido ? (
-        <div style={{ fontSize: 14, color: '#4a7a5a', background: '#eff7f1', borderRadius: 10, padding: '12px 14px', lineHeight: 1.5 }}>
-          ✅ ¡Bien! El formulario de pedido estará disponible muy pronto. Mientras tanto, tu interés quedó registrado.
-        </div>
-      ) : (
-        <button
-          onClick={handleCta}
-          style={{
-            background: '#2d2a26',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: 12,
-            padding: '14px 18px',
-            fontSize: 15,
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-          }}
-        >
-          {B2B_COPY.cta}
-        </button>
-      )}
+      <button
+        onClick={handleCta}
+        style={{
+          background: '#2d2a26',
+          color: '#ffffff',
+          border: 'none',
+          borderRadius: 12,
+          padding: '14px 18px',
+          fontSize: 15,
+          fontWeight: 600,
+          cursor: 'pointer',
+          fontFamily: 'inherit',
+        }}
+      >
+        {B2B_COPY.cta}
+      </button>
     </div>
   );
 }
 
 export default function B2bLanding() {
+  const [seleccionado, setSeleccionado] = useState(null);
+
   return (
     <div style={{ minHeight: '100vh', background: '#faf8f4', color: '#2d2a26' }}>
       <div style={{ maxWidth: 1080, margin: '0 auto', padding: '56px 24px 80px' }}>
@@ -100,7 +95,7 @@ export default function B2bLanding() {
         {/* Catálogo */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
           {CATALOGO.map((item) => (
-            <EntregaCard key={item.id} item={item} />
+            <EntregaCard key={item.id} item={item} onPedir={setSeleccionado} />
           ))}
         </div>
 
@@ -108,6 +103,9 @@ export default function B2bLanding() {
           {B2B_COPY.notaPrecios}
         </p>
       </div>
+
+      {/* Formulario de pedido (modal) */}
+      {seleccionado && <PedidoForm item={seleccionado} onClose={() => setSeleccionado(null)} />}
     </div>
   );
 }
