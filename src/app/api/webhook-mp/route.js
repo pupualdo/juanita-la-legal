@@ -64,7 +64,27 @@ export async function POST(request) {
       return NextResponse.json({ ok: true });
     }
 
-    // Verificar que no se haya procesado ya este pago
+    // ── B2B: si el external_reference es una orden, marcarla como pagada ──
+    const { data: order } = await getSupabase()
+      .from('orders')
+      .select('id, payment_id')
+      .eq('id', sessionId)
+      .maybeSingle();
+
+    if (order) {
+      if (order.payment_id === String(paymentId)) {
+        log.info('webhook-mp', 'Orden ya procesada (duplicado)', { paymentId, orderId: sessionId });
+        return NextResponse.json({ ok: true });
+      }
+      await getSupabase()
+        .from('orders')
+        .update({ payment_id: String(paymentId), updated_at: new Date().toISOString() })
+        .eq('id', sessionId);
+      log.info('webhook-mp', 'Orden marcada como pagada', { orderId: sessionId, paymentId });
+      return NextResponse.json({ ok: true });
+    }
+
+    // Verificar que no se haya procesado ya este pago (flujo B2C sessions)
     const { data: existing } = await getSupabase()
       .from('sessions')
       .select('payment_id')
