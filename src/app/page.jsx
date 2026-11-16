@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false, loading: () => null });
 import { track } from '@vercel/analytics';
 import { trackEvent } from '@/lib/analytics';
+import B2bLanding from '@/components/b2b/B2bLanding';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
@@ -3111,6 +3112,12 @@ function PaidDetector({ onPaid }) {
 // ─── APP PRINCIPAL ───────────────────────────────────────────────────────────
 
 export default function App() {
+  // ── Flag de modo: B2B renderiza la landing de catálogo, B2C el flujo clásico ──
+  // NEXT_PUBLIC_MODE=b2b activa el nuevo producto; sin definir → B2C (default).
+  if (process.env.NEXT_PUBLIC_MODE === 'b2b') {
+    return <B2bLanding />;
+  }
+
   const [screen, setScreen] = useState("hero");
   const [postTermsScreen, setPostTermsScreen] = useState("chat");
 
