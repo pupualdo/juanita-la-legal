@@ -45,6 +45,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Incluir las plantillas .md en el trace de las funciones serverless que las leen
+  outputFileTracingIncludes: {
+    '/api/orders/generate': ['./src/templates/**/*'],
+  },
   async headers() {
     return [
       {
