@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { CATALOGO, B2B_COPY } from '@/config/catalogo';
 import { trackEvent } from '@/lib/analytics';
+import Diagnostico from '@/components/b2b/Diagnostico';
 
 const formatCLP = (n) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
@@ -92,6 +93,9 @@ export default function B2bLanding() {
             ))}
           </div>
         </header>
+
+        {/* Diagnóstico gratuito (gancho principal) */}
+        <Diagnostico />
 
         {/* Catálogo */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
