@@ -41,7 +41,7 @@ export async function POST(request) {
     // Enviar por Resend
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { error: sendError } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+      from: process.env.RESEND_FROM || 'onboarding@resend.dev',
       to: order.email,
       subject: `Tu documento "${nombreDoc}" está listo — Juanita La Legal`,
       html: `
